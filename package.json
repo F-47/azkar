@@ -1,0 +1,14 @@
+{
+  "name": "azkar-monorepo",
+  "private": true,
+  "workspaces": ["apps/web", "apps/desktop"],
+  "scripts": {
+    "dev": "npm run dev --workspace=apps/desktop",
+    "dev:web": "npm run dev --workspace=apps/web",
+    "build": "npm run build --workspace=apps/desktop",
+    "build:web": "npm run build --workspace=apps/web"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

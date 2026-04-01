@@ -1,0 +1,69 @@
+@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --green-primary: #1B5E20;
+  --green-medium: #2E7D32;
+  --gold: #C9A227;
+  --bg-primary: #F9F6EE;
+  --bg-card: #FFFFFF;
+  --border-color: #E8DFC5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  direction: rtl;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: #1a1a1a;
+  font-family: 'Noto Naskh Arabic', 'Amiri', serif;
+  min-height: 100vh;
+}
+
+.arabic-text {
+  font-family: 'Amiri', 'Noto Naskh Arabic', serif;
+  line-height: 2;
+  letter-spacing: 0.02em;
+}
+
+.decorative-border {
+  border-image: repeating-linear-gradient(
+    90deg,
+    var(--gold) 0px,
+    var(--gold) 4px,
+    transparent 4px,
+    transparent 12px
+  ) 1;
+}
+
+@layer utilities {
+  .text-shadow-sm {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2E7D32;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #1B5E20;
+}
