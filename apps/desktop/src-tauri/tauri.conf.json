@@ -27,6 +27,14 @@
       "csp": null
     }
   },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEJCRjc0RDhGOUY4MjhEMkEKUldRcWpZS2ZqMDMzdTlUcTRlVHdNbkpjaXZJZU1QL2VhcGZNM0xjU1lqUDdCOElYVk5zV2hHMngK",
+      "endpoints": [
+        "https://github.com/F-47/azkar/releases/latest/download/latest.json"
+      ]
+    }
+  },
   "bundle": {
     "active": true,
     "targets": "all",

@@ -10,7 +10,8 @@ import {
   pickRandomZekrForTest,
   type NotificationSettings,
 } from '@/lib/notificationScheduler'
-import { sendAzkarNotification } from '@/lib/tauri'
+import { sendAzkarNotification, isTauri } from '@/lib/tauri'
+import { checkForUpdate, installUpdate } from '@/lib/updater'
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i)
 
@@ -24,6 +25,9 @@ export default function SettingsPage() {
   const [settings, setSettings] = useState<NotificationSettings | null>(null)
   const [saved, setSaved] = useState(false)
   const [testing, setTesting] = useState(false)
+  const [updateState, setUpdateState] = useState<'idle' | 'checking' | 'available' | 'downloading' | 'done'>('idle')
+  const [updateVersion, setUpdateVersion] = useState<string | null>(null)
+  const [downloadProgress, setDownloadProgress] = useState(0)
 
   async function handleTest() {
     if (!settings) return
@@ -48,6 +52,24 @@ export default function SettingsPage() {
     else stopScheduler()
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
+  }
+
+  async function handleCheckUpdate() {
+    setUpdateState('checking')
+    const version = await checkForUpdate()
+    if (version) {
+      setUpdateVersion(version)
+      setUpdateState('available')
+    } else {
+      setUpdateState('idle')
+    }
+  }
+
+  async function handleInstallUpdate() {
+    setUpdateState('downloading')
+    setDownloadProgress(0)
+    await installUpdate((pct) => setDownloadProgress(pct))
+    setUpdateState('done')
   }
 
   if (!settings) return null
@@ -203,6 +225,63 @@ export default function SettingsPage() {
         >
           {testing ? '✓ تم الإرسال' : '🔔 اختبار إشعار الآن'}
         </button>
+
+        {/* Updates */}
+        {isTauri() && (
+          <div
+            className="rounded-2xl p-5 shadow-sm border"
+            style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
+          >
+            <p className="arabic-text font-bold text-gray-800 mb-3">التحديثات</p>
+
+            {updateState === 'idle' && (
+              <button
+                onClick={handleCheckUpdate}
+                className="arabic-text w-full py-2.5 rounded-xl text-sm font-medium border-2 transition-all"
+                style={{ borderColor: 'var(--green-primary)', color: 'var(--green-primary)', background: 'transparent' }}
+              >
+                التحقق من التحديثات
+              </button>
+            )}
+
+            {updateState === 'checking' && (
+              <p className="arabic-text text-sm text-gray-500 text-center">جارٍ التحقق...</p>
+            )}
+
+            {updateState === 'available' && (
+              <div className="space-y-3">
+                <p className="arabic-text text-sm text-green-700">
+                  🎉 يتوفر إصدار جديد: <span dir="ltr" className="font-bold">{updateVersion}</span>
+                </p>
+                <button
+                  onClick={handleInstallUpdate}
+                  className="arabic-text w-full py-2.5 rounded-xl text-sm font-bold text-white transition-all"
+                  style={{ background: 'var(--green-primary)' }}
+                >
+                  تحميل وتثبيت التحديث
+                </button>
+              </div>
+            )}
+
+            {updateState === 'downloading' && (
+              <div className="space-y-2">
+                <p className="arabic-text text-sm text-gray-600">جارٍ التحميل... {downloadProgress}%</p>
+                <div className="w-full h-2 rounded-full" style={{ background: '#e8f5e9' }}>
+                  <div
+                    className="h-full rounded-full transition-all"
+                    style={{ width: `${downloadProgress}%`, background: 'var(--green-primary)' }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {updateState === 'done' && (
+              <p className="arabic-text text-sm text-green-700">
+                ✓ تم تثبيت التحديث. أعد تشغيل التطبيق لتطبيق التغييرات.
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Save */}
         <button

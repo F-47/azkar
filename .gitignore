@@ -40,3 +40,8 @@ Thumbs.db
 
 # Claude Code
 .claude/
+
+# Signing keys
+*.key
+*.key.pub
+**/.tauri/
