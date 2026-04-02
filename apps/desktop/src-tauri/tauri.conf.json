@@ -39,11 +39,5 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "windows": {
-      "wix": {
-        "bannerPath": null,
-        "dialogImagePath": null
-      }
-    }
   }
 }
