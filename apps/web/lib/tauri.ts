@@ -5,8 +5,8 @@ export function isTauri(): boolean {
 export async function sendAzkarNotification(body: string): Promise<void> {
   if (!isTauri()) return
   try {
-    const { invoke } = await import('@tauri-apps/api/core')
-    await invoke('send_notification', { title: 'أذكار', body })
+    const { sendNotification } = await import('@tauri-apps/plugin-notification')
+    sendNotification({ title: 'أذكار', body })
   } catch (e) {
     console.warn('Notification failed:', e)
   }

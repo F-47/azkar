@@ -3,20 +3,10 @@ use tauri::{
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
 };
 
-#[tauri::command]
-fn send_notification(title: String, body: String) {
-    let _ = std::process::Command::new("notify-send")
-        .arg("--app-name=أذكار")
-        .arg(&title)
-        .arg(&body)
-        .spawn();
-}
-
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_notification::init())
-        .invoke_handler(tauri::generate_handler![send_notification])
         .setup(|app| {
             let window = app.get_webview_window("main").unwrap();
 
