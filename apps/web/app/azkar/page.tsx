@@ -58,7 +58,7 @@ export default function AzkarPage() {
       >
         {/* Top row */}
         <div className="flex items-center justify-between mb-4">
-          <h1 className="arabic-text text-white text-xl font-bold">
+          <h1 className="text-white text-xl font-bold">
             {category === 'morning' ? '🌅 أذكار الصباح' : '🌙 أذكار المساء'}
           </h1>
 
@@ -72,7 +72,7 @@ export default function AzkarPage() {
             </Link>
             <button
               onClick={reset}
-              className="arabic-text text-xs text-white/70 hover:text-white transition-colors px-2 py-1 rounded-lg"
+              className="text-xs text-white/70 hover:text-white transition-colors px-2 py-1 rounded-lg"
               style={{ background: 'rgba(255,255,255,0.12)' }}
               title="إعادة تعيين"
             >
@@ -96,12 +96,12 @@ export default function AzkarPage() {
       {mounted && isComplete && (
         <div
           className="mx-4 mt-4 p-4 rounded-xl text-center shadow-sm"
-          style={{ background: '#e8f5e9', border: '1px solid #a5d6a7' }}
+          style={{ background: 'var(--success-bg)', border: '1px solid var(--success-border)' }}
         >
-          <p className="arabic-text text-green-800 font-bold text-lg">
+          <p className="arabic-text font-bold text-lg" style={{ color: 'var(--success-text)' }}>
             🎉 ما شاء الله! اكتملت جميع الأذكار
           </p>
-          <p className="arabic-text text-green-700 text-sm mt-1">
+          <p className="arabic-text text-sm mt-1" style={{ color: 'var(--success-text)' }}>
             تقبّل الله منك
           </p>
         </div>
@@ -118,7 +118,7 @@ export default function AzkarPage() {
           </div>
         ) : azkar.length === 0 ? (
           <div className="text-center py-20">
-            <p className="arabic-text text-gray-400 text-lg">لا توجد أذكار</p>
+            <p className="text-lg" style={{ color: 'var(--text-muted)' }}>لا توجد أذكار</p>
           </div>
         ) : (
           azkar.map((zekr, i) => (
@@ -140,7 +140,7 @@ export default function AzkarPage() {
             await sendAzkarNotification('تذكير: لا تنسَ أذكارك اليومية 📿')
             showToast('تم إرسال الإشعار 🔔')
           }}
-          className="w-full arabic-text py-3 rounded-xl text-sm font-medium transition-all hover:opacity-90"
+          className="w-full py-3 rounded-xl text-sm font-medium transition-all hover:opacity-90 active:scale-95"
           style={{
             background: 'var(--bg-card)',
             border: '1px solid var(--border-color)',

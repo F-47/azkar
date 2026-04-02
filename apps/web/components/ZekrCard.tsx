@@ -19,17 +19,17 @@ export default function ZekrCard({ zekr, index, remaining, onDecrement }: Props)
         isDone ? 'opacity-60' : 'hover:shadow-md'
       }`}
       style={{
-        background: isDone ? '#f0f0e8' : 'var(--bg-card)',
-        borderColor: isDone ? '#ccc8b0' : 'var(--border-color)',
+        background: isDone ? 'var(--done-bg)' : 'var(--bg-card)',
+        borderColor: isDone ? 'var(--done-border)' : 'var(--border-color)',
       }}
     >
-      {/* Top row: verse number + note badge */}
+      {/* Top row: index + note badge */}
       <div className="flex items-center justify-between mb-3" dir="ltr">
         <span
           className="text-sm font-bold tabular-nums flex items-center justify-center rounded-full"
           style={{
-            background: isDone ? '#d0cdb5' : 'var(--green-primary)',
-            color: isDone ? '#666' : '#fff',
+            background: isDone ? 'var(--done-badge)' : 'var(--green-primary)',
+            color: isDone ? 'var(--text-muted)' : '#fff',
             width: '1.75rem',
             height: '1.75rem',
             flexShrink: 0,
@@ -39,10 +39,10 @@ export default function ZekrCard({ zekr, index, remaining, onDecrement }: Props)
         </span>
         {zekr.note && (
           <span
-            className="arabic-text text-xs px-2 py-0.5 rounded-full font-medium"
+            className="text-xs px-2 py-0.5 rounded-full font-medium"
             style={{
-              background: isDone ? '#d0cdb5' : '#e8f5e9',
-              color: isDone ? '#666' : '#2E7D32',
+              background: isDone ? 'var(--done-badge)' : 'var(--note-bg)',
+              color: isDone ? 'var(--text-muted)' : 'var(--note-text)',
             }}
           >
             {zekr.note}
@@ -50,16 +50,19 @@ export default function ZekrCard({ zekr, index, remaining, onDecrement }: Props)
         )}
       </div>
 
-      {/* Arabic text */}
+      {/* Arabic verse text — calligraphic font */}
       <p
         className={`arabic-text text-lg leading-loose mb-4 text-right ${
-          isDone ? 'line-through text-gray-400' : 'text-gray-800'
+          isDone ? 'line-through' : ''
         }`}
-        style={{ whiteSpace: 'pre-line' }}
+        style={{
+          whiteSpace: 'pre-line',
+          color: isDone ? 'var(--text-muted)' : 'var(--text-primary)',
+        }}
         dangerouslySetInnerHTML={{
           __html: zekr.text.replace(
             /۝([\u0660-\u0669]+)/g,
-            `<span style="display:inline-flex;align-items:center;justify-content:center;background:${isDone ? '#d0cdb5' : 'var(--gold)'};color:${isDone ? '#888' : '#3b2000'};font-size:0.7rem;font-weight:700;border-radius:50%;width:1.4rem;height:1.4rem;margin:0 0.2rem;vertical-align:middle;font-family:serif;">$1</span>`
+            `<span style="display:inline-flex;align-items:center;justify-content:center;background:${isDone ? 'var(--done-badge)' : 'var(--gold)'};color:${isDone ? 'var(--text-muted)' : '#3b2000'};font-size:0.7rem;font-weight:700;border-radius:50%;width:1.4rem;height:1.4rem;margin:0 0.2rem;vertical-align:middle;font-family:serif;">$1</span>`
           ),
         }}
       />
@@ -67,13 +70,13 @@ export default function ZekrCard({ zekr, index, remaining, onDecrement }: Props)
       {/* Progress bar */}
       <div
         className="w-full h-1 rounded-full mb-4 overflow-hidden"
-        style={{ background: '#e8e4d0' }}
+        style={{ background: 'var(--progress-track)' }}
       >
         <div
           className="h-full rounded-full transition-all duration-500"
           style={{
             width: `${progress}%`,
-            background: isDone ? '#b0a878' : 'var(--green-medium)',
+            background: isDone ? 'var(--done-badge)' : 'var(--green-medium)',
           }}
         />
       </div>
@@ -83,14 +86,14 @@ export default function ZekrCard({ zekr, index, remaining, onDecrement }: Props)
         <button
           onClick={() => !isDone && onDecrement(zekr.id)}
           disabled={isDone}
-          className={`arabic-text px-5 py-2 rounded-xl font-bold text-sm transition-all duration-150 select-none ${
+          className={`px-5 py-2 rounded-xl font-bold text-sm transition-all duration-150 select-none ${
             isDone
-              ? 'cursor-not-allowed text-gray-400'
+              ? 'cursor-not-allowed'
               : 'text-white hover:scale-105 active:scale-95 shadow-sm hover:shadow-md'
           }`}
           style={
             isDone
-              ? { background: '#d0cdb5' }
+              ? { background: 'var(--done-badge)', color: 'var(--text-muted)' }
               : { background: 'var(--green-primary)' }
           }
         >
@@ -99,12 +102,12 @@ export default function ZekrCard({ zekr, index, remaining, onDecrement }: Props)
 
         <div className="flex items-center gap-2">
           <span
-            className="arabic-text text-2xl font-bold tabular-nums"
-            style={{ color: isDone ? '#aaa' : 'var(--green-primary)' }}
+            className="text-2xl font-bold tabular-nums"
+            style={{ color: isDone ? 'var(--text-muted)' : 'var(--green-primary)' }}
           >
             {zekr.count - remaining}
           </span>
-          <span className="arabic-text text-xs text-gray-400">
+          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
             / {zekr.count}
           </span>
         </div>

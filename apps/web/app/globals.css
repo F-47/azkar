@@ -1,9 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Amiri:ital,wght@0,400;0,700;1,400&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ── Light mode (default) ───────────────────── */
 :root {
   --green-primary: #1B5E20;
   --green-medium: #2E7D32;
@@ -11,6 +12,67 @@
   --bg-primary: #F9F6EE;
   --bg-card: #FFFFFF;
   --border-color: #E8DFC5;
+  --text-primary: #1a1a1a;
+  --text-secondary: #555555;
+  --text-muted: #9ca3af;
+  --input-bg: #f0f0e8;
+  --progress-track: #e8e4d0;
+  --done-bg: #f0f0e8;
+  --done-border: #ccc8b0;
+  --done-badge: #d0cdb5;
+  --note-bg: #e8f5e9;
+  --note-text: #2E7D32;
+  --success-bg: #e8f5e9;
+  --success-border: #a5d6a7;
+  --success-text: #1B5E20;
+}
+
+/* ── Dark mode variables ────────────────────── */
+.dark {
+  --green-primary: #4ade80;
+  --green-medium: #22c55e;
+  --gold: #d4a843;
+  --bg-primary: #0f1117;
+  --bg-card: #1a1d26;
+  --border-color: #2d3148;
+  --text-primary: #e8e3d8;
+  --text-secondary: #a3a3a3;
+  --text-muted: #6b7280;
+  --input-bg: #252830;
+  --progress-track: #2d3148;
+  --done-bg: #1e2028;
+  --done-border: #2d3148;
+  --done-badge: #353845;
+  --note-bg: #1a3a1e;
+  --note-text: #4ade80;
+  --success-bg: #14291a;
+  --success-border: #2d6a35;
+  --success-text: #4ade80;
+}
+
+/* ── OS dark preference (when no manual override) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --green-primary: #4ade80;
+    --green-medium: #22c55e;
+    --gold: #d4a843;
+    --bg-primary: #0f1117;
+    --bg-card: #1a1d26;
+    --border-color: #2d3148;
+    --text-primary: #e8e3d8;
+    --text-secondary: #a3a3a3;
+    --text-muted: #6b7280;
+    --input-bg: #252830;
+    --progress-track: #2d3148;
+    --done-bg: #1e2028;
+    --done-border: #2d3148;
+    --done-badge: #353845;
+    --note-bg: #1a3a1e;
+    --note-text: #4ade80;
+    --success-bg: #14291a;
+    --success-border: #2d6a35;
+    --success-text: #4ade80;
+  }
 }
 
 * {
@@ -23,11 +85,12 @@ html {
 
 body {
   background-color: var(--bg-primary);
-  color: #1a1a1a;
-  font-family: 'Noto Naskh Arabic', 'Amiri', serif;
+  color: var(--text-primary);
+  font-family: 'Cairo', 'Noto Sans Arabic', system-ui, sans-serif;
   min-height: 100vh;
 }
 
+/* Calligraphic font — verses and Islamic text only */
 .arabic-text {
   font-family: 'Amiri', 'Noto Naskh Arabic', serif;
   line-height: 2;
@@ -50,20 +113,27 @@ body {
   }
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 6px;
+/* Buttons */
+button:focus-visible {
+  outline: 2px solid var(--green-primary);
+  outline-offset: 2px;
 }
 
-::-webkit-scrollbar-track {
-  background: var(--bg-primary);
+/* Inputs & selects */
+input, select {
+  color: var(--text-primary);
+  background-color: var(--input-bg);
+  border-color: var(--border-color);
 }
 
-::-webkit-scrollbar-thumb {
-  background: #2E7D32;
-  border-radius: 3px;
+input:focus, select:focus {
+  outline: 2px solid var(--green-primary);
+  outline-offset: 0;
+  border-color: var(--green-primary);
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #1B5E20;
-}
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--green-medium); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--green-primary); }
