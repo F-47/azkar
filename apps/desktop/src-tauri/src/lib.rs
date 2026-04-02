@@ -21,8 +21,8 @@ pub fn run() {
             });
 
             // Tray context menu
-            let show_item = MenuItem::with_id(app, "show", "فتح", true, None::<&str>)?;
-            let quit_item = MenuItem::with_id(app, "quit", "إغلاق", true, None::<&str>)?;
+            let show_item = MenuItem::with_id(app, "show", "Open", true, None::<&str>)?;
+            let quit_item = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
             let menu = Menu::with_items(app, &[&show_item, &quit_item])?;
 
             // System tray icon
