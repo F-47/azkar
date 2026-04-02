@@ -1,5 +1,6 @@
 use tauri::{
     Manager,
+    menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
 };
 
@@ -19,10 +20,26 @@ pub fn run() {
                 }
             });
 
-            // System tray icon — click to show window
+            // Tray context menu
+            let show_item = MenuItem::with_id(app, "show", "فتح", true, None::<&str>)?;
+            let quit_item = MenuItem::with_id(app, "quit", "إغلاق", true, None::<&str>)?;
+            let menu = Menu::with_items(app, &[&show_item, &quit_item])?;
+
+            // System tray icon
             TrayIconBuilder::new()
                 .icon(app.default_window_icon().unwrap().clone())
                 .tooltip("أذكار")
+                .menu(&menu)
+                .on_menu_event(|app, event| match event.id.as_ref() {
+                    "show" => {
+                        if let Some(win) = app.get_webview_window("main") {
+                            let _ = win.show();
+                            let _ = win.set_focus();
+                        }
+                    }
+                    "quit" => app.exit(0),
+                    _ => {}
+                })
                 .on_tray_icon_event(|tray, event| {
                     if let TrayIconEvent::Click {
                         button: MouseButton::Left,
