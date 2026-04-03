@@ -1,59 +1,81 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-
-declare global {
-  interface Window {
-    __NOTIFICATION__?: { title: string; body: string }
-  }
-}
+import { useEffect, useRef, useState } from 'react'
 
 const DURATION = 6000
 
 export default function NotificationPage() {
   const [data, setData] = useState<{ title: string; body: string } | null>(null)
   const [progress, setProgress] = useState(100)
+  const rafRef = useRef<number | null>(null)
+  const cardRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     document.documentElement.style.background = 'transparent'
     document.body.style.background = 'transparent'
     document.documentElement.setAttribute('dir', 'rtl')
 
-    const notif = window.__NOTIFICATION__
-    if (notif) setData(notif)
-
-    const start = Date.now()
-    let raf: number
-
-    function tick() {
-      const elapsed = Date.now() - start
-      setProgress(Math.max(0, 100 - (elapsed / DURATION) * 100))
-      if (elapsed < DURATION) {
-        raf = requestAnimationFrame(tick)
-      } else {
-        closeWindow()
+    function trigger(title: string, body: string) {
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current)
+        rafRef.current = null
       }
+      setData({ title, body })
+      setProgress(100)
+
+      const start = Date.now()
+      function tick() {
+        const elapsed = Date.now() - start
+        setProgress(Math.max(0, 100 - (elapsed / DURATION) * 100))
+        if (elapsed < DURATION) {
+          rafRef.current = requestAnimationFrame(tick)
+        } else {
+          rafRef.current = null
+          hideWindow()
+        }
+      }
+      rafRef.current = requestAnimationFrame(tick)
     }
 
-    raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
+    // Register global so Rust can call via eval()
+    ;(window as any).__showNotification = trigger
+
+    // Pick up any notification that arrived before this effect ran
+    const pending = (window as any).__pendingNotif
+    if (pending) {
+      delete (window as any).__pendingNotif
+      trigger(pending.title, pending.body)
+    }
+
+    return () => {
+      delete (window as any).__showNotification
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current)
+    }
   }, [])
 
-  async function closeWindow() {
+  // Resize window to fit content after each new notification
+  useEffect(() => {
+    if (!data || !cardRef.current) return
+    const height = cardRef.current.scrollHeight + 16 // 8px padding top + bottom
+    import('@tauri-apps/api/core').then(({ invoke }) => {
+      invoke('resize_notification', { height })
+    })
+  }, [data])
+
+  async function hideWindow() {
     try {
-      const { getCurrentWindow } = await import('@tauri-apps/api/window')
-      await getCurrentWindow().close()
+      const { invoke } = await import('@tauri-apps/api/core')
+      await invoke('hide_notification')
     } catch {
-      window.close()
+      // noop
     }
   }
 
   if (!data) return null
 
   return (
-    <div dir="rtl" style={{ padding: 8, height: '100vh', boxSizing: 'border-box' }}>
-      <div style={{
-        height: '100%',
+    <div dir="rtl" style={{ padding: 8 }}>
+      <div ref={cardRef} style={{
         background: '#fff',
         borderRadius: 14,
         boxShadow: '0 8px 40px rgba(0,0,0,0.22)',
@@ -87,7 +109,7 @@ export default function NotificationPage() {
             📿 {data.title}
           </span>
           <button
-            onClick={closeWindow}
+            onClick={hideWindow}
             style={{
               background: 'rgba(255,255,255,0.18)',
               border: 'none',
@@ -121,11 +143,8 @@ export default function NotificationPage() {
             fontFamily: '"Noto Naskh Arabic", "Amiri", serif',
             textAlign: 'right',
             direction: 'rtl',
-            display: '-webkit-box',
-            WebkitLineClamp: 3,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
             width: '100%',
+            whiteSpace: 'pre-wrap',
           }}>
             {data.body}
           </p>

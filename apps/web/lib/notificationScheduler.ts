@@ -63,8 +63,7 @@ export function pickRandomZekrForTest(category: Category | 'both'): string | nul
 }
 
 function formatForNotification(text: string): string {
-  const firstLine = text.split('\n')[0].trim()
-  return firstLine.length > 150 ? firstLine.slice(0, 150) + '...' : firstLine
+  return text.trim()
 }
 
 let timer: ReturnType<typeof setInterval> | null = null
