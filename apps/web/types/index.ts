@@ -6,6 +6,7 @@ export interface Zekr {
   count: number
   category: Category
   note?: string
+  isCustom?: boolean
 }
 
 export interface ZekrProgress {

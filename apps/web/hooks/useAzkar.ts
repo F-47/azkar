@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import type { Category, Zekr, ProgressMap } from '@/types'
-import azkarData from '@/data/azkar.json'
+import { getActiveAzkars } from '@/lib/azkarStore'
 
 const STORAGE_KEY = 'azkar-progress'
 const DATE_KEY = 'azkar-date'
@@ -54,8 +54,21 @@ export function useAzkar() {
   const [category, setCategory] = useState<Category>('morning')
   const [progress, setProgress] = useState<ProgressMap>({})
   const [mounted, setMounted] = useState(false)
+  const [azkarData, setAzkarData] = useState<Zekr[]>([])
 
-  const azkar = (azkarData as Zekr[]).filter((z) => z.category === category)
+  const azkar = azkarData.filter((z) => z.category === category)
+
+  const reloadAzkarData = useCallback(() => {
+    setAzkarData(getActiveAzkars())
+  }, [])
+
+  useEffect(() => {
+    reloadAzkarData()
+    const handleUpdate = () => reloadAzkarData()
+    
+    window.addEventListener('azkar-updated', handleUpdate)
+    return () => window.removeEventListener('azkar-updated', handleUpdate)
+  }, [reloadAzkarData])
 
   useEffect(() => {
     setMounted(true)
@@ -68,9 +81,9 @@ export function useAzkar() {
     }
   }, [progress, category, mounted])
 
-  const decrement = useCallback((id: number) => {
+  const decrement = useCallback((id: number, defaultCount: number) => {
     setProgress((prev) => {
-      const current = prev[id] ?? 0
+      const current = prev[id] ?? defaultCount
       if (current <= 0) return prev
       return { ...prev, [id]: current - 1 }
     })

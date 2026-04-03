@@ -1,5 +1,5 @@
 import { sendAzkarNotification } from './tauri'
-import azkarData from '@/data/azkar.json'
+import { getNotificationAzkars } from '@/lib/azkarStore'
 import type { Zekr, Category } from '@/types'
 
 const SETTINGS_KEY = 'azkar-notification-settings'
@@ -51,7 +51,7 @@ function isInActiveHours(settings: NotificationSettings): boolean {
 }
 
 function pickRandomZekr(category: Category | 'both'): Zekr | null {
-  const all = azkarData as Zekr[]
+  const all = getNotificationAzkars()
   const pool = category === 'both' ? all : all.filter((z) => z.category === category)
   if (!pool.length) return null
   return pool[Math.floor(Math.random() * pool.length)]

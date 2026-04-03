@@ -9,9 +9,9 @@ import {
   requestNotificationPermission,
   sendAzkarNotification,
 } from "@/lib/tauri";
-import { Bell, Moon, RotateCw, Settings, Sun } from "lucide-react";
+import { Bell, Moon, RotateCw, Settings, Sun, ListChecks } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 export default function AzkarPage() {
   const [toast, setToast] = useState<string | null>(null);
@@ -38,15 +38,7 @@ export default function AzkarPage() {
     requestNotificationPermission().then(() => startScheduler());
   }, []);
 
-  useEffect(() => {
-    if (isComplete && mounted && azkar.length > 0) {
-      const msg =
-        category === "morning"
-          ? "أحسنت! اكتملت أذكار الصباح"
-          : "أحسنت! اكتملت أذكار المساء";
-      sendAzkarNotification(msg);
-    }
-  }, [isComplete, category, mounted, azkar.length]);
+
 
   const headerBg =
     category === "morning"
@@ -80,11 +72,18 @@ export default function AzkarPage() {
 
           <div className="flex items-center gap-2">
             <Link
+              href="/azkar/manage"
+              className="text-white/70 hover:text-white transition-colors text-lg"
+              title="إدارة الأذكار"
+            >
+              <ListChecks className="w-6 h-6" />
+            </Link>
+            <Link
               href="/azkar/settings"
               className="text-white/70 hover:text-white transition-colors text-lg"
               title="إعدادات الإشعارات"
             >
-              <Settings />
+              <Settings className="w-6 h-6" />
             </Link>
             <button
               onClick={reset}

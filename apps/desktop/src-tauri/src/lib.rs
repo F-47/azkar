@@ -14,11 +14,14 @@ async fn resize_notification(app: tauri::AppHandle, height: f64) -> Result<(), S
             .map_err(|e: tauri::Error| e.to_string())?;
         if let Ok(Some(monitor)) = win.current_monitor() {
             let size = monitor.size();
+            let position = monitor.position();
             let scale = monitor.scale_factor();
             let logical_w = size.width as f64 / scale;
             let logical_h = size.height as f64 / scale;
-            let x = logical_w - 360.0 - 16.0;
-            let y = logical_h - h - 48.0;
+            let logical_x = position.x as f64 / scale;
+            let logical_y = position.y as f64 / scale;
+            let x = logical_x + logical_w - 360.0 - 16.0;
+            let y = logical_y + logical_h - h - 48.0;
             let _ = win.set_position(LogicalPosition::new(x, y));
         }
     }
@@ -42,11 +45,14 @@ async fn show_notification(app: tauri::AppHandle, body: String) -> Result<(), St
     // Position bottom-right, above the taskbar
     if let Ok(Some(monitor)) = win.current_monitor() {
         let size = monitor.size();
+        let position = monitor.position();
         let scale = monitor.scale_factor();
         let logical_w = size.width as f64 / scale;
         let logical_h = size.height as f64 / scale;
-        let x = logical_w - 360.0 - 16.0;
-        let y = logical_h - 140.0 - 48.0;
+        let logical_x = position.x as f64 / scale;
+        let logical_y = position.y as f64 / scale;
+        let x = logical_x + logical_w - 360.0 - 16.0;
+        let y = logical_y + logical_h - 140.0 - 48.0;
         let _ = win.set_position(LogicalPosition::new(x, y));
     }
 
@@ -68,6 +74,9 @@ async fn show_notification(app: tauri::AppHandle, body: String) -> Result<(), St
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    #[cfg(target_os = "linux")]
+    std::env::set_var("GDK_BACKEND", "x11");
+
     tauri::Builder::default()
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {

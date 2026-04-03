@@ -6,7 +6,7 @@ interface Props {
   zekr: Zekr;
   index: number;
   remaining: number;
-  onDecrement: (id: number) => void;
+  onDecrement: (id: number, defaultCount: number) => void;
 }
 
 export default function ZekrCard({
@@ -86,7 +86,7 @@ export default function ZekrCard({
 
       <div className="flex items-center justify-between">
         <button
-          onClick={() => !isDone && onDecrement(zekr.id)}
+          onClick={() => !isDone && onDecrement(zekr.id, zekr.count)}
           disabled={isDone}
           className={`px-5 py-2 rounded-xl font-bold text-sm transition-all duration-150 select-none ${
             isDone
