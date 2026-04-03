@@ -90,7 +90,7 @@ export default function NotificationPage() {
           style={{
             fontFamily: '"Noto Naskh Arabic", "Amiri", serif',
           }}
-          className="text-sm font-bold pointer-events-none"
+          className="text-sm font-bold pointer-events-none text-white"
         >
           {data.title}
         </span>
@@ -98,12 +98,7 @@ export default function NotificationPage() {
         <CircularProgress progress={progress} />
       </div>
 
-      <p
-        style={{
-          fontFamily: '"Noto Naskh Arabic", "Amiri", serif',
-        }}
-        className="p-4 text-[#1a1a1a] w-full text-start whitespace-pre-wrap text-base bg-white rounded-b-xl"
-      >
+      <p className="p-4 text-[#1a1a1a] arabic-text w-full text-start text-base bg-white rounded-b-xl">
         {data.body}
       </p>
     </div>
@@ -148,7 +143,7 @@ function CircularProgress({ progress }: { progress: number }) {
         />
       </svg>
 
-      <div className="absolute top-0 start-0 size-full flex items-center justify-center text-[0.6rem] font-bold">
+      <div className="absolute top-0 start-0 size-full flex items-center justify-center text-[0.6rem] font-bold text-white">
         {Math.ceil((progress / 100) * (DURATION / 1000))}
       </div>
     </div>
