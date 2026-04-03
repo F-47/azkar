@@ -105,7 +105,7 @@ export default function AzkarPage() {
         </div>
       </header>
 
-      {mounted && !isComplete && (
+      {mounted && isComplete && (
         <div
           className="mx-4 mt-4 p-4 rounded-xl text-center shadow-sm"
           style={{
