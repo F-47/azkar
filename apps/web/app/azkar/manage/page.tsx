@@ -9,6 +9,10 @@ import {
   ListChecks,
   Bell,
   BellOff,
+  X,
+  PlusCircle,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import {
   getAllAzkars,
@@ -22,17 +26,9 @@ import {
   toggleAllZekrNotifStatus,
 } from "@/lib/azkarStore";
 import type { Zekr } from "@/types";
-
-const cardStyle = {
-  background: "var(--bg-card)",
-  borderColor: "var(--border-color)",
-};
-
-const inputStyle = {
-  background: "var(--input-bg)",
-  borderColor: "var(--border-color)",
-  color: "var(--text-primary)",
-};
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export default function ManageAzkarPage() {
   const [azkars, setAzkars] = useState<Zekr[]>([]);
@@ -97,302 +93,272 @@ export default function ManageAzkarPage() {
   if (!mounted) return null;
 
   return (
-    <div
-      className="min-h-screen flex flex-col pb-10"
-      dir="rtl"
-      style={{ background: "var(--bg-primary)" }}
-    >
-      <header
-        className="sticky top-0 z-10 px-4 pt-5 pb-4 shadow-lg"
-        style={{
-          background:
-            "linear-gradient(135deg, #1B5E20 0%, #2E7D32 60%, #388E3C 100%)",
-        }}
-      >
-        <div className="flex items-center justify-between" dir="ltr">
-          <Link
-            href="/azkar"
-            className="text-white/70 hover:text-white transition-colors text-xl w-8 flex items-center"
-          >
-            <ArrowLeft />
-          </Link>
-          <h1 className="text-white text-xl font-bold flex items-center gap-2">
-            إدارة الأذكار
-            <ListChecks />
-          </h1>
-          <span className="w-8" />
+    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-500" dir="rtl">
+      {/* Background patterns */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.05),transparent_60%)]" />
+        <div className="absolute inset-0 pattern-islamic opacity-[0.03]" />
+      </div>
+
+      <header className="sticky top-0 z-50 border-b border-white/5 backdrop-blur-xl">
+        <div className="absolute inset-0 bg-background/40" />
+
+        <div className="container max-w-2xl mx-auto px-4 py-4 relative">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Link href="/azkar">
+                <Button variant="ghost" size="icon-sm" className="rounded-xl bg-white/5 border border-white/10 text-muted-foreground hover:text-primary transition-all">
+                  <ArrowLeft className="w-5 h-5" />
+                </Button>
+              </Link>
+              <div>
+                <h1 className="text-xl font-black tracking-tight">إدارة الأذكار</h1>
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold italic">Manage Adhkar</p>
+              </div>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-[0_0_15px_rgba(59,130,246,0.2)]">
+              <ListChecks className="w-5 h-5" />
+            </div>
+          </div>
         </div>
       </header>
 
-      <main className="flex-1 px-4 py-6 space-y-6 max-w-2xl w-full mx-auto">
-        <div className="flex justify-between items-center">
-          <div className="flex bg-[var(--input-bg)] p-1 rounded-xl">
-            <button
-              onClick={() => setTab("morning")}
-              className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${
-                tab === "morning"
-                  ? "bg-green-800 text-white shadow"
-                  : "text-[var(--text-secondary)]"
-              }`}
-            >
-              الصباح
-            </button>
-            <button
-              onClick={() => setTab("evening")}
-              className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${
-                tab === "evening"
-                  ? "bg-green-800 text-white shadow"
-                  : "text-[var(--text-secondary)]"
-              }`}
-            >
-              المساء
-            </button>
-          </div>
-
-          <button
-            onClick={() => setIsAdding(!isAdding)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-white transition-all active:scale-95"
-            style={{ background: "var(--green-primary)" }}
-          >
-            {isAdding ? "إلغاء" : "إضافة ذكر"}
-            <Plus className="w-4 h-4" />
-          </button>
-        </div>
-
-        <div className="flex items-center justify-between text-xs font-medium px-2 py-1 mb-2">
-          <div className="flex items-center gap-3">
-            <span style={{ color: "var(--text-muted)" }}>القائمة:</span>
-            <button
-              onClick={() => handleToggleAllStatus(true)}
-              className="text-green-600 hover:text-green-700 transition"
-            >
-              تفعيل
-            </button>
-            <button
-              onClick={() => handleToggleAllStatus(false)}
-              className="text-gray-400 hover:text-red-500 transition"
-            >
-              إخفاء
-            </button>
-          </div>
-          <div className="w-4 h-0.5 bg-gray-300"></div>
-          <div className="flex items-center gap-3">
-            <span style={{ color: "var(--text-muted)" }}>الإشعارات:</span>
-            <button
-              onClick={() => handleToggleAllNotif(true)}
-              className="text-green-600 hover:text-green-700 transition"
-            >
-              تفعيل
-            </button>
-            <button
-              onClick={() => handleToggleAllNotif(false)}
-              className="text-gray-400 hover:text-red-500 transition"
-            >
-              صامت
-            </button>
-          </div>
-        </div>
-
-        {isAdding && (
-          <form
-            onSubmit={handleAdd}
-            className="rounded-2xl p-5 shadow-sm border space-y-4"
-            style={cardStyle}
-          >
-            <div>
-              <label
-                className="text-sm block mb-1 font-bold"
-                style={{ color: "var(--text-primary)" }}
+      <main className="flex-1 px-4 py-8 relative z-10">
+        <div className="max-w-2xl mx-auto space-y-8">
+          {/* Controls */}
+          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between bg-white/5 backdrop-blur-md rounded-4xl p-4 border border-white/10 shadow-sm">
+            <div className="flex bg-white/5 p-1 rounded-2xl border border-white/5">
+              <button
+                onClick={() => setTab("morning")}
+                className={cn(
+                  "px-6 py-2 rounded-xl text-sm font-bold transition-all duration-300",
+                  tab === "morning"
+                    ? "bg-primary text-primary-foreground shadow-lg scale-105"
+                    : "text-muted-foreground hover:text-white"
+                )}
               >
-                الذكر
-              </label>
-              <textarea
-                required
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                className="w-full py-2 px-3 rounded-xl border text-sm focus:outline-none transition-colors"
-                style={inputStyle}
-                rows={3}
-                placeholder="اكتب الذكر هنا..."
-              />
+                أذكار الصباح
+              </button>
+              <button
+                onClick={() => setTab("evening")}
+                className={cn(
+                  "px-6 py-2 rounded-xl text-sm font-bold transition-all duration-300",
+                  tab === "evening"
+                    ? "bg-primary text-primary-foreground shadow-lg scale-105"
+                    : "text-muted-foreground hover:text-white"
+                )}
+              >
+                أذكار المساء
+              </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label
-                  className="text-sm block mb-1 font-bold"
-                  style={{ color: "var(--text-primary)" }}
-                >
-                  العدد
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  required
-                  value={count}
-                  onChange={(e) => setCount(Number(e.target.value))}
-                  className="w-full py-2 px-3 rounded-xl border text-sm focus:outline-none transition-colors"
-                  style={inputStyle}
-                />
-              </div>
-              <div>
-                <label
-                  className="text-sm block mb-1 font-bold"
-                  style={{ color: "var(--text-primary)" }}
-                >
-                  الفئة
-                </label>
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value as any)}
-                  className="w-full py-2 px-3 rounded-xl border text-sm focus:outline-none transition-colors"
-                  style={inputStyle}
-                >
-                  <option value="morning">الصباح</option>
-                  <option value="evening">المساء</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label
-                className="text-sm block mb-1 font-bold"
-                style={{ color: "var(--text-primary)" }}
-              >
-                ملاحظة فضل الذكر (اختياري)
-              </label>
-              <input
-                type="text"
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                className="w-full py-2 px-3 rounded-xl border text-sm focus:outline-none transition-colors"
-                style={inputStyle}
-                placeholder="مثال: من قالها حين يصبح..."
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="w-full py-2.5 rounded-xl text-sm font-bold text-white transition-all active:scale-95 mt-2"
-              style={{ background: "var(--green-primary)" }}
+            <Button
+              onClick={() => setIsAdding(!isAdding)}
+              className={cn(
+                "rounded-2xl h-11 px-6 font-bold shadow-lg transition-all active:scale-95 flex items-center gap-2",
+                isAdding ? "bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20" : "bg-primary text-primary-foreground"
+              )}
             >
-              حفظ الذكر
-            </button>
-          </form>
-        )}
+              {isAdding ? "إلغاء الإضافة" : "إضافة ذكر جديد"}
+              {isAdding ? <X className="w-4 h-4" /> : <PlusCircle className="w-4 h-4" />}
+            </Button>
+          </div>
 
-        <div className="space-y-3">
-          {visibleAzkars.map((zekr) => {
-            const isEnabled = !disabledIds.includes(zekr.id);
-            const isNotifEnabled = !notifDisabledIds.includes(zekr.id);
-            return (
-              <div
-                key={zekr.id}
-                className="rounded-2xl p-4 shadow-sm border flex flex-col gap-3 transition-opacity"
-                style={{
-                  ...cardStyle,
-                  opacity: isEnabled ? 1 : 0.5,
-                }}
-              >
-                <div className="flex justify-between items-start gap-3">
-                  <div className="flex-1">
-                    <p
-                      className="arabic-text text-base leading-relaxed"
-                      style={{ color: "var(--text-primary)" }}
-                    >
-                      {zekr.text}
-                    </p>
-                    <div className="flex gap-4 mt-2">
-                      <span
-                        className="text-xs font-bold px-2 py-1 rounded"
-                        style={{
-                          background: "var(--input-bg)",
-                          color: "var(--text-secondary)",
-                        }}
+          {!isAdding && (
+            <div className="flex items-center justify-between px-6 py-4 bg-white/5 rounded-3xl border border-white/5 shadow-inner">
+               <div className="flex items-center gap-6">
+                <div className="flex flex-col gap-1.5">
+                   <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">الظهور في القائمة</span>
+                   <div className="flex items-center gap-3">
+                      <button onClick={() => handleToggleAllStatus(true)} className="text-xs font-bold text-green-500 hover:text-green-400 transition-colors">تفعيل الكل</button>
+                      <div className="w-px h-3 bg-white/10" />
+                      <button onClick={() => handleToggleAllStatus(false)} className="text-xs font-bold text-muted-foreground hover:text-red-400 transition-colors">إخفاء الكل</button>
+                   </div>
+                </div>
+               </div>
+               <div className="w-px h-8 bg-white/5 hidden md:block" />
+               <div className="flex items-center gap-6">
+                <div className="flex flex-col gap-1.5 items-end">
+                   <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">إشعارات سطح المكتب</span>
+                   <div className="flex items-center gap-3">
+                      <button onClick={() => handleToggleAllNotif(true)} className="text-xs font-bold text-green-500 hover:text-green-400 transition-colors">تفعيل</button>
+                      <div className="w-px h-3 bg-white/10" />
+                      <button onClick={() => handleToggleAllNotif(false)} className="text-xs font-bold text-muted-foreground hover:text-red-400 transition-colors">صامت</button>
+                   </div>
+                </div>
+               </div>
+            </div>
+          )}
+
+          {isAdding && (
+            <Card className="rounded-[2.5rem] p-8 border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl animate-in zoom-in-95 duration-300">
+              <form onSubmit={handleAdd} className="space-y-6">
+                <div className="flex items-center gap-3 mb-2">
+                   <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
+                      <Plus className="w-4 h-4" />
+                   </div>
+                   <h3 className="font-black text-xl">إضافة ذكر جديد</h3>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-xs font-black uppercase tracking-widest text-muted-foreground px-1">الذكر</label>
+                    <textarea
+                      required
+                      value={text}
+                      onChange={(e) => setText(e.target.value)}
+                      className="w-full py-4 px-5 rounded-2xl bg-white/5 border border-white/10 text-base focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all min-h-30 placeholder:text-muted-foreground/30"
+                      placeholder="اكتب نص الذكر هنا..."
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-xs font-black uppercase tracking-widest text-muted-foreground px-1">العدد الافتراضي</label>
+                      <input
+                        type="number"
+                        min="1"
+                        required
+                        value={count}
+                        onChange={(e) => setCount(Number(e.target.value))}
+                        className="w-full py-3 px-5 rounded-2xl bg-white/5 border border-white/10 text-lg font-bold tabular-nums focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-black uppercase tracking-widest text-muted-foreground px-1">التكرار</label>
+                      <select
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value as "morning" | "evening")}
+                        className="w-full py-3 px-5 rounded-2xl bg-white/5 border border-white/10 text-sm font-bold focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all appearance-none cursor-pointer"
                       >
-                        العدد: {zekr.count}
-                      </span>
-                      {zekr.note && (
-                        <span
-                          className="text-xs font-medium px-2 py-1 rounded"
-                          style={{
-                            background: "var(--input-bg)",
-                            color: "var(--green-primary)",
-                          }}
-                        >
-                          {zekr.note}
+                        <option value="morning">الصباح</option>
+                        <option value="evening">المساء</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-black uppercase tracking-widest text-muted-foreground px-1">ملاحظة فضل الذكر (اختياري)</label>
+                    <input
+                      type="text"
+                      value={note}
+                      onChange={(e) => setNote(e.target.value)}
+                      className="w-full py-3 px-5 rounded-2xl bg-white/5 border border-white/10 text-sm font-medium focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all placeholder:text-muted-foreground/30"
+                      placeholder="مثال: من قالها حين يصبح..."
+                    />
+                  </div>
+                </div>
+
+                <Button type="submit" className="w-full h-14 rounded-3xl text-lg font-black shadow-[0_10px_25px_rgba(59,130,246,0.3)] hover:shadow-[0_15px_30px_rgba(59,130,246,0.4)] active:scale-[0.98] transition-all">
+                  حفظ الذكر في القائمة
+                </Button>
+              </form>
+            </Card>
+          )}
+
+          {/* List */}
+          <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {visibleAzkars.map((zekr) => {
+              const isEnabled = !disabledIds.includes(zekr.id);
+              const isNotifEnabled = !notifDisabledIds.includes(zekr.id);
+              return (
+                <Card
+                  key={zekr.id}
+                  className={cn(
+                    "group relative rounded-4xl p-6 border transition-all duration-500 overflow-hidden",
+                    isEnabled 
+                      ? "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20" 
+                      : "bg-white/2 border-white/5 opacity-50 grayscale shadow-none"
+                  )}
+                >
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.03),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                  
+                  <div className="relative z-10 flex flex-col md:flex-row justify-between items-start gap-6">
+                    <div className="flex-1 space-y-3">
+                      <p className="arabic-text text-lg leading-relaxed text-foreground transition-colors group-hover:text-white">
+                        {zekr.text}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        <span className="text-[10px] font-black px-3 py-1.5 rounded-full bg-white/5 border border-white/5 text-muted-foreground">
+                          العدد: {zekr.count}
                         </span>
+                        {zekr.note && (
+                          <span className="text-[10px] font-black px-3 py-1.5 rounded-full bg-primary/10 border border-primary/10 text-primary">
+                            {zekr.note}
+                          </span>
+                        )}
+                        {zekr.isCustom && (
+                          <span className="text-[10px] font-black px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/10 text-amber-500">
+                            مخصص
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-row md:flex-col items-center md:items-end gap-3 shrink-0 w-full md:w-auto mt-4 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 border-white/5">
+                      <div className="flex items-center gap-2 flex-1 md:flex-none">
+                        <button
+                          onClick={() => toggleZekrNotifStatus(zekr.id, !isNotifEnabled)}
+                          className={cn(
+                            "w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 shadow-sm",
+                            isNotifEnabled 
+                              ? "bg-green-500/20 text-green-500 border border-green-500/20" 
+                              : "bg-white/5 text-muted-foreground border border-white/10"
+                          )}
+                          title={isNotifEnabled ? "يظهر في الإشعارات" : "صامت"}
+                        >
+                          {isNotifEnabled ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
+                        </button>
+
+                        <button
+                          onClick={() => toggleZekrStatus(zekr.id, !isEnabled)}
+                          className={cn(
+                            "w-14 h-10 rounded-xl flex items-center justify-center transition-all duration-300 relative px-1",
+                            isEnabled ? "bg-primary/20 border border-primary/20" : "bg-white/5 border border-white/10"
+                          )}
+                          title={isEnabled ? "ظاهر في القائمة" : "مخفي"}
+                        >
+                           <div className={cn(
+                             "flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-300",
+                             isEnabled ? "bg-primary text-white scale-110 shadow-lg" : "bg-white/10 text-muted-foreground"
+                           )}>
+                              {isEnabled ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                           </div>
+                        </button>
+                      </div>
+
+                      {zekr.isCustom && (
+                        <button
+                          onClick={() => {
+                            if (confirm("هل أنت متأكد من حذف هذا الذكر من القائمة الخاصة بك؟")) {
+                              deleteCustomZekr(zekr.id);
+                            }
+                          }}
+                          className="w-10 h-10 rounded-xl flex items-center justify-center text-muted-foreground/30 hover:text-red-500 hover:bg-red-500/10 transition-all border border-transparent hover:border-red-500/20"
+                          title="حذف الذكر المخصص"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       )}
                     </div>
                   </div>
-
-                  <div className="flex flex-col items-end gap-3 flex-shrink-0">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() =>
-                          toggleZekrNotifStatus(zekr.id, !isNotifEnabled)
-                        }
-                        className="relative p-1 rounded-full transition-colors duration-300 focus:outline-none"
-                        title={isNotifEnabled ? "يظهر في الإشعارات" : "صامت"}
-                        style={{
-                          background: isNotifEnabled
-                            ? "var(--green-800, #1B5E20)"
-                            : "var(--gray-400, #9ca3af)",
-                          color: "white",
-                        }}
-                      >
-                        {isNotifEnabled ? (
-                          <Bell className="w-4 h-4 m-0.5" />
-                        ) : (
-                          <BellOff className="w-4 h-4 m-0.5" />
-                        )}
-                      </button>
-
-                      <button
-                        onClick={() => toggleZekrStatus(zekr.id, !isEnabled)}
-                        className={`relative w-12 h-7 rounded-full transition-colors duration-300 focus:outline-none ${
-                          isEnabled ? "bg-green-800" : "bg-gray-400"
-                        }`}
-                      >
-                        <span
-                          className="absolute top-1 w-5 h-5 bg-white rounded-full shadow transition-all duration-300"
-                          style={{
-                            left: isEnabled
-                              ? "0.125rem"
-                              : "calc(100% - 1.375rem)",
-                          }}
-                        />
-                      </button>
-                    </div>
-
-                    {zekr.isCustom && (
-                      <button
-                        onClick={() => {
-                          if (confirm("هل أنت متأكد من حذف هذا الذكر؟")) {
-                            deleteCustomZekr(zekr.id);
-                          }
-                        }}
-                        className="text-red-500 hover:text-red-700 transition"
-                        title="حذف الذكر المخصص"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                </div>
+                </Card>
+              );
+            })}
+            
+            {visibleAzkars.length === 0 && (
+              <div className="text-center py-20 border-2 border-dashed border-white/5 rounded-[2.5rem]">
+                <p className="text-lg font-bold text-muted-foreground/50">لا توجد أذكار في هذه الفئة</p>
               </div>
-            );
-          })}
-          {visibleAzkars.length === 0 && (
-            <p
-              className="text-center py-6"
-              style={{ color: "var(--text-muted)" }}
-            >
-              لا توجد أذكار
-            </p>
-          )}
+            )}
+          </div>
         </div>
       </main>
+
+      <footer className="py-8 px-4 text-center text-muted-foreground/20 relative z-10 border-t border-white/5 mt-auto">
+        <p className="text-[10px] font-black uppercase tracking-[0.3em]">Adhkar Settings • Management Console</p>
+      </footer>
     </div>
   );
 }
+

@@ -2,6 +2,7 @@
 
 import type { Category } from "@/types";
 import { Moon, Sun } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Props {
   active: Category;
@@ -10,28 +11,40 @@ interface Props {
 
 export default function CategoryToggle({ active, onChange }: Props) {
   return (
-    <div className="flex rounded-xl p-1 gap-1 bg-white/10">
+    <div className="flex rounded-2xl p-1.5 gap-1.5 bg-white/5 backdrop-blur-xl border border-white/10 shadow-lg">
       <button
         onClick={() => onChange("morning")}
-        className={`flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+        className={cn(
+          "flex-1 py-2.5 px-4 rounded-xl text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2.5 relative overflow-hidden group",
           active === "morning"
-            ? "text-white shadow-md bg-white/20"
-            : "text-white/70 hover:text-white/90"
-        }`}
+            ? "text-white bg-primary"
+            : "text-white/60 hover:text-white hover:bg-white/5",
+        )}
       >
-        <Sun />
-        <span>الصباح</span>
+        <Sun
+          className={cn(
+            "w-4 h-4 transition-transform duration-500",
+            active === "morning" && "rotate-90",
+          )}
+        />
+        <span className="relative z-10">الصباح</span>
       </button>
       <button
         onClick={() => onChange("evening")}
-        className={`flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+        className={cn(
+          "flex-1 py-2.5 px-4 rounded-xl text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2.5 relative overflow-hidden group",
           active === "evening"
-            ? "text-white shadow-md bg-white/20"
-            : "text-white/70 hover:text-white/90"
-        }`}
+            ? "text-white bg-primary"
+            : "text-white/60 hover:text-white hover:bg-white/5",
+        )}
       >
-        <Moon />
-        <span>المساء</span>
+        <Moon
+          className={cn(
+            "w-4 h-4 transition-transform duration-500",
+            active === "evening" && "rotate-12",
+          )}
+        />
+        <span className="relative z-10">المساء</span>
       </button>
     </div>
   );

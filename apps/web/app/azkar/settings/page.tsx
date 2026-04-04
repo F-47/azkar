@@ -19,7 +19,14 @@ import {
   Settings,
   Sparkles,
   Sun,
+  Bell,
+  Clock,
+  RefreshCw,
+  Zap,
 } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
@@ -28,17 +35,6 @@ function formatHour(h: number): string {
   const display = h === 0 ? 12 : h > 12 ? h - 12 : h;
   return `${display}:00 ${period}`;
 }
-
-const cardStyle = {
-  background: "var(--bg-card)",
-  borderColor: "var(--border-color)",
-};
-
-const inputStyle = {
-  background: "var(--input-bg)",
-  borderColor: "var(--border-color)",
-  color: "var(--text-primary)",
-};
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<NotificationSettings | null>(null);
@@ -49,26 +45,10 @@ export default function SettingsPage() {
   >("idle");
   const [updateVersion, setUpdateVersion] = useState<string | null>(null);
   const [downloadProgress, setDownloadProgress] = useState(0);
-  const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
     setSettings(loadSettings());
-    setIsDark(document.documentElement.classList.contains("dark"));
   }, []);
-
-  function toggleTheme() {
-    const next = !isDark;
-    setIsDark(next);
-    if (next) {
-      document.documentElement.classList.add("dark");
-      document.documentElement.setAttribute("data-theme", "dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      document.documentElement.setAttribute("data-theme", "light");
-      localStorage.setItem("theme", "light");
-    }
-  }
 
   async function handleTest() {
     if (!settings) return;
@@ -111,295 +91,335 @@ export default function SettingsPage() {
 
   return (
     <div
-      className="min-h-screen flex flex-col"
+      className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-500"
       dir="rtl"
-      style={{ background: "var(--bg-primary)" }}
     >
-      <header
-        className="sticky top-0 z-10 px-4 pt-5 pb-4 shadow-lg"
-        style={{
-          background:
-            "linear-gradient(135deg, #1B5E20 0%, #2E7D32 60%, #388E3C 100%)",
-        }}
-      >
-        <div className="flex items-center justify-between" dir="ltr">
-          <Link
-            href="/azkar"
-            className="text-white/70 hover:text-white transition-colors text-xl w-8 flex items-center"
-          >
-            <ArrowLeft />
-          </Link>
-          <h1 className="text-white text-xl font-bold flex items-center gap-2">
-            إعدادات الإشعارات
-            <Settings />
-          </h1>
-          <span className="w-8" />
+      {/* Background patterns */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.05),transparent_60%)]" />
+        <div className="absolute inset-0 pattern-islamic opacity-[0.03]" />
+      </div>
+
+      <header className="sticky top-0 z-50 border-b border-white/5 backdrop-blur-xl">
+        <div className="absolute inset-0 bg-background/40" />
+
+        <div className="container max-w-2xl mx-auto px-4 py-4 relative">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Link href="/azkar">
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className="rounded-xl bg-white/5 border border-white/10 text-muted-foreground hover:text-primary transition-all"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </Button>
+              </Link>
+              <div>
+                <h1 className="text-xl font-black tracking-tight">الإعدادات</h1>
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold italic">
+                  Preferences
+                </p>
+              </div>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-[0_0_15px_rgba(59,130,246,0.2)]">
+              <Settings className="w-5 h-5" />
+            </div>
+          </div>
         </div>
       </header>
 
-      <main className="flex-1 px-4 py-6 space-y-4 max-w-2xl w-full mx-auto">
-        <div className="rounded-2xl p-5 shadow-sm border" style={cardStyle}>
-          <div className="flex items-center justify-between">
-            <div>
-              <p
-                className="font-semibold"
-                style={{ color: "var(--text-primary)" }}
-              >
-                تفعيل الإشعارات
-              </p>
-              <p
-                className="text-sm mt-0.5"
-                style={{ color: "var(--text-secondary)" }}
-              >
-                تظهر أذكار عشوائية على سطح المكتب
-              </p>
-            </div>
-            <button
-              onClick={() => update({ enabled: !settings.enabled })}
-              className={`relative w-14 h-7 rounded-full transition-colors duration-300 focus:outline-none flex-shrink-0 ${settings.enabled ? "bg-green-800" : "bg-gray-700"}`}
-            >
-              <span
-                className="absolute top-0.5 w-6 h-6 bg-white rounded-full shadow transition-all duration-300"
-                style={{
-                  left: settings.enabled ? "0.125rem" : "calc(100% - 1.625rem)",
-                }}
-              />
-            </button>
-          </div>
-        </div>
+      <main className="flex-1 px-4 py-8 relative z-10">
+        <div className="max-w-2xl mx-auto space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <Card className="rounded-3xl p-6 border-white/10 bg-white/5 backdrop-blur-xl group overflow-hidden">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.03),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
 
-        {settings.enabled && (
-          <>
-            <div
-              className="rounded-2xl p-5 shadow-sm border flex items-center justify-between"
-              style={cardStyle}
-            >
-              <p
-                className="font-semibold"
-                style={{ color: "var(--text-primary)" }}
-              >
-                تكرار الإشعار
-              </p>
-              <div className="flex items-center gap-3">
-                <input
-                  type="number"
-                  min={1}
-                  value={settings.intervalMinutes}
-                  onChange={(e) =>
-                    update({
-                      intervalMinutes: Math.max(1, Number(e.target.value)),
-                    })
-                  }
-                  className="w-24 py-2 px-3 rounded-xl border text-center text-lg font-bold tabular-nums focus:outline-none transition-colors"
-                  style={{ ...inputStyle, borderColor: "var(--green-primary)" }}
-                />
-                <span
-                  className="text-sm"
-                  style={{ color: "var(--text-secondary)" }}
-                >
-                  دقيقة
-                </span>
+            <div className="relative z-10 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                  <Bell className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base">تفعيل الإشعارات</h3>
+                  <p className="text-xs text-muted-foreground">
+                    تظهر أذكار عشوائية على سطح المكتب
+                  </p>
+                </div>
               </div>
-            </div>
 
-            <div className="rounded-2xl p-5 shadow-sm border" style={cardStyle}>
-              <p
-                className="font-semibold mb-3"
-                style={{ color: "var(--text-primary)" }}
+              <button
+                onClick={() => update({ enabled: !settings.enabled })}
+                className={cn(
+                  "relative w-14 h-8 rounded-full transition-all duration-500 p-1",
+                  settings.enabled
+                    ? "bg-primary shadow-[0_0_15px_rgba(59,130,246,0.5)]"
+                    : "bg-white/10 border border-white/5",
+                )}
               >
-                نوع الأذكار
-              </p>
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { label: "الصباح", value: "morning", icon: Sun },
-                  { label: "المساء", value: "evening", icon: Moon },
-                  { label: "الكل", value: "both", icon: Sparkles },
-                ].map((opt) => {
-                  const Icon = opt.icon;
-                  const active = settings.category === opt.value;
+                <div
+                  className={cn(
+                    "w-6 h-6 rounded-full bg-white transition-all duration-500",
+                    settings.enabled
+                      ? "translate-x-0 shadow-lg"
+                      : "translate-x-6",
+                  )}
+                />
+              </button>
+            </div>
+          </Card>
 
-                  return (
-                    <button
-                      key={opt.value}
-                      onClick={() =>
+          {settings.enabled && (
+            <div className="grid gap-4 animate-in fade-in zoom-in-95 duration-500 mt-4">
+              <Card className="rounded-3xl p-6 border-white/10 bg-white/5 backdrop-blur-xl">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500">
+                      <RefreshCw className="w-5 h-5" />
+                    </div>
+                    <h3 className="font-bold text-sm">تكرار الإشعار</h3>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="number"
+                      min={1}
+                      value={settings.intervalMinutes}
+                      onChange={(e) =>
                         update({
-                          category:
-                            opt.value as NotificationSettings["category"],
+                          intervalMinutes: Math.max(1, Number(e.target.value)),
                         })
                       }
-                      className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-medium transition-all active:scale-95 ${
-                        active
-                          ? "bg-green-800 text-white"
-                          : "bg-[var(--input-bg)] text-[var(--text-secondary)]"
-                      }`}
-                    >
-                      <Icon className="w-4 h-4" />
-                      {opt.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="rounded-2xl p-5 shadow-sm border" style={cardStyle}>
-              <p
-                className="font-semibold mb-3"
-                style={{ color: "var(--text-primary)" }}
-              >
-                ساعات التفعيل
-              </p>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label
-                    className="text-sm block mb-1"
-                    style={{ color: "var(--text-muted)" }}
-                  >
-                    من
-                  </label>
-                  <select
-                    value={settings.activeStart}
-                    onChange={(e) =>
-                      update({ activeStart: Number(e.target.value) })
-                    }
-                    className="w-full py-2 px-3 rounded-xl border text-sm focus:outline-none transition-colors"
-                    style={inputStyle}
-                  >
-                    {HOURS.map((h) => (
-                      <option key={h} value={h}>
-                        {formatHour(h)}
-                      </option>
-                    ))}
-                  </select>
+                      className="w-20 py-2 rounded-xl bg-white/5 border border-white/10 text-center text-lg font-black tabular-nums focus:outline-none focus:border-primary/50 transition-all shadow-inner"
+                    />
+                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                      دقيقة
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <label
-                    className="text-sm block mb-1"
-                    style={{ color: "var(--text-muted)" }}
-                  >
-                    إلى
-                  </label>
-                  <select
-                    value={settings.activeEnd}
-                    onChange={(e) =>
-                      update({ activeEnd: Number(e.target.value) })
-                    }
-                    className="w-full py-2 px-3 rounded-xl border text-sm focus:outline-none transition-colors"
-                    style={inputStyle}
-                  >
-                    {HOURS.map((h) => (
-                      <option key={h} value={h}>
-                        {formatHour(h)}
-                      </option>
-                    ))}
-                  </select>
+              </Card>
+
+              <Card className="rounded-3xl p-6 border-white/10 bg-white/5 backdrop-blur-xl">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500">
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <h3 className="font-bold text-sm">
+                    نوع الأذكار في الإشعارات
+                  </h3>
                 </div>
-              </div>
-              <p
-                className="text-xs mt-2"
-                style={{ color: "var(--text-muted)" }}
-              >
-                لن تظهر إشعارات خارج هذا النطاق الزمني
-              </p>
+
+                <div className="grid grid-cols-3 gap-5">
+                  {[
+                    {
+                      label: "الصباح",
+                      value: "morning",
+                      icon: Sun,
+                      color: "text-amber-500",
+                    },
+                    {
+                      label: "المساء",
+                      value: "evening",
+                      icon: Moon,
+                      color: "text-blue-400",
+                    },
+                    {
+                      label: "الكل",
+                      value: "both",
+                      icon: Sparkles,
+                      color: "text-purple-400",
+                    },
+                  ].map((opt) => {
+                    const Icon = opt.icon;
+                    const active = settings.category === opt.value;
+
+                    return (
+                      <button
+                        key={opt.value}
+                        onClick={() =>
+                          update({
+                            category:
+                              opt.value as NotificationSettings["category"],
+                          })
+                        }
+                        className={cn(
+                          "flex flex-col items-center justify-center gap-2 py-4 px-2 rounded-2xl transition-all duration-300 border active:scale-95",
+                          active
+                            ? "bg-primary border-primary text-primary-foreground shadow-lg scale-105"
+                            : "bg-white/5 border-white/5 text-muted-foreground hover:bg-white/10 hover:border-white/10",
+                        )}
+                      >
+                        <Icon className={cn("w-5 h-5", !active && opt.color)} />
+                        <span className="text-[10px] font-black uppercase tracking-widest">
+                          {opt.label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </Card>
+
+              <Card className="rounded-3xl p-6 border-white/10 bg-white/5 backdrop-blur-xl">
+                <div className="flex items-center gap-4 mb-5">
+                  <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center text-green-500">
+                    <Clock className="w-5 h-5" />
+                  </div>
+                  <h3 className="font-bold text-sm">ساعات التفعيل</h3>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5 px-1">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+                      من الساعة
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={settings.activeStart}
+                        onChange={(e) =>
+                          update({ activeStart: Number(e.target.value) })
+                        }
+                        className="w-full py-3 px-4 rounded-2xl bg-white/5 border border-white/10 text-sm font-bold focus:outline-none focus:border-primary/50 transition-all appearance-none cursor-pointer"
+                      >
+                        {HOURS.map((h) => (
+                          <option key={h} value={h}>
+                            {formatHour(h)}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
+                        <Sun className="w-4 h-4" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-1.5 px-1">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+                      إلى الساعة
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={settings.activeEnd}
+                        onChange={(e) =>
+                          update({ activeEnd: Number(e.target.value) })
+                        }
+                        className="w-full py-3 px-4 rounded-2xl bg-white/5 border border-white/10 text-sm font-bold focus:outline-none focus:border-primary/50 transition-all appearance-none cursor-pointer"
+                      >
+                        {HOURS.map((h) => (
+                          <option key={h} value={h}>
+                            {formatHour(h)}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
+                        <Moon className="w-4 h-4" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-[10px] items-center flex gap-1.5 mt-4 text-muted-foreground/60 bg-white/5 p-2 rounded-lg border border-white/5">
+                  <Zap className="w-3 h-3 text-amber-500" />
+                  <span>لن تظهر إشعارات خارج هذا النطاق الزمني</span>
+                </p>
+              </Card>
             </div>
-          </>
-        )}
+          )}
 
-        <button
-          onClick={handleTest}
-          disabled={testing}
-          className="w-full py-3 rounded-2xl font-medium text-base transition-all border-2 active:scale-95"
-          style={{
-            background: "transparent",
-            borderColor: testing ? "var(--text-muted)" : "var(--green-primary)",
-            color: testing ? "var(--text-muted)" : "var(--green-primary)",
-          }}
-        >
-          {testing ? "✓ تم الإرسال" : "🔔 اختبار إشعار الآن"}
-        </button>
-
-        {isTauri() && (
-          <div className="rounded-2xl p-5 shadow-sm border" style={cardStyle}>
-            <p
-              className="font-semibold mb-3"
-              style={{ color: "var(--text-primary)" }}
+          <div className="pt-4 grid gap-4">
+            <Button
+              onClick={handleTest}
+              disabled={testing}
+              variant="outline"
+              className={cn(
+                "h-14 rounded-3xl text-sm font-black uppercase tracking-widest border-2 transition-all active:scale-[0.98]",
+                testing
+                  ? "bg-green-500/10 text-green-500 border-green-500/20"
+                  : "bg-white/5 border-white/10 text-primary hover:bg-white/10 hover:border-primary/30",
+              )}
             >
-              التحديثات
-            </p>
+              {testing ? "✓ تم إرسال إشعار التجربة" : "🔔 اختبار إشعار الآن"}
+            </Button>
 
-            {updateState === "idle" && (
-              <button
-                onClick={handleCheckUpdate}
-                className="w-full py-2.5 rounded-xl text-sm font-medium border-2 transition-all active:scale-95"
-                style={{
-                  borderColor: "var(--green-primary)",
-                  color: "var(--green-primary)",
-                  background: "transparent",
-                }}
-              >
-                التحقق من التحديثات
-              </button>
-            )}
-            {updateState === "checking" && (
-              <p
-                className="text-sm text-center"
-                style={{ color: "var(--text-muted)" }}
-              >
-                جارٍ التحقق...
-              </p>
-            )}
-            {updateState === "available" && (
-              <div className="space-y-3">
-                <p className="text-sm" style={{ color: "var(--note-text)" }}>
-                  <PartyPopper className="w-4 h-4" /> يتوفر إصدار جديد:{" "}
-                  <span dir="ltr" className="font-bold">
-                    {updateVersion}
-                  </span>
-                </p>
-                <button
-                  onClick={handleInstallUpdate}
-                  className="w-full py-2.5 rounded-xl text-sm font-bold text-white transition-all active:scale-95"
-                  style={{ background: "var(--green-primary)" }}
-                >
-                  تحميل وتثبيت التحديث
-                </button>
-              </div>
-            )}
-            {updateState === "downloading" && (
-              <div className="space-y-2">
-                <p
-                  className="text-sm"
-                  style={{ color: "var(--text-secondary)" }}
-                >
-                  جارٍ التحميل... {downloadProgress}%
-                </p>
-                <div
-                  className="w-full h-2 rounded-full"
-                  style={{ background: "var(--progress-track)" }}
-                >
-                  <div
-                    className="h-full rounded-full transition-all"
-                    style={{
-                      width: `${downloadProgress}%`,
-                      background: "var(--green-primary)",
-                    }}
-                  />
+            {isTauri() && (
+              <Card className="rounded-3xl p-6 border-white/5 bg-white/5 backdrop-blur-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-sm tracking-tight">
+                    تحديثات التطبيق
+                  </h3>
+                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                 </div>
-              </div>
-            )}
-            {updateState === "done" && (
-              <p className="text-sm" style={{ color: "var(--note-text)" }}>
-                ✓ تم التحديث. أعد تشغيل التطبيق لتطبيق التغييرات.
-              </p>
-            )}
-          </div>
-        )}
 
-        <button
-          onClick={handleSave}
-          className={`w-full py-3.5 rounded-2xl font-bold text-white text-base transition-all active:scale-95 ${saved ? "bg-green-800" : "bg-green-700"}`}
-        >
-          {saved ? "✓ تم الحفظ" : "حفظ الإعدادات"}
-        </button>
+                {updateState === "idle" && (
+                  <Button
+                    onClick={handleCheckUpdate}
+                    variant="ghost"
+                    className="w-full h-11 rounded-2xl bg-white/5 border border-white/5 text-xs font-bold hover:bg-white/10"
+                  >
+                    التحقق من التحديثات
+                  </Button>
+                )}
+                {updateState === "checking" && (
+                  <div className="flex flex-col items-center py-2 gap-3">
+                    <RefreshCw className="w-5 h-5 animate-spin text-primary" />
+                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                      جارٍ التحقق...
+                    </p>
+                  </div>
+                )}
+                {updateState === "available" && (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-500">
+                      <PartyPopper className="w-5 h-5" />
+                      <span className="text-xs font-bold">
+                        يتوفر إصدار جديد: {updateVersion}
+                      </span>
+                    </div>
+                    <Button
+                      onClick={handleInstallUpdate}
+                      className="w-full h-12 rounded-2xl bg-amber-500 text-white font-black shadow-lg shadow-amber-500/20"
+                    >
+                      تحميل وتثبيت التحديث
+                    </Button>
+                  </div>
+                )}
+                {updateState === "downloading" && (
+                  <div className="space-y-4 py-2">
+                    <div className="flex justify-between items-end px-1">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                        جارٍ التحميل
+                      </span>
+                      <span className="text-sm font-black text-primary">
+                        {downloadProgress}%
+                      </span>
+                    </div>
+                    <div className="w-full h-2 rounded-full bg-white/10 p-0.5 border border-white/5">
+                      <div
+                        className="h-full rounded-full bg-primary shadow-[0_0_10px_rgba(59,130,246,0.5)] transition-all duration-300"
+                        style={{ width: `${downloadProgress}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+                {updateState === "done" && (
+                  <div className="p-3 rounded-2xl bg-green-500/10 border border-green-500/20 text-green-500 flex items-center gap-3">
+                    <Zap className="w-5 h-5 animate-pulse" />
+                    <span className="text-xs font-bold">
+                      ✓ تم التحديث. أعد تشغيل التطبيق.
+                    </span>
+                  </div>
+                )}
+              </Card>
+            )}
+
+            <Button
+              onClick={handleSave}
+              className={cn(
+                "h-16 rounded-3xl text-lg font-black shadow-2xl transition-all active:scale-[0.98] mt-4 mb-10",
+                saved
+                  ? "bg-green-500 text-white shadow-green-500/30"
+                  : "bg-primary text-primary-foreground shadow-primary/40 hover:shadow-primary/60",
+              )}
+            >
+              {saved ? "✓ تم حفظ الإعدادات بنجاح" : "حفظ الكل"}
+            </Button>
+          </div>
+        </div>
       </main>
     </div>
   );

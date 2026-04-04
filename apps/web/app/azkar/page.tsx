@@ -5,22 +5,21 @@ import ProgressBar from "@/components/ProgressBar";
 import ZekrCard from "@/components/ZekrCard";
 import { useAzkar } from "@/hooks/useAzkar";
 import { startScheduler } from "@/lib/notificationScheduler";
+import { requestNotificationPermission } from "@/lib/tauri";
+import { cn } from "@/lib/utils";
 import {
-  requestNotificationPermission,
-  sendAzkarNotification,
-} from "@/lib/tauri";
-import { Bell, Moon, RotateCw, Settings, Sun, ListChecks } from "lucide-react";
+  ListChecks,
+  Loader2,
+  Moon,
+  RotateCw,
+  Settings,
+  Sun,
+  LayoutDashboard,
+} from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState, useRef } from "react";
+import { useEffect } from "react";
 
 export default function AzkarPage() {
-  const [toast, setToast] = useState<string | null>(null);
-
-  function showToast(msg: string) {
-    setToast(msg);
-    setTimeout(() => setToast(null), 3000);
-  }
-
   const {
     azkar,
     category,
@@ -38,130 +37,148 @@ export default function AzkarPage() {
     requestNotificationPermission().then(() => startScheduler());
   }, []);
 
-
-
-  const headerBg =
-    category === "morning"
-      ? "linear-gradient(135deg, #1B5E20 0%, #2E7D32 60%, #388E3C 100%)"
-      : "linear-gradient(135deg, #0D1B2A 0%, #1a3a5c 60%, #1B5E20 100%)";
-
   return (
     <div
-      className="min-h-screen flex flex-col"
+      className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-500"
       dir="rtl"
-      style={{ background: "var(--bg-primary)" }}
     >
-      <header
-        className="sticky top-0 z-10 px-4 pt-5 pb-4 shadow-lg"
-        style={{ background: headerBg }}
-      >
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-white text-xl font-bold flex items-center gap-2">
-            {category === "morning" ? (
-              <>
-                <Sun className="w-5 h-5" />
-                أذكار الصباح
-              </>
-            ) : (
-              <>
-                <Moon className="w-5 h-5" />
-                أذكار المساء
-              </>
-            )}
-          </h1>
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.05),transparent_60%)]" />
+        <div className="absolute inset-0 pattern-islamic opacity-[0.03]" />
+      </div>
 
-          <div className="flex items-center gap-2">
-            <Link
-              href="/azkar/manage"
-              className="text-white/70 hover:text-white transition-colors text-lg"
-              title="إدارة الأذكار"
-            >
-              <ListChecks className="w-6 h-6" />
-            </Link>
-            <Link
-              href="/azkar/settings"
-              className="text-white/70 hover:text-white transition-colors text-lg"
-              title="إعدادات الإشعارات"
-            >
-              <Settings className="w-6 h-6" />
-            </Link>
-            <button
-              onClick={reset}
-              className="text-orange-500 hover:text-orange-600 transition-colors text-lg"
-              title="إعادة تعيين"
-            >
-              <RotateCw />
-            </button>
+      <header className="sticky top-0 z-50 border-b border-white/5 backdrop-blur-xl">
+        <div className="absolute inset-0 bg-background/40" />
+
+        <div className="px-4 py-4 relative">
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-3">
+              <div
+                className={cn(
+                  "w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-500",
+                  category === "morning"
+                    ? "bg-amber-500/20 text-amber-500"
+                    : "bg-blue-500/20 text-blue-400",
+                )}
+              >
+                {category === "morning" ? (
+                  <Sun className="w-5 h-5" />
+                ) : (
+                  <Moon className="w-5 h-5" />
+                )}
+              </div>
+              <div>
+                <h1 className="text-xl font-black tracking-tight">
+                  {category === "morning" ? "أذكار الصباح" : "أذكار المساء"}
+                </h1>
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">
+                  {category === "morning" ? "Morning Adhkar" : "Evening Adhkar"}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              <Link href="/azkar/manage">
+                <button
+                  className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-white/10 hover:border-primary/30 transition-all"
+                  title="إدارة الأذكار"
+                >
+                  <ListChecks className="w-5 h-5" />
+                </button>
+              </Link>
+              <Link href="/azkar/settings">
+                <button
+                  className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-white/10 hover:border-primary/30 transition-all"
+                  title="الإعدادات"
+                >
+                  <Settings className="w-5 h-5" />
+                </button>
+              </Link>
+              <button
+                onClick={() => {
+                  if (confirm("هل تريد إعادة تعيين العداد لهذا اليوم؟"))
+                    reset();
+                }}
+                className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-muted-foreground hover:text-red-400 hover:bg-red-400/5 hover:border-red-400/30 transition-all"
+                title="إعادة تعيين"
+              >
+                <RotateCw className="w-4 h-4" />
+              </button>
+            </div>
           </div>
-        </div>
 
-        <CategoryToggle active={category} onChange={switchCategory} />
+          <CategoryToggle active={category} onChange={switchCategory} />
 
-        <div className="mt-3">
-          {mounted && (
-            <ProgressBar completed={completedCount} total={totalCount} />
-          )}
+          <div className="mt-5">
+            {mounted && (
+              <ProgressBar completed={completedCount} total={totalCount} />
+            )}
+          </div>
         </div>
       </header>
 
-      {mounted && isComplete && (
-        <div
-          className="mx-4 mt-4 p-4 rounded-xl text-center shadow-sm"
-          style={{
-            background: "var(--success-bg)",
-            border: "1px solid var(--success-border)",
-          }}
-        >
-          <p
-            className="font-bold text-lg"
-            style={{ color: "var(--success-text)" }}
-          >
-            ما شاء الله! اكتملت جميع الأذكار
-          </p>
-          <p className="text-sm mt-1" style={{ color: "var(--success-text)" }}>
-            تقبّل الله منك
-          </p>
-        </div>
-      )}
+      <main className="flex-1 overflow-y-auto px-4 py-8 relative z-10">
+        <div className="max-w-2xl mx-auto space-y-4">
+          {mounted && isComplete && (
+            <div className="p-8 rounded-3xl text-center relative overflow-hidden group mb-8 border border-green-500/20 bg-green-500/5">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(34,197,94,0.1),transparent_70%)] animate-pulse" />
+              <div className="relative z-10">
+                <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-[0_0_30px_rgba(34,197,94,0.4)]">
+                  <LayoutDashboard className="w-8 h-8 text-white" />
+                </div>
+                <h2 className="text-2xl font-black mb-2 text-white">
+                  ما شاء الله!
+                </h2>
+                <p className="text-muted-foreground font-medium">
+                  اكتملت جميع أذكار{" "}
+                  {category === "morning" ? "الصباح" : "المساء"}
+                </p>
+                <p className="text-sm mt-1 text-green-400/80">
+                  تقبّل الله منك طاعتك
+                </p>
+              </div>
+            </div>
+          )}
 
-      <main className="flex-1 px-4 py-4 space-y-3 pb-8 max-w-2xl w-full mx-auto">
-        {!mounted ? (
-          <div className="flex items-center justify-center py-20">
-            <div
-              className="w-10 h-10 rounded-full border-4 border-t-transparent animate-spin"
-              style={{
-                borderColor: "var(--green-primary)",
-                borderTopColor: "transparent",
-              }}
-            />
-          </div>
-        ) : azkar.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-lg" style={{ color: "var(--text-muted)" }}>
-              لا توجد أذكار
-            </p>
-          </div>
-        ) : (
-          azkar.map((zekr, i) => (
-            <ZekrCard
-              key={zekr.id}
-              zekr={zekr}
-              index={i + 1}
-              remaining={progress[zekr.id] ?? zekr.count}
-              onDecrement={decrement}
-            />
-          ))
-        )}
+          {!mounted ? (
+            <div className="flex flex-col items-center justify-center py-32 opacity-50">
+              <Loader2 className="w-10 h-10 animate-spin text-primary mb-4" />
+              <p className="text-sm font-bold tracking-widest uppercase">
+                Loading adhkar...
+              </p>
+            </div>
+          ) : azkar.length === 0 ? (
+            <div className="text-center py-32 border-2 border-dashed border-white/5 rounded-3xl">
+              <p className="text-xl font-bold text-muted-foreground">
+                لا توجد أذكار مفعلة
+              </p>
+              <Link
+                href="/azkar/manage"
+                className="mt-4 inline-block text-primary font-bold hover:underline"
+              >
+                انتقل لصفحة الإدارة لتفعيل الأذكار
+              </Link>
+            </div>
+          ) : (
+            <div className="grid gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+              {azkar.map((zekr) => (
+                <ZekrCard
+                  key={zekr.id}
+                  zekr={zekr}
+                  remaining={progress[zekr.id] ?? zekr.count}
+                  onDecrement={decrement}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </main>
 
-      {toast && (
-        <div
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 arabic-text text-sm px-5 py-3 rounded-2xl shadow-xl z-50 pointer-events-none"
-          style={{ background: "var(--green-primary)", color: "#fff" }}
-        >
-          {toast}
-        </div>
-      )}
+      <footer className="py-8 px-4 text-center text-muted-foreground/30 relative z-10 border-t border-white/5 mt-8">
+        <p className="text-xs font-bold uppercase tracking-[0.2em]">
+          أذكار المسلم • {new Date().getFullYear()}
+        </p>
+      </footer>
     </div>
   );
 }

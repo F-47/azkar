@@ -84,7 +84,7 @@ export default function NotificationPage() {
     >
       <div
         data-tauri-drag-region
-        className="flex items-center justify-between px-4 py-2 bg-gradient-to-r from-green-900 to-green-700 rounded-t-xl"
+        className="flex items-center justify-between px-4 py-2 bg-linear-to-r from-green-900 to-green-700 rounded-t-xl"
       >
         <span
           style={{
@@ -143,7 +143,7 @@ function CircularProgress({ progress }: { progress: number }) {
         />
       </svg>
 
-      <div className="absolute top-0 start-0 size-full flex items-center justify-center text-[0.6rem] font-bold text-white">
+      <div className="absolute top-0 inset-s-0 size-full flex items-center justify-center text-[0.6rem] font-bold text-white">
         {Math.ceil((progress / 100) * (DURATION / 1000))}
       </div>
     </div>

@@ -1,116 +1,103 @@
 "use client";
 
+import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import type { Zekr } from "@/types";
+import { Check, Star } from "lucide-react";
 
 interface Props {
   zekr: Zekr;
-  index: number;
   remaining: number;
   onDecrement: (id: number, defaultCount: number) => void;
 }
 
-export default function ZekrCard({
-  zekr,
-  index,
-  remaining,
-  onDecrement,
-}: Props) {
+export default function ZekrCard({ zekr, remaining, onDecrement }: Props) {
   const isDone = remaining === 0;
   const progress =
     zekr.count > 0 ? ((zekr.count - remaining) / zekr.count) * 100 : 100;
 
   return (
-    <div
-      className={`rounded-2xl p-5 shadow-sm border transition-all duration-300 ${
-        isDone ? "opacity-60" : "hover:shadow-md"
-      }`}
-      style={{
-        background: isDone ? "var(--done-bg)" : "var(--bg-card)",
-        borderColor: isDone ? "var(--done-border)" : "var(--border-color)",
-      }}
+    <Card
+      className={cn(
+        "group relative border border-white/10 bg-white/5 backdrop-blur-xl transition-all duration-500 p-6 overflow-hidden shadow-[0_0_30px_rgba(59,130,246,0.03)] rounded-3xl",
+        isDone ? "opacity-60 grayscale-[0.3]" : "hover:bg-white/10 hover:scale-[1.01]"
+      )}
     >
-      <div className="flex items-center justify-between mb-3" dir="ltr">
-        <span
-          className="text-sm font-bold tabular-nums flex items-center justify-center rounded-full"
-          style={{
-            background: isDone ? "var(--done-badge)" : "var(--green-primary)",
-            color: isDone ? "var(--text-muted)" : "#fff",
-            width: "1.75rem",
-            height: "1.75rem",
-            flexShrink: 0,
-          }}
-        >
-          {index}
-        </span>
-        {zekr.note && (
-          <span
-            className="text-xs px-2 py-0.5 rounded-full font-medium"
-            style={{
-              background: isDone ? "var(--done-badge)" : "var(--note-bg)",
-              color: isDone ? "var(--text-muted)" : "var(--note-text)",
-            }}
-          >
-            {zekr.note}
-          </span>
-        )}
-      </div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.08),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
 
-      <p
-        className={`arabic-text text-lg leading-loose mb-4 text-right ${
-          isDone ? "line-through" : ""
-        }`}
-        style={{
-          whiteSpace: "pre-line",
-          color: isDone ? "var(--text-muted)" : "var(--text-primary)",
-        }}
-        dangerouslySetInnerHTML={{
-          __html: zekr.text.replace(
-            /۝([\u0660-\u0669]+)/g,
-            `<span style="display:inline-flex;align-items:center;justify-content:center;background:${isDone ? "var(--done-badge)" : "var(--gold)"};color:${isDone ? "var(--text-muted)" : "#3b2000"};font-size:0.7rem;font-weight:700;border-radius:50%;width:1.4rem;height:1.4rem;margin:0 0.2rem;vertical-align:middle;font-family:serif;">$1</span>`,
-          ),
-        }}
-      />
-
-      <div
-        className="w-full h-1 rounded-full mb-4 overflow-hidden"
-        style={{ background: "var(--progress-track)" }}
-      >
-        <div
-          className="h-full rounded-full transition-all duration-500"
-          style={{
-            width: `${progress}%`,
-            background: isDone ? "var(--done-badge)" : "var(--green-medium)",
+      <div className="relative z-10 flex flex-col gap-4">
+        <p
+          className={cn(
+            "arabic-text text-xl md:text-2xl leading-[2.2] mb-2 text-right whitespace-pre-line text-foreground/90 transition-all duration-500",
+            isDone && "text-muted-foreground/50"
+          )}
+          dangerouslySetInnerHTML={{
+            __html: zekr.text.replace(
+              /۝([\u0660-\u0669]+)/g,
+              `<span class="inline-flex items-center justify-center bg-primary/20 text-primary text-sm font-bold rounded-full w-7 h-7 mx-1.5 align-middle font-serif border border-primary/20">$1</span>`,
+            ),
           }}
         />
-      </div>
 
-      <div className="flex items-center justify-between">
-        <button
-          onClick={() => !isDone && onDecrement(zekr.id, zekr.count)}
-          disabled={isDone}
-          className={`px-5 py-2 rounded-xl font-bold text-sm transition-all duration-150 select-none ${
-            isDone
-              ? "cursor-not-allowed bg-green-900"
-              : "text-white hover:scale-105 active:scale-95 shadow-sm hover:shadow-md bg-green-700"
-          }`}
-        >
-          {isDone ? "✓ تمّ" : "سبّح"}
-        </button>
+        <div className="space-y-4 pt-2 border-t border-white/5">
+          <div className="w-full h-1.5 rounded-full overflow-hidden bg-white/10">
+            <div
+              className={cn(
+                "h-full rounded-full transition-all duration-700 ease-out bg-primary",
+                isDone && "bg-green-500"
+              )}
+              style={{
+                width: `${progress}%`,
+              }}
+            />
+          </div>
 
-        <div className="flex items-center gap-1">
-          <span
-            className="text-xl font-bold tabular-nums"
-            style={{
-              color: isDone ? "var(--text-muted)" : "var(--green-primary)",
-            }}
-          >
-            {zekr.count - remaining}
-          </span>
-          <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-            / {zekr.count}
-          </span>
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => !isDone && onDecrement(zekr.id, zekr.count)}
+              disabled={isDone}
+              className={cn(
+                "relative h-11 px-6 rounded-2xl font-bold text-sm transition-all duration-300 select-none flex items-center justify-center gap-2 min-w-25",
+                isDone
+                  ? "bg-green-500/20 text-green-400 cursor-not-allowed border border-green-500/20"
+                  : "bg-primary text-primary-foreground hover:shadow-[0_0_20px_rgba(59,130,246,0.3)] active:scale-95 group-hover:scale-105"
+              )}
+            >
+              {isDone ? (
+                <>
+                  <span>تمّ الذكر</span>
+                  <Check className="w-4 h-4" />
+                </>
+              ) : (
+                <>
+                  <span>سبّح</span>
+                  <Star className="w-4 h-4 transition-transform group-hover:rotate-45" />
+                </>
+              )}
+            </button>
+
+            <div className="flex flex-col items-end">
+              <div className="flex items-baseline gap-1.5">
+                <span
+                  className={cn(
+                    "text-2xl font-bold tabular-nums tracking-tighter",
+                    isDone ? "text-green-400" : "text-primary hover:text-blue-400 transition-colors"
+                  )}
+                >
+                  {zekr.count - remaining}
+                </span>
+                <span className="text-xs text-muted-foreground/60 font-medium whitespace-nowrap">
+                  / {zekr.count}
+                </span>
+              </div>
+              <span className="text-[10px] uppercase tracking-widest text-muted-foreground/40 font-bold">
+                المرات
+              </span>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }
+
