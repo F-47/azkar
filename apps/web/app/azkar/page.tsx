@@ -2,24 +2,23 @@
 
 import CategoryToggle from "@/components/CategoryToggle";
 import ProgressBar from "@/components/ProgressBar";
+import Reset from "@/components/reset";
+import { Button } from "@/components/ui/button";
 import ZekrCard from "@/components/ZekrCard";
 import { useAzkar } from "@/hooks/useAzkar";
 import { startScheduler } from "@/lib/notificationScheduler";
 import { requestNotificationPermission } from "@/lib/tauri";
 import { cn } from "@/lib/utils";
 import {
+  LayoutDashboard,
   ListChecks,
   Loader2,
   Moon,
-  RotateCw,
   Settings,
   Sun,
-  LayoutDashboard,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import Reset from "@/components/reset";
+import { useEffect } from "react";
 
 export default function AzkarPage() {
   const {
