@@ -1,40 +1,12 @@
 "use client";
 
-import { AppLogo, GitHubIcon } from "@/components/icons";
 import LandingPage from "@/components/landingPage";
 import { Card } from "@/components/ui/card";
 import { Bell, Book, GlobeOff, Lock, LucideIcon, Star } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
 
 export default function Home() {
   return (
     <div className="min-h-screen text-foreground">
-      <header className="fixed top-0 right-0 left-0 z-50 border-b border-white/5 bg-transparent backdrop-blur-xl">
-        <div className="absolute inset-0 bg-background/40 backdrop-blur-2xl" />
-
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between relative">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="relative group-hover:scale-110 transition-transform duration-300">
-              <Image src="/logo.png" alt="Azkar Logo" width={50} height={50} />
-            </div>
-            <span className="text-xl font-black tracking-tight bg-linear-to-r from-primary to-blue-400 bg-clip-text text-transparent group-hover:opacity-80 transition-opacity">
-              أذكار
-            </span>
-          </Link>
-
-          <Link
-            href="https://github.com/F-47/azkar"
-            aria-label="GitHub"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden sm:inline"
-          >
-            <GitHubIcon />
-          </Link>
-        </div>
-      </header>
-
       <LandingPage />
 
       <section className="py-24 relative overflow-hidden">
