@@ -1,3 +1,4 @@
+use std::sync::Mutex;
 use tauri::{
     Manager,
     LogicalPosition,
@@ -5,43 +6,40 @@ use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
 };
+
 const NOTIF_WIDTH: f64 = 360.0;
 const NOTIF_DEFAULT_HEIGHT: f64 = 140.0;
 const NOTIF_BOTTOM_MARGIN: f64 = 12.0;
 const NOTIF_RIGHT_MARGIN: f64 = 16.0;
 
-#[tauri::command]
-async fn resize_notification(app: tauri::AppHandle, height: f64) -> Result<(), String> {
-    if let Some(win) = app.get_webview_window("notification") {
-        let h = height.min(420.0).max(100.0);
-        win.set_size(LogicalSize::new(NOTIF_WIDTH, h))
-            .map_err(|e: tauri::Error| e.to_string())?;
-        if let Ok(Some(monitor)) = win.current_monitor() {
-            let size = monitor.size();
-            let position = monitor.position();
-            let scale = monitor.scale_factor();
-            let logical_w = size.width as f64 / scale;
-            let logical_h = size.height as f64 / scale;
-            let logical_x = position.x as f64 / scale;
-            let logical_y = position.y as f64 / scale;
-            let x = logical_x + logical_w - NOTIF_WIDTH - NOTIF_RIGHT_MARGIN;
-            let y = logical_y + logical_h - h - NOTIF_BOTTOM_MARGIN;
-            let _ = win.set_position(LogicalPosition::new(x, y));
-        }
-    }
-    Ok(())
+// ---------------------------------------------------------------------------
+// Scheduler state — lives on the Rust side so it keeps running even when the
+// webview is hidden (Linux/WebKitGTK pauses JS in hidden windows).
+// ---------------------------------------------------------------------------
+
+struct SchedulerState {
+    handle: Option<tauri::async_runtime::JoinHandle<()>>,
 }
 
-#[tauri::command]
-async fn hide_notification(app: tauri::AppHandle) -> Result<(), String> {
-    if let Some(win) = app.get_webview_window("notification") {
-        win.hide().map_err(|e: tauri::Error| e.to_string())?;
+impl Default for SchedulerState {
+    fn default() -> Self {
+        Self { handle: None }
     }
-    Ok(())
 }
 
-#[tauri::command]
-async fn show_notification(app: tauri::AppHandle, body: String) -> Result<(), String> {
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct SchedulerSettings {
+    enabled: bool,
+    interval_minutes: u32,
+    texts: Vec<String>,
+}
+
+// ---------------------------------------------------------------------------
+// Notification display logic (shared between the command and the scheduler)
+// ---------------------------------------------------------------------------
+
+async fn trigger_notification(app: &tauri::AppHandle, body: String) -> Result<(), String> {
     let win = app
         .get_webview_window("notification")
         .ok_or_else(|| "notification window not found".to_string())?;
@@ -80,12 +78,112 @@ async fn show_notification(app: tauri::AppHandle, body: String) -> Result<(), St
     Ok(())
 }
 
+// ---------------------------------------------------------------------------
+// Tauri commands
+// ---------------------------------------------------------------------------
+
+#[tauri::command]
+async fn resize_notification(app: tauri::AppHandle, height: f64) -> Result<(), String> {
+    if let Some(win) = app.get_webview_window("notification") {
+        let h = height.min(420.0).max(100.0);
+        win.set_size(LogicalSize::new(NOTIF_WIDTH, h))
+            .map_err(|e: tauri::Error| e.to_string())?;
+        if let Ok(Some(monitor)) = win.current_monitor() {
+            let size = monitor.size();
+            let position = monitor.position();
+            let scale = monitor.scale_factor();
+            let logical_w = size.width as f64 / scale;
+            let logical_h = size.height as f64 / scale;
+            let logical_x = position.x as f64 / scale;
+            let logical_y = position.y as f64 / scale;
+            let x = logical_x + logical_w - NOTIF_WIDTH - NOTIF_RIGHT_MARGIN;
+            let y = logical_y + logical_h - h - NOTIF_BOTTOM_MARGIN;
+            let _ = win.set_position(LogicalPosition::new(x, y));
+        }
+    }
+    Ok(())
+}
+
+#[tauri::command]
+async fn hide_notification(app: tauri::AppHandle) -> Result<(), String> {
+    if let Some(win) = app.get_webview_window("notification") {
+        win.hide().map_err(|e: tauri::Error| e.to_string())?;
+    }
+    Ok(())
+}
+
+#[tauri::command]
+async fn show_notification(app: tauri::AppHandle, body: String) -> Result<(), String> {
+    trigger_notification(&app, body).await
+}
+
+#[tauri::command]
+async fn configure_scheduler(
+    app: tauri::AppHandle,
+    state: tauri::State<'_, Mutex<SchedulerState>>,
+    settings: SchedulerSettings,
+) -> Result<(), String> {
+    {
+        let mut scheduler = state.lock().map_err(|e| e.to_string())?;
+
+        // Abort the previous background task if any
+        if let Some(handle) = scheduler.handle.take() {
+            handle.abort();
+        }
+    }
+
+    if !settings.enabled || settings.texts.is_empty() {
+        return Ok(());
+    }
+
+    let interval = std::time::Duration::from_secs(settings.interval_minutes as u64 * 60);
+    let texts = settings.texts;
+    let app_handle = app.clone();
+
+    // Trigger one immediately to show it's working
+    let body = {
+        let index = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .subsec_nanos() as usize
+            % texts.len();
+        texts[index].clone()
+    };
+    let _ = trigger_notification(&app_handle, body).await;
+
+    // Relock to set the new handle
+    {
+        let mut scheduler = state.lock().map_err(|e| e.to_string())?;
+        scheduler.handle = Some(tauri::async_runtime::spawn(async move {
+            loop {
+                tokio::time::sleep(interval).await;
+
+                // Pick a pseudo-random text from the pool
+                let index = std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap_or_default()
+                    .subsec_nanos() as usize
+                    % texts.len();
+                let body = texts[index].clone();
+                let _ = trigger_notification(&app_handle, body).await;
+            }
+        }));
+    }
+
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// App entry point
+// ---------------------------------------------------------------------------
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     #[cfg(target_os = "linux")]
     std::env::set_var("GDK_BACKEND", "x11");
 
     tauri::Builder::default()
+        .manage(Mutex::new(SchedulerState::default()))
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             if let Some(win) = app.get_webview_window("main") {
@@ -93,7 +191,12 @@ pub fn run() {
                 let _ = win.set_focus();
             }
         }))
-        .invoke_handler(tauri::generate_handler![show_notification, hide_notification, resize_notification])
+        .invoke_handler(tauri::generate_handler![
+            show_notification,
+            hide_notification,
+            resize_notification,
+            configure_scheduler
+        ])
         .setup(|app| {
             // Pre-create the notification window hidden so it loads in the background.
             // Dev uses the Next.js dev server; production uses the static export.

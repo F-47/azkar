@@ -1,22 +1,18 @@
-import { sendAzkarNotification } from "./tauri";
+import { isTauri, sendAzkarNotification } from "./tauri";
 import { getNotificationAzkars } from "@/lib/azkarStore";
-import type { Zekr, Category } from "@/types";
+import type { Category } from "@/types";
 
 const SETTINGS_KEY = "azkar-notification-settings";
 
 export interface NotificationSettings {
   enabled: boolean;
   intervalMinutes: number;
-  activeStart: number;
-  activeEnd: number;
   category: Category | "both";
 }
 
 export const DEFAULT_SETTINGS: NotificationSettings = {
   enabled: false,
   intervalMinutes: 30,
-  activeStart: 6,
-  activeEnd: 22,
   category: "both",
 };
 
@@ -45,12 +41,7 @@ export function saveSettings(settings: NotificationSettings): void {
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
 }
 
-function isInActiveHours(settings: NotificationSettings): boolean {
-  const hour = new Date().getHours();
-  return hour >= settings.activeStart && hour < settings.activeEnd;
-}
-
-function pickRandomZekr(category: Category | "both"): Zekr | null {
+function pickRandomZekr(category: Category | "both") {
   const all = getNotificationAzkars();
   const pool =
     category === "both" ? all : all.filter((z) => z.category === category);
@@ -69,21 +60,49 @@ function formatForNotification(text: string): string {
   return text.trim();
 }
 
+async function configureRustScheduler(
+  settings: NotificationSettings,
+): Promise<void> {
+  if (!isTauri()) return;
+  try {
+    const texts = settings.enabled
+      ? getNotificationAzkars(settings.category).map((z) =>
+          formatForNotification(z.text),
+        )
+      : [];
+
+    const { invoke } = await import("@tauri-apps/api/core");
+    await invoke("configure_scheduler", {
+      settings: {
+        enabled: settings.enabled,
+        intervalMinutes: settings.intervalMinutes,
+        texts,
+      },
+    });
+  } catch (e) {
+    console.warn("Failed to configure Rust scheduler:", e);
+  }
+}
+
 let timer: ReturnType<typeof setInterval> | null = null;
 
-export function startScheduler(): void {
-  stopScheduler();
-  const settings = loadSettings();
-  if (!settings.enabled) return;
+function stopJsTimer(): void {
+  if (timer) {
+    clearInterval(timer);
+    timer = null;
+  }
+}
 
+function startJsTimer(settings: NotificationSettings): void {
+  stopJsTimer();
+  if (!settings.enabled) return;
   timer = setInterval(
     async () => {
       const current = loadSettings();
       if (!current.enabled) {
-        stopScheduler();
+        stopJsTimer();
         return;
       }
-      if (!isInActiveHours(current)) return;
       const zekr = pickRandomZekr(current.category);
       if (zekr) await sendAzkarNotification(formatForNotification(zekr.text));
     },
@@ -91,14 +110,24 @@ export function startScheduler(): void {
   );
 }
 
-export function stopScheduler(): void {
-  if (timer) {
-    clearInterval(timer);
-    timer = null;
+export async function startScheduler(): Promise<void> {
+  stopJsTimer();
+  const settings = loadSettings();
+
+  if (isTauri()) {
+    await configureRustScheduler(settings);
+  } else {
+    startJsTimer(settings);
   }
 }
 
-export function restartScheduler(): void {
-  stopScheduler();
-  startScheduler();
+export async function stopScheduler(): Promise<void> {
+  stopJsTimer();
+  if (isTauri()) {
+    await configureRustScheduler({ ...DEFAULT_SETTINGS, enabled: false });
+  }
+}
+
+export async function restartScheduler(): Promise<void> {
+  await startScheduler();
 }

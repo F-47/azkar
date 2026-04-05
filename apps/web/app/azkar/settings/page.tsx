@@ -4,13 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   loadSettings,
   pickRandomZekrForTest,
   restartScheduler,
@@ -25,7 +18,6 @@ import {
   ArrowLeft,
   Bell,
   Check,
-  Clock,
   Moon,
   PartyPopper,
   RefreshCw,
@@ -37,13 +29,7 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
-function formatHour(h: number): string {
-  const period = h < 12 ? "ص" : "م";
-  const display = h === 0 ? 12 : h > 12 ? h - 12 : h;
-  return `${display}:00 ${period}`;
-}
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<NotificationSettings | null>(null);
@@ -257,67 +243,7 @@ export default function SettingsPage() {
                   })}
                 </div>
               </Card>
-              <Card className="rounded-xl p-6 border-white/10 bg-white/5 backdrop-blur-xl">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center text-green-500">
-                    <Clock className="w-5 h-5" />
-                  </div>
-                  <h3 className="font-bold text-sm">ساعات التفعيل</h3>
-                </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
-                      من الساعة
-                    </label>
-                    <Select
-                      value={String(settings.activeStart)}
-                      onValueChange={(value) =>
-                        update({ activeStart: Number(value) })
-                      }
-                    >
-                      <SelectTrigger className="w-full py-3 px-4 rounded-xl bg-white/5 border border-white/10 text-sm font-bold focus:outline-none focus:border-primary/50 transition-all">
-                        <SelectValue placeholder="Select time" />
-                      </SelectTrigger>
-
-                      <SelectContent>
-                        {HOURS.map((h) => (
-                          <SelectItem key={h} value={String(h)}>
-                            {formatHour(h)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
-                      إلى الساعة
-                    </label>
-                    <Select
-                      value={String(settings.activeEnd)}
-                      onValueChange={(value) =>
-                        update({ activeEnd: Number(value) })
-                      }
-                    >
-                      <SelectTrigger className="w-full py-3 px-4 rounded-xl bg-white/5 border border-white/10 text-sm font-bold focus:outline-none focus:border-primary/50 transition-all">
-                        <SelectValue placeholder="Select time" />
-                      </SelectTrigger>
-
-                      <SelectContent>
-                        {HOURS.map((h) => (
-                          <SelectItem key={h} value={String(h)}>
-                            {formatHour(h)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <p className="text-xs items-center flex gap-1.5 mt-4 text-muted-foreground/60 bg-white/5 p-2 rounded-lg border border-white/5">
-                  <Zap className="w-3 h-3 text-amber-500" />
-                  <span>لن تظهر إشعارات خارج هذا النطاق الزمني</span>
-                </p>
-              </Card>
             </div>
           )}
           <div className="grid gap-4">
