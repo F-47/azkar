@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { loadSettings } from "@/lib/notificationScheduler";
+import { useEffect, useRef, useState } from "react";
 
 const DURATION = 6000;
 

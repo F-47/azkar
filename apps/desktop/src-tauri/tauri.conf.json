@@ -38,7 +38,12 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "publisher": "Azkar App",
+    "publisher": "Fares Galal",
+    "windows": {
+      "nsis": {
+        "installerIcon": "icons/icon.ico"
+      }
+    },
     "icon": [
       "icons/32x32.png",
       "icons/64x64.png",

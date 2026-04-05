@@ -18,7 +18,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-
 import { Button } from "@/components/ui/button";
 import Reset from "@/components/reset";
 
@@ -43,9 +42,7 @@ export default function AzkarPage() {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-500">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.1),transparent_60%)]" />
-      <header className="sticky top-0 z-10 border-b border-white/5 backdrop-blur-2xl">
-        <div className="absolute inset-0 bg-background/40" />
-
+      <header className="sticky top-0 z-20 border-b border-white/5 backdrop-blur-2xl">
         <div className="px-4 py-4 relative">
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">
@@ -75,7 +72,7 @@ export default function AzkarPage() {
                 className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 focus-visible:ring-yellow-500/20 focus-visible:border-yellow-500 flex items-center justify-center text-muted-foreground hover:text-yellow-500 hover:bg-white/10 hover:border-yellow-500/30 transition-all"
                 title="إدارة الأذكار"
               >
-                <Link href="/azkar/manage">
+                <Link href="/azkar/manage" prefetch={false}>
                   <ListChecks className="w-5 h-5" />
                 </Link>
               </Button>
@@ -85,7 +82,7 @@ export default function AzkarPage() {
                 className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 focus-visible:ring-accent/20 focus-visible:border-accent flex items-center justify-center text-muted-foreground hover:text-accent hover:bg-white/10 hover:border-accent/30 transition-all"
                 asChild
               >
-                <Link href="/azkar/settings">
+                <Link href="/azkar/settings" prefetch={false}>
                   <Settings className="w-5 h-5" />
                 </Link>
               </Button>
