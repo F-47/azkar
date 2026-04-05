@@ -1,72 +1,89 @@
-# أذكار — Azkar Desktop App
+# Azkar App - Desktop Reminders
 
-تطبيق سطح مكتب لأذكار الصباح والمساء مع إشعارات دورية.
+[![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)](https://github.com/F-47/azkar/releases)
+[![Tauri](https://img.shields.io/badge/platform-Tauri%20v2-orange.svg)](https://tauri.app/)
+[![Next.js](https://img.shields.io/badge/frontend-Next.js%2016-black.svg)](https://nextjs.org/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE.md)
 
-A desktop app for Muslim morning and evening Adhkar with scheduled reminders.
-
----
-
-## Download
-
-Pre-built installers are attached to every [GitHub Release](https://github.com/F-47/azkar/releases/latest).
-
-| Platform | File | Notes |
-|----------|------|-------|
-| Windows | `.msi` | Recommended — Windows Installer |
-| Windows | `.exe` | NSIS standalone installer |
-| Linux | `.deb` | Debian / Ubuntu / Mint |
-| Linux | `.AppImage` | Portable, runs on any distro |
-
-Go to **[Releases](https://github.com/F-47/azkar/releases)** → pick the latest version → download the file for your OS.
+Azkar App is a professional desktop application designed for daily spiritual reminders. Built with a focus on performance and minimalist aesthetics, it integrates directly into your desktop environment with a glassmorphic interface and native system notifications.
 
 ---
 
-## Features
+## Technical Specifications
 
-- أذكار الصباح والمساء (Morning & Evening Adhkar)
-- Scheduled desktop reminders at a configurable interval
-- Custom reminder window — styled popup, not a plain OS notification
-- Active hours setting (e.g. only remind between 6 AM and 10 PM)
-- Minimizes to system tray instead of closing
-- Dark/light aware styling
+Azkar App is built on the **Tauri v2** framework, ensuring high security and a minimal resource footprint. The frontend leverages **Next.js 16** and **React 19** for a fast, responsive user experience. It supports cross-platform deployment on both **Windows** and **Linux** systems.
 
 ---
 
-## Tech Stack
+## Screenshots
+
+<div align="center">
+  <img src="screenshots/1.png" width="48%" />
+  <img src="screenshots/2.png" width="48%" />
+  <br />
+  <img src="screenshots/3.png" width="48%" />
+  <img src="screenshots/4.png" width="48%" />
+  <br />
+  <img src="screenshots/5.png" width="35%" />
+</div>
+
+---
+
+## Core Features
+
+- **Cross-Platform Support**: Ready for Windows and Linux systems.
+- **Glassmorphic UI**: Minimalist design language compatible with Light and Dark modes.
+- **Automated Reminders**: Configurable scheduling for morning and evening Adhkar.
+- **Custom Notifications**: Stylized reminder windows integrated with the desktop shell.
+- **System Tray Integration**: Persistent background operation with a low memory profile.
+- **Automatic Updates**: Seamless background updates via the Tauri updater plugin.
+- **Active Hours**: Intelligent scheduling to avoid interruptions during specific times.
+
+---
+
+## Technology Stack
 
 | Layer | Technology |
 |-------|-----------|
-| Desktop shell | [Tauri v2](https://tauri.app) (Rust) |
-| Frontend | Next.js 14 + React 18 (static export) |
-| Styling | Tailwind CSS + CSS variables |
-| Fonts | Noto Naskh Arabic, Amiri |
+| **Core** | [Tauri v2](https://tauri.app) |
+| **Frontend** | [Next.js 16](https://nextjs.org/), React 19 |
+| **Styling** | Tailwind CSS 4, Framer Motion |
 
 ---
 
-## Development
+## Installation and Development
 
-**Prerequisites:** Node.js 20+, Rust (stable), system WebView2 (Windows) or WebKitGTK (Linux).
+### Downloads
+Installers are available for Windows and Linux on the [Releases Page](https://github.com/F-47/azkar/releases).
 
-```bash
-# Install dependencies
-npm install
+| Operating System | Recommended Format |
+|------------------|-------------------|
+| **Windows** | `.msi` (Installer) or `.exe` (NSIS) |
+| **Linux** | `.deb` (Debian/Ubuntu) or `.AppImage` |
 
-# Run in dev mode (hot reload)
-npm run dev
+### Building from Source
+To set up a local development environment:
 
-# Build for production (current platform only)
-npm run build
-```
-
-> Releases for both Windows and Linux are built automatically via GitHub Actions when a version tag is pushed — no local cross-compilation needed.
+1. **Requirements**: Node.js 20+ and Rust (Stable).
+2. **Setup**:
+   ```bash
+   npm install
+   ```
+3. **Run Development**:
+   ```bash
+   npm run dev
+   ```
+4. **Build Distribution**:
+   ```bash
+   npm run build
+   ```
 
 ---
 
-## Releasing
+## Patch Notes
+Detailed version history and changes are documented in the [CHANGELOG.md](CHANGELOG.md).
 
-```bash
-git tag v1.0.0
-git push origin v1.0.0
-```
+---
 
-GitHub Actions will build the installers and publish them to the Releases page automatically.
+## License
+Distributed under the MIT License. See [LICENSE.md](LICENSE.md) for more information.
