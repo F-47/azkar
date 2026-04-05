@@ -5,12 +5,16 @@ use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
 };
+const NOTIF_WIDTH: f64 = 360.0;
+const NOTIF_DEFAULT_HEIGHT: f64 = 140.0;
+const NOTIF_BOTTOM_MARGIN: f64 = 12.0;
+const NOTIF_RIGHT_MARGIN: f64 = 16.0;
 
 #[tauri::command]
 async fn resize_notification(app: tauri::AppHandle, height: f64) -> Result<(), String> {
     if let Some(win) = app.get_webview_window("notification") {
         let h = height.min(420.0).max(100.0);
-        win.set_size(LogicalSize::new(360.0, h))
+        win.set_size(LogicalSize::new(NOTIF_WIDTH, h))
             .map_err(|e: tauri::Error| e.to_string())?;
         if let Ok(Some(monitor)) = win.current_monitor() {
             let size = monitor.size();
@@ -20,8 +24,8 @@ async fn resize_notification(app: tauri::AppHandle, height: f64) -> Result<(), S
             let logical_h = size.height as f64 / scale;
             let logical_x = position.x as f64 / scale;
             let logical_y = position.y as f64 / scale;
-            let x = logical_x + logical_w - 360.0 - 16.0;
-            let y = logical_y + logical_h - h - 48.0;
+            let x = logical_x + logical_w - NOTIF_WIDTH - NOTIF_RIGHT_MARGIN;
+            let y = logical_y + logical_h - h - NOTIF_BOTTOM_MARGIN;
             let _ = win.set_position(LogicalPosition::new(x, y));
         }
     }
@@ -42,7 +46,11 @@ async fn show_notification(app: tauri::AppHandle, body: String) -> Result<(), St
         .get_webview_window("notification")
         .ok_or_else(|| "notification window not found".to_string())?;
 
-    // Position bottom-right, above the taskbar
+    // Pre-resize to default before positioning to prevent coordinate drift
+    win.set_size(LogicalSize::new(NOTIF_WIDTH, NOTIF_DEFAULT_HEIGHT))
+        .map_err(|e| e.to_string())?;
+
+    // Position bottom-right, relative to a fixed margin
     if let Ok(Some(monitor)) = win.current_monitor() {
         let size = monitor.size();
         let position = monitor.position();
@@ -51,8 +59,8 @@ async fn show_notification(app: tauri::AppHandle, body: String) -> Result<(), St
         let logical_h = size.height as f64 / scale;
         let logical_x = position.x as f64 / scale;
         let logical_y = position.y as f64 / scale;
-        let x = logical_x + logical_w - 360.0 - 16.0;
-        let y = logical_y + logical_h - 140.0 - 48.0;
+        let x = logical_x + logical_w - NOTIF_WIDTH - NOTIF_RIGHT_MARGIN;
+        let y = logical_y + logical_h - NOTIF_DEFAULT_HEIGHT - NOTIF_BOTTOM_MARGIN;
         let _ = win.set_position(LogicalPosition::new(x, y));
     }
 
@@ -98,7 +106,7 @@ pub fn run() {
 
             tauri::WebviewWindowBuilder::new(app, "notification", notif_url)
                 .title("")
-                .inner_size(360.0, 140.0)
+                .inner_size(NOTIF_WIDTH, NOTIF_DEFAULT_HEIGHT)
                 .visible(false)
                 .decorations(false)
                 .transparent(true)
