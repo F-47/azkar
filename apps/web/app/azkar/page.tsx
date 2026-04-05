@@ -17,6 +17,7 @@ import {
   Settings,
   Sun,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect } from "react";
 
@@ -155,7 +156,10 @@ export default function AzkarPage() {
         </div>
       </main>
 
-      <footer className="py-8 px-4 text-center text-muted-foreground/30 relative z-10 border-t border-white/5 mt-8">
+      <footer className="py-8 px-4 text-center text-muted-foreground/30 relative z-10 border-t border-white/5 mt-8 space-y-3">
+        <div className="relative w-14 h-14 mx-auto">
+          <Image src="/logo.png" alt="icon" fill className="object-contain" />
+        </div>
         <p className="text-xs font-bold uppercase tracking-[0.2em]">
           أذكار المسلم • {new Date().getFullYear()}
         </p>
