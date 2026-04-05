@@ -12,10 +12,7 @@ function LandingPage() {
   const { data, loading } = useLatestRelease();
 
   const handleDownload = (platform: "windows" | "linux") => {
-    const url =
-      platform === "windows"
-        ? data?.windowsUrl
-        : data?.linuxUrl;
+    const url = platform === "windows" ? data?.windowsUrl : data?.linuxUrl;
 
     if (url) {
       window.location.href = url;
@@ -47,7 +44,7 @@ function LandingPage() {
       </div>
 
       <div className="relative w-full max-w-3xl mx-auto flex flex-col items-center text-center z-10">
-        <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-6">
+        <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold leading-tight mb-6">
           اجعل الذكر جزءًا من <span className="text-primary">يومك</span>
         </h1>
 

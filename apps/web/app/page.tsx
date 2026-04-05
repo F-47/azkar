@@ -1,8 +1,7 @@
 "use client";
 
-import { GitHubIcon } from "@/components/icons";
+import { AppLogo, GitHubIcon } from "@/components/icons";
 import LandingPage from "@/components/landingPage";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Bell, Book, GlobeOff, Lock, LucideIcon, Star } from "lucide-react";
 import Link from "next/link";
@@ -14,11 +13,15 @@ export default function Home() {
         <div className="absolute inset-0 bg-background/40 backdrop-blur-2xl" />
 
         <div className="container mx-auto px-4 py-3 flex items-center justify-between relative">
-          <div className="flex items-center gap-3 group">
-            <span className="text-xl font-bold tracking-wide bg-linear-to-r from-primary to-blue-400 bg-clip-text text-transparent">
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="relative group-hover:scale-110 transition-transform duration-300">
+              <AppLogo className="w-8 h-8 drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
+              <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full -z-10 group-hover:bg-primary/40 transition-colors" />
+            </div>
+            <span className="text-xl font-black tracking-tight bg-linear-to-r from-primary to-blue-400 bg-clip-text text-transparent group-hover:opacity-80 transition-opacity">
               أذكار
             </span>
-          </div>
+          </Link>
 
           <Link
             href="https://github.com/F-47/azkar"
@@ -102,7 +105,7 @@ export default function Home() {
           </div>
           <span className="font-bold">أذكار</span>
         </div>
-        <p className="text-sm text-muted-foreground leading-relaxed">
+        <p className="text-sm text-muted-foreground leading-relaxed text-center">
           نسعى لتذكيرك بما يعينك على الثبات في الذكر والقرب من الله في كل يوم.
         </p>
         <div className="w-24 h-px bg-linear-to-r from-transparent via-primary/30 to-transparent my-6" />

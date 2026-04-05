@@ -33,3 +33,38 @@ export const GitHubIcon = () => {
     </svg>
   );
 };
+export const AppLogo = ({ className }: { className?: string }) => {
+  return (
+    <svg
+      width="32"
+      height="32"
+      viewBox="0 0 32 32"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+    >
+      <circle cx="16" cy="16" r="16" fill="url(#logo-gradient)" />
+      <path
+        d="M22 11.5C22 13.9853 19.9853 16 17.5 16C15.0147 16 13 13.9853 13 11.5C13 9.01472 15.0147 7 17.5 7C19.9853 7 22 9.01472 22 11.5Z"
+        fill="white"
+      />
+      <path
+        d="M17.5 25C12.8056 25 9 21.1944 9 16.5C9 11.8056 12.8056 8 17.5 8C18.6656 8 19.761 8.23659 20.7588 8.66224C19.043 9.47954 17.8438 11.2384 17.8438 13.2812C17.8438 16.1083 20.1417 18.4062 22.9688 18.4062C23.8647 18.4062 24.7042 18.1759 25.4375 17.7719C25.1557 21.8491 21.7214 25 17.5 25Z"
+        fill="white"
+      />
+      <defs>
+        <linearGradient
+          id="logo-gradient"
+          x1="0"
+          y1="0"
+          x2="32"
+          y2="32"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop stopColor="#3B82F6" />
+          <stop offset="1" stopColor="#2DD4BF" />
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+};
