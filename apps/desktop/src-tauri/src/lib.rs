@@ -140,16 +140,6 @@ async fn configure_scheduler(
     let texts = settings.texts;
     let app_handle = app.clone();
 
-    // Trigger one immediately to show it's working
-    let body = {
-        let index = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap_or_default()
-            .subsec_nanos() as usize
-            % texts.len();
-        texts[index].clone()
-    };
-    let _ = trigger_notification(&app_handle, body).await;
 
     // Relock to set the new handle
     {
