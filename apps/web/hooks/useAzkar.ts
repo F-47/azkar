@@ -23,7 +23,8 @@ function buildInitialProgress(azkar: Zekr[]): ProgressMap {
 }
 
 function loadProgress(category: Category, azkar: Zekr[]): ProgressMap {
-  if (typeof window === 'undefined') return buildInitialProgress(azkar)
+  const initial = buildInitialProgress(azkar)
+  if (typeof window === 'undefined') return initial
   try {
     const storedDate = localStorage.getItem(DATE_KEY)
     const today = getTodayString()
@@ -31,13 +32,24 @@ function loadProgress(category: Category, azkar: Zekr[]): ProgressMap {
       localStorage.setItem(DATE_KEY, today)
       localStorage.removeItem(getStorageKey('morning'))
       localStorage.removeItem(getStorageKey('evening'))
-      return buildInitialProgress(azkar)
+      return initial
     }
     const stored = localStorage.getItem(getStorageKey(category))
-    if (!stored) return buildInitialProgress(azkar)
-    return JSON.parse(stored) as ProgressMap
+    if (!stored) return initial
+    const parsed = JSON.parse(stored) as ProgressMap
+
+    // Sanitize: ensure current progress doesn't exceed target count
+    // and handle missing or corrupted data
+    const sanitized: ProgressMap = { ...initial }
+    azkar.forEach((zekr) => {
+      if (parsed[zekr.id] !== undefined) {
+        // Cap remaining at current target count and ensure it is not negative
+        sanitized[zekr.id] = Math.max(0, Math.min(parsed[zekr.id], zekr.count))
+      }
+    })
+    return sanitized
   } catch {
-    return buildInitialProgress(azkar)
+    return initial
   }
 }
 

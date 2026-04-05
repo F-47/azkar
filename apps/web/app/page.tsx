@@ -3,18 +3,9 @@
 import LandingPage from "@/components/landingPage";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { isTauri } from "@/lib/tauri";
 import { Bell, Book, GlobeOff, Lock, LucideIcon, Star } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 
 export default function Home() {
-  const router = useRouter();
-
-  useEffect(() => {
-    if (isTauri()) router.replace("/azkar");
-  }, [router]);
-
   return (
     <div className="min-h-screen text-foreground">
       <header className="fixed top-0 right-0 left-0 z-50 border-b border-white/5 bg-transparent backdrop-blur-xl">

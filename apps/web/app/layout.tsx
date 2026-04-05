@@ -26,6 +26,19 @@ export default function RootLayout({
       dir="rtl"
       className={cn("font-sans", notoSansArabic.variable)}
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                if (window.__TAURI_INTERNALS__ && window.location.pathname === '/') {
+                  window.location.replace('/azkar/');
+                }
+              } catch (e) {}
+            `,
+          }}
+        />
+      </head>
       <body className="min-h-screen">
         <DirectionProvider dir="rtl">
           <TooltipProvider>{children}</TooltipProvider>
