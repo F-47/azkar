@@ -4,10 +4,25 @@ import { MosqueIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { OrbitingCircles } from "@/components/ui/orbiting-circles";
 import useOrbitRadius from "@/hooks/useOrbitRadius";
-import { Download, Moon, Star } from "lucide-react";
+import { useLatestRelease } from "@/hooks/useLatestRelease";
+import { Download, Loader2, Moon, Star } from "lucide-react";
 
 function LandingPage() {
   const radius = useOrbitRadius();
+  const { data, loading } = useLatestRelease();
+
+  const handleDownload = (platform: "windows" | "linux") => {
+    const url =
+      platform === "windows"
+        ? data?.windowsUrl
+        : data?.linuxUrl;
+
+    if (url) {
+      window.location.href = url;
+    } else {
+      window.open("https://github.com/F-47/azkar/releases/latest", "_blank");
+    }
+  };
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
@@ -41,11 +56,25 @@ function LandingPage() {
         </p>
 
         <div className="flex gap-4">
-          <Button size="xl">
-            <Download className="w-4 h-4 ml-2" />
-            تحميل
+          <Button
+            size="xl"
+            onClick={() => handleDownload("windows")}
+            disabled={loading}
+          >
+            {loading ? (
+              <Loader2 className="w-4 h-4 ml-2 animate-spin" />
+            ) : (
+              <Download className="w-4 h-4 ml-2" />
+            )}
+            تحميل {data?.version ? `(${data.version})` : ""}
           </Button>
-          <Button size="xl" variant="outline">
+          <Button
+            size="xl"
+            variant="outline"
+            onClick={() => handleDownload("linux")}
+            disabled={loading}
+          >
+            {loading && <Loader2 className="w-4 h-4 ml-2 animate-spin" />}
             نسخة لينكس
           </Button>
         </div>
