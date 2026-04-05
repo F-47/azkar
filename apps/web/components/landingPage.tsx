@@ -3,9 +3,10 @@
 import { MosqueIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { OrbitingCircles } from "@/components/ui/orbiting-circles";
-import useOrbitRadius from "@/hooks/useOrbitRadius";
 import { useLatestRelease } from "@/hooks/useLatestRelease";
+import useOrbitRadius from "@/hooks/useOrbitRadius";
 import { Download, Loader2, Moon, Star } from "lucide-react";
+import Image from "next/image";
 
 function LandingPage() {
   const radius = useOrbitRadius();
@@ -44,6 +45,10 @@ function LandingPage() {
       </div>
 
       <div className="relative w-full max-w-3xl mx-auto flex flex-col items-center text-center z-10">
+        <div className="absolute w-28 h-28 -top-32">
+          <Image src="/logo.png" alt="icon" fill className="object-contain" />
+        </div>
+
         <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold leading-tight mb-6">
           اجعل الذكر جزءًا من <span className="text-primary">يومك</span>
         </h1>

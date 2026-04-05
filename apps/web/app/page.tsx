@@ -3,6 +3,7 @@
 import LandingPage from "@/components/landingPage";
 import { Card } from "@/components/ui/card";
 import { Bell, Book, GlobeOff, Lock, LucideIcon, Star } from "lucide-react";
+import Image from "next/image";
 
 export default function Home() {
   return (
@@ -70,12 +71,8 @@ export default function Home() {
 
       <footer className="border-t border-border/30 bg-card/30 backdrop-blur py-12 flex-col flex items-center">
         <div className="absolute inset-0 bg-linear-to-r from-accent/8 via-transparent to-accent/8" />
-
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-8 h-8 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center">
-            <Book className="w-5 h-5 text-white" />
-          </div>
-          <span className="font-bold">أذكار</span>
+        <div className="relative w-20 h-20 mb-6">
+          <Image src="/logo.png" alt="icon" fill className="object-contain" />
         </div>
         <p className="text-sm text-muted-foreground leading-relaxed text-center">
           نسعى لتذكيرك بما يعينك على الثبات في الذكر والقرب من الله في كل يوم.
