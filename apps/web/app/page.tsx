@@ -4,6 +4,7 @@ import { AppLogo, GitHubIcon } from "@/components/icons";
 import LandingPage from "@/components/landingPage";
 import { Card } from "@/components/ui/card";
 import { Bell, Book, GlobeOff, Lock, LucideIcon, Star } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 export default function Home() {
@@ -15,8 +16,7 @@ export default function Home() {
         <div className="container mx-auto px-4 py-3 flex items-center justify-between relative">
           <Link href="/" className="flex items-center gap-3 group">
             <div className="relative group-hover:scale-110 transition-transform duration-300">
-              <AppLogo className="w-8 h-8 drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
-              <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full -z-10 group-hover:bg-primary/40 transition-colors" />
+              <Image src="/logo.png" alt="Azkar Logo" width={50} height={50} />
             </div>
             <span className="text-xl font-black tracking-tight bg-linear-to-r from-primary to-blue-400 bg-clip-text text-transparent group-hover:opacity-80 transition-opacity">
               أذكار
