@@ -23,22 +23,20 @@ export const useLatestRelease = () => {
     const fetchLatestRelease = async () => {
       try {
         const response = await fetch(
-          "https://api.github.com/repos/F-47/azkar/releases/latest"
+          "https://api.github.com/repos/F-47/azkar/releases/latest",
         );
         if (!response.ok) throw new Error("Failed to fetch release");
 
         const json = await response.json();
         const assets: ReleaseAsset[] = json.assets || [];
 
-        // Find best match for Windows (.msi is preferred, fallback to .exe)
         const windowsAsset =
           assets.find((a) => a.name.endsWith(".msi")) ||
           assets.find((a) => a.name.endsWith(".exe"));
 
-        // Find best match for Linux (.AppImage is preferred, fallback to .deb)
         const linuxAsset =
-          assets.find((a) => a.name.endsWith(".AppImage")) ||
           assets.find((a) => a.name.endsWith(".deb")) ||
+          assets.find((a) => a.name.endsWith(".AppImage")) ||
           assets.find((a) => a.name.endsWith(".rpm"));
 
         setData({

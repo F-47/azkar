@@ -1,9 +1,11 @@
 "use client";
 
+import { GitHubIcon } from "@/components/icons";
 import LandingPage from "@/components/landingPage";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Bell, Book, GlobeOff, Lock, LucideIcon, Star } from "lucide-react";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -18,24 +20,15 @@ export default function Home() {
             </span>
           </div>
 
-          <div className="flex items-center gap-4">
-            <a
-              href="https://github.com"
-              target="_blank"
-              className="hidden sm:inline text-sm text-muted-foreground/70 hover:text-primary transition-colors"
-            >
-              GitHub
-            </a>
-
-            <a href="#download">
-              <Button
-                size="sm"
-                className="rounded-full px-5 bg-primary/80 hover:bg-primary transition-all hover:scale-[1.03]"
-              >
-                تحميل التطبيق
-              </Button>
-            </a>
-          </div>
+          <Link
+            href="https://github.com/F-47/azkar"
+            aria-label="GitHub"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden sm:inline"
+          >
+            <GitHubIcon />
+          </Link>
         </div>
       </header>
 
