@@ -17,7 +17,10 @@ import {
   LayoutDashboard,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+
+import { Button } from "@/components/ui/button";
+import Reset from "@/components/reset";
 
 export default function AzkarPage() {
   const {
@@ -26,7 +29,7 @@ export default function AzkarPage() {
     progress,
     mounted,
     decrement,
-    reset,
+
     switchCategory,
     totalCount,
     completedCount,
@@ -38,16 +41,9 @@ export default function AzkarPage() {
   }, []);
 
   return (
-    <div
-      className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-500"
-      dir="rtl"
-    >
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.05),transparent_60%)]" />
-        <div className="absolute inset-0 pattern-islamic opacity-[0.03]" />
-      </div>
-
-      <header className="sticky top-0 z-50 border-b border-white/5 backdrop-blur-xl">
+    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-500">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.1),transparent_60%)]" />
+      <header className="sticky top-0 z-10 border-b border-white/5 backdrop-blur-2xl">
         <div className="absolute inset-0 bg-background/40" />
 
         <div className="px-4 py-4 relative">
@@ -67,48 +63,37 @@ export default function AzkarPage() {
                   <Moon className="w-5 h-5" />
                 )}
               </div>
-              <div>
-                <h1 className="text-xl font-black tracking-tight">
-                  {category === "morning" ? "أذكار الصباح" : "أذكار المساء"}
-                </h1>
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">
-                  {category === "morning" ? "Morning Adhkar" : "Evening Adhkar"}
-                </p>
-              </div>
+
+              <h1 className="text-xl font-black tracking-tight">
+                {category === "morning" ? "أذكار الصباح" : "أذكار المساء"}
+              </h1>
             </div>
 
             <div className="flex items-center gap-1.5">
-              <Link href="/azkar/manage">
-                <button
-                  className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-white/10 hover:border-primary/30 transition-all"
-                  title="إدارة الأذكار"
-                >
-                  <ListChecks className="w-5 h-5" />
-                </button>
-              </Link>
-              <Link href="/azkar/settings">
-                <button
-                  className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-white/10 hover:border-primary/30 transition-all"
-                  title="الإعدادات"
-                >
-                  <Settings className="w-5 h-5" />
-                </button>
-              </Link>
-              <button
-                onClick={() => {
-                  if (confirm("هل تريد إعادة تعيين العداد لهذا اليوم؟"))
-                    reset();
-                }}
-                className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-muted-foreground hover:text-red-400 hover:bg-red-400/5 hover:border-red-400/30 transition-all"
-                title="إعادة تعيين"
+              <Button
+                asChild
+                className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 focus-visible:ring-yellow-500/20 focus-visible:border-yellow-500 flex items-center justify-center text-muted-foreground hover:text-yellow-500 hover:bg-white/10 hover:border-yellow-500/30 transition-all"
+                title="إدارة الأذكار"
               >
-                <RotateCw className="w-4 h-4" />
-              </button>
+                <Link href="/azkar/manage">
+                  <ListChecks className="w-5 h-5" />
+                </Link>
+              </Button>
+
+              <Button
+                title="الإعدادات"
+                className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 focus-visible:ring-accent/20 focus-visible:border-accent flex items-center justify-center text-muted-foreground hover:text-accent hover:bg-white/10 hover:border-accent/30 transition-all"
+                asChild
+              >
+                <Link href="/azkar/settings">
+                  <Settings className="w-5 h-5" />
+                </Link>
+              </Button>
+
+              <Reset />
             </div>
           </div>
-
           <CategoryToggle active={category} onChange={switchCategory} />
-
           <div className="mt-5">
             {mounted && (
               <ProgressBar completed={completedCount} total={totalCount} />
@@ -119,8 +104,8 @@ export default function AzkarPage() {
 
       <main className="flex-1 overflow-y-auto px-4 py-8 relative z-10">
         <div className="max-w-2xl mx-auto space-y-4">
-          {mounted && isComplete && (
-            <div className="p-8 rounded-3xl text-center relative overflow-hidden group mb-8 border border-green-500/20 bg-green-500/5">
+          {mounted && isComplete && azkar.length > 0 && (
+            <div className="p-8 rounded-2xl text-center relative overflow-hidden group mb-8 border border-green-500/20 bg-green-500/5">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(34,197,94,0.1),transparent_70%)] animate-pulse" />
               <div className="relative z-10">
                 <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-[0_0_30px_rgba(34,197,94,0.4)]">
@@ -144,11 +129,11 @@ export default function AzkarPage() {
             <div className="flex flex-col items-center justify-center py-32 opacity-50">
               <Loader2 className="w-10 h-10 animate-spin text-primary mb-4" />
               <p className="text-sm font-bold tracking-widest uppercase">
-                Loading adhkar...
+                جاري تحميل الأذكار...
               </p>
             </div>
           ) : azkar.length === 0 ? (
-            <div className="text-center py-32 border-2 border-dashed border-white/5 rounded-3xl">
+            <div className="text-center py-32 border-2 border-dashed border-white/5 rounded-2xl">
               <p className="text-xl font-bold text-muted-foreground">
                 لا توجد أذكار مفعلة
               </p>

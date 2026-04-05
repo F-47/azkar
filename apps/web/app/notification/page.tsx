@@ -1,16 +1,28 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { invoke } from "@tauri-apps/api/core";
+import { loadSettings } from "@/lib/notificationScheduler";
 
 const DURATION = 6000;
 
+interface NotificationData {
+  title: string;
+  body: string;
+}
+
 export default function NotificationPage() {
-  const [data, setData] = useState<{ title: string; body: string } | null>(
-    null,
-  );
+  const [data, setData] = useState<NotificationData | null>(null);
+  const [settings, setSettings] = useState(() => loadSettings());
   const [progress, setProgress] = useState(100);
   const rafRef = useRef<number | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+
+  async function hideWindow() {
+    try {
+      await invoke("hide_notification");
+    } catch {}
+  }
 
   useEffect(() => {
     document.documentElement.style.background = "transparent";
@@ -22,6 +34,7 @@ export default function NotificationPage() {
         cancelAnimationFrame(rafRef.current);
         rafRef.current = null;
       }
+      setSettings(loadSettings());
       setData({ title, body });
       setProgress(100);
 
@@ -39,39 +52,32 @@ export default function NotificationPage() {
       rafRef.current = requestAnimationFrame(tick);
     }
 
-    // Register global so Rust can call via eval()
-    (window as any).__showNotification = trigger;
+    const win = window as unknown as {
+      __showNotification?: typeof trigger;
+      __pendingNotif?: NotificationData;
+    };
 
-    // Pick up any notification that arrived before this effect ran
-    const pending = (window as any).__pendingNotif;
+    win.__showNotification = trigger;
+
+    const pending = win.__pendingNotif;
     if (pending) {
-      delete (window as any).__pendingNotif;
+      delete win.__pendingNotif;
       trigger(pending.title, pending.body);
     }
 
     return () => {
-      delete (window as any).__showNotification;
+      delete win.__showNotification;
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
     };
   }, []);
 
-  // Resize window to fit content after each new notification
   useEffect(() => {
     if (!data || !cardRef.current) return;
-    const height = cardRef.current.scrollHeight + 16; // 8px padding top + bottom
-    import("@tauri-apps/api/core").then(({ invoke }) => {
-      invoke("resize_notification", { height });
-    });
+    const height = cardRef.current.scrollHeight + 16;
+    invoke("resize_notification", { height }).catch(() => {});
   }, [data]);
 
-  async function hideWindow() {
-    try {
-      const { invoke } = await import("@tauri-apps/api/core");
-      await invoke("hide_notification");
-    } catch {
-      // noop
-    }
-  }
+  const theme = settings.theme;
 
   if (!data) return null;
 
@@ -79,33 +85,55 @@ export default function NotificationPage() {
     <div
       dir="rtl"
       ref={cardRef}
-      className="flex flex-col rounded-xl cursor-pointer"
+      className="flex flex-col rounded-xl cursor-pointer overflow-hidden border"
+      style={{ borderColor: theme.borderColor }}
       onClick={hideWindow}
     >
       <div
         data-tauri-drag-region
-        className="flex items-center justify-between px-4 py-2 bg-linear-to-r from-green-900 to-green-700 rounded-t-xl"
+        className="flex items-center justify-between px-4 py-2"
+        style={{
+          background: `linear-gradient(to right, ${theme.primaryColor}, ${theme.secondaryColor})`,
+        }}
       >
         <span
-          style={{
-            fontFamily: '"Noto Naskh Arabic", "Amiri", serif',
-          }}
-          className="text-sm font-bold pointer-events-none text-white"
+          className="text-sm font-bold pointer-events-none"
+          style={{ color: theme.titleColor }}
         >
           {data.title}
         </span>
 
-        <CircularProgress progress={progress} />
+        <CircularProgress
+          progress={progress}
+          color={theme.titleColor}
+        />
       </div>
 
-      <p className="p-4 text-[#1a1a1a] arabic-text w-full text-start text-base bg-white rounded-b-xl">
-        {data.body}
-      </p>
+      <p
+        className="p-4 arabic-text w-full whitespace-pre-line text-start text-base"
+        style={{
+          backgroundColor: theme.backgroundColor,
+          color: theme.textColor,
+          fontFamily: theme.fontFamily,
+        }}
+        dangerouslySetInnerHTML={{
+          __html: data.body.replace(
+            /۝([\u0660-\u0669]+)/g,
+            `<span class="inline-flex items-center justify-center text-sm font-bold rounded-full w-6 h-6 align-middle font-serif border" style="background-color: ${theme.primaryColor}20; color: ${theme.primaryColor}; border-color: ${theme.primaryColor}20">$1</span>`,
+          ),
+        }}
+      />
     </div>
   );
 }
 
-function CircularProgress({ progress }: { progress: number }) {
+function CircularProgress({
+  progress,
+  color,
+}: {
+  progress: number;
+  color: string;
+}) {
   const size = 28;
   const stroke = 3;
 
@@ -123,8 +151,9 @@ function CircularProgress({ progress }: { progress: number }) {
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke="#c8e6c9"
+          stroke={color}
           strokeWidth={stroke}
+          strokeOpacity={0.2}
           fill="none"
         />
 
@@ -133,7 +162,7 @@ function CircularProgress({ progress }: { progress: number }) {
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke="#2E7D32"
+          stroke={color}
           strokeWidth={stroke}
           fill="none"
           strokeLinecap="round"
@@ -143,7 +172,10 @@ function CircularProgress({ progress }: { progress: number }) {
         />
       </svg>
 
-      <div className="absolute top-0 inset-s-0 size-full flex items-center justify-center text-[0.6rem] font-bold text-white">
+      <div
+        className="absolute top-0 inset-s-0 size-full flex items-center justify-center text-[0.6rem] font-bold"
+        style={{ color }}
+      >
         {Math.ceil((progress / 100) * (DURATION / 1000))}
       </div>
     </div>

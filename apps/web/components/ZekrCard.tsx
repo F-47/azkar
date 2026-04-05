@@ -19,17 +19,18 @@ export default function ZekrCard({ zekr, remaining, onDecrement }: Props) {
   return (
     <Card
       className={cn(
-        "group relative border border-white/10 bg-white/5 backdrop-blur-xl transition-all duration-500 p-6 overflow-hidden shadow-[0_0_30px_rgba(59,130,246,0.03)] rounded-3xl",
-        isDone ? "opacity-60 grayscale-[0.3]" : "hover:bg-white/10 hover:scale-[1.01]"
+        "group relative border border-white/10 bg-white/5 backdrop-blur-xl transition-all duration-500 p-6 overflow-hidden shadow-[0_0_30px_rgba(59,130,246,0.03)] rounded-2xl",
+        isDone
+          ? "opacity-60 grayscale-[0.3]"
+          : "hover:bg-white/10 hover:scale-[1.01]",
       )}
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.08),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-
       <div className="relative z-10 flex flex-col gap-4">
         <p
           className={cn(
-            "arabic-text text-xl md:text-2xl leading-[2.2] mb-2 text-right whitespace-pre-line text-foreground/90 transition-all duration-500",
-            isDone && "text-muted-foreground/50"
+            "arabic-text text-xl leading-[2.2] mb-2 text-right whitespace-pre-line text-foreground/90 transition-all duration-500",
+            isDone && "text-muted-foreground/50",
           )}
           dangerouslySetInnerHTML={{
             __html: zekr.text.replace(
@@ -44,7 +45,7 @@ export default function ZekrCard({ zekr, remaining, onDecrement }: Props) {
             <div
               className={cn(
                 "h-full rounded-full transition-all duration-700 ease-out bg-primary",
-                isDone && "bg-green-500"
+                isDone && "bg-green-500",
               )}
               style={{
                 width: `${progress}%`,
@@ -60,7 +61,7 @@ export default function ZekrCard({ zekr, remaining, onDecrement }: Props) {
                 "relative h-11 px-6 rounded-2xl font-bold text-sm transition-all duration-300 select-none flex items-center justify-center gap-2 min-w-25",
                 isDone
                   ? "bg-green-500/20 text-green-400 cursor-not-allowed border border-green-500/20"
-                  : "bg-primary text-primary-foreground hover:shadow-[0_0_20px_rgba(59,130,246,0.3)] active:scale-95 group-hover:scale-105"
+                  : "bg-primary text-primary-foreground active:scale-95 group-hover:scale-105",
               )}
             >
               {isDone ? (
@@ -81,7 +82,9 @@ export default function ZekrCard({ zekr, remaining, onDecrement }: Props) {
                 <span
                   className={cn(
                     "text-2xl font-bold tabular-nums tracking-tighter",
-                    isDone ? "text-green-400" : "text-primary hover:text-blue-400 transition-colors"
+                    isDone
+                      ? "text-green-400"
+                      : "text-primary hover:text-blue-400 transition-colors",
                   )}
                 >
                   {zekr.count - remaining}
@@ -100,4 +103,3 @@ export default function ZekrCard({ zekr, remaining, onDecrement }: Props) {
     </Card>
   );
 }
-

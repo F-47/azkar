@@ -63,17 +63,23 @@ export function useAzkar() {
   }, [])
 
   useEffect(() => {
-    reloadAzkarData()
-    const handleUpdate = () => reloadAzkarData()
+    const timer = setTimeout(() => reloadAzkarData(), 0);
+    const handleUpdate = () => reloadAzkarData();
     
-    window.addEventListener('azkar-updated', handleUpdate)
-    return () => window.removeEventListener('azkar-updated', handleUpdate)
-  }, [reloadAzkarData])
+    window.addEventListener('azkar-updated', handleUpdate);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('azkar-updated', handleUpdate);
+    };
+  }, [reloadAzkarData]);
 
   useEffect(() => {
-    setMounted(true)
-    setProgress(loadProgress(category, azkar))
-  }, [category])
+    const timer = setTimeout(() => {
+      setMounted(true)
+      setProgress(loadProgress(category, azkar))
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [category, azkar]);
 
   useEffect(() => {
     if (mounted) {

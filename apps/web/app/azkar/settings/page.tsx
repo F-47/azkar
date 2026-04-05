@@ -1,32 +1,41 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   loadSettings,
-  saveSettings,
-  restartScheduler,
-  stopScheduler,
   pickRandomZekrForTest,
+  restartScheduler,
+  saveSettings,
+  stopScheduler,
   type NotificationSettings,
 } from "@/lib/notificationScheduler";
-import { sendAzkarNotification, isTauri } from "@/lib/tauri";
+import { isTauri, sendAzkarNotification } from "@/lib/tauri";
 import { checkForUpdate, installUpdate } from "@/lib/updater";
+import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
+  Bell,
+  Check,
+  Clock,
   Moon,
   PartyPopper,
+  RefreshCw,
   Settings,
   Sparkles,
   Sun,
-  Bell,
-  Clock,
-  RefreshCw,
   Zap,
 } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
@@ -46,9 +55,19 @@ export default function SettingsPage() {
   const [updateVersion, setUpdateVersion] = useState<string | null>(null);
   const [downloadProgress, setDownloadProgress] = useState(0);
 
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
-    setSettings(loadSettings());
+    const timer = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (mounted) {
+      const timer = setTimeout(() => setSettings(loadSettings()), 0);
+      return () => clearTimeout(timer);
+    }
+  }, [mounted]);
 
   async function handleTest() {
     if (!settings) return;
@@ -87,56 +106,39 @@ export default function SettingsPage() {
     setUpdateState("done");
   }
 
-  if (!settings) return null;
+  if (!mounted || !settings) return null;
 
   return (
-    <div
-      className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-500"
-      dir="rtl"
-    >
-      {/* Background patterns */}
+    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-500">
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.05),transparent_60%)]" />
-        <div className="absolute inset-0 pattern-islamic opacity-[0.03]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.1),transparent_60%)]" />
       </div>
 
-      <header className="sticky top-0 z-50 border-b border-white/5 backdrop-blur-xl">
-        <div className="absolute inset-0 bg-background/40" />
-
-        <div className="container max-w-2xl mx-auto px-4 py-4 relative">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Link href="/azkar">
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  className="rounded-xl bg-white/5 border border-white/10 text-muted-foreground hover:text-primary transition-all"
-                >
-                  <ArrowLeft className="w-5 h-5" />
-                </Button>
-              </Link>
-              <div>
-                <h1 className="text-xl font-black tracking-tight">الإعدادات</h1>
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold italic">
-                  Preferences
-                </p>
-              </div>
-            </div>
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-[0_0_15px_rgba(59,130,246,0.2)]">
-              <Settings className="w-5 h-5" />
-            </div>
+      <header className="sticky top-0 z-50 border-b border-white/5 backdrop-blur-xl px-4 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
+            <Settings className="w-5 h-5" />
           </div>
+          <h1 className="text-xl font-black tracking-tight">الإعدادات</h1>
         </div>
+        <Link href="/azkar">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="rounded-xl bg-white/5 border border-accent/20 focus-visible:ring-accent/20 focus-visible:border-accent text-muted-foreground hover:text-accent transition-all"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+        </Link>
       </header>
 
       <main className="flex-1 px-4 py-8 relative z-10">
         <div className="max-w-2xl mx-auto space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
-          <Card className="rounded-3xl p-6 border-white/10 bg-white/5 backdrop-blur-xl group overflow-hidden">
+          <Card className="rounded-xl p-6 border-white/10 bg-white/5 backdrop-blur-xl group overflow-hidden">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.03),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-
             <div className="relative z-10 flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                   <Bell className="w-6 h-6" />
                 </div>
                 <div>
@@ -146,13 +148,12 @@ export default function SettingsPage() {
                   </p>
                 </div>
               </div>
-
               <button
                 onClick={() => update({ enabled: !settings.enabled })}
                 className={cn(
                   "relative w-14 h-8 rounded-full transition-all duration-500 p-1",
                   settings.enabled
-                    ? "bg-primary shadow-[0_0_15px_rgba(59,130,246,0.5)]"
+                    ? "bg-primary"
                     : "bg-white/10 border border-white/5",
                 )}
               >
@@ -161,16 +162,15 @@ export default function SettingsPage() {
                     "w-6 h-6 rounded-full bg-white transition-all duration-500",
                     settings.enabled
                       ? "translate-x-0 shadow-lg"
-                      : "translate-x-6",
+                      : "-translate-x-6",
                   )}
                 />
               </button>
             </div>
           </Card>
-
           {settings.enabled && (
-            <div className="grid gap-4 animate-in fade-in zoom-in-95 duration-500 mt-4">
-              <Card className="rounded-3xl p-6 border-white/10 bg-white/5 backdrop-blur-xl">
+            <div className="grid gap-4 animate-in fade-in zoom-in-95 duration-500">
+              <Card className="rounded-xl p-6 border-white/10 bg-white/5 backdrop-blur-xl">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500">
@@ -178,8 +178,8 @@ export default function SettingsPage() {
                     </div>
                     <h3 className="font-bold text-sm">تكرار الإشعار</h3>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <input
+                  <div className="flex items-center gap-2">
+                    <Input
                       type="number"
                       min={1}
                       value={settings.intervalMinutes}
@@ -188,7 +188,7 @@ export default function SettingsPage() {
                           intervalMinutes: Math.max(1, Number(e.target.value)),
                         })
                       }
-                      className="w-20 py-2 rounded-xl bg-white/5 border border-white/10 text-center text-lg font-black tabular-nums focus:outline-none focus:border-primary/50 transition-all shadow-inner"
+                      className="w-16 py-4 rounded-lg bg-white/5 border border-white/10 text-center text-lg font-black tabular-nums focus:outline-none focus:border-primary transition-all"
                     />
                     <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
                       دقيقة
@@ -196,8 +196,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
               </Card>
-
-              <Card className="rounded-3xl p-6 border-white/10 bg-white/5 backdrop-blur-xl">
+              <Card className="rounded-xl p-6 border-white/10 bg-white/5 backdrop-blur-xl">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500">
                     <Sparkles className="w-5 h-5" />
@@ -206,7 +205,6 @@ export default function SettingsPage() {
                     نوع الأذكار في الإشعارات
                   </h3>
                 </div>
-
                 <div className="grid grid-cols-3 gap-5">
                   {[
                     {
@@ -241,13 +239,16 @@ export default function SettingsPage() {
                           })
                         }
                         className={cn(
-                          "flex flex-col items-center justify-center gap-2 py-4 px-2 rounded-2xl transition-all duration-300 border active:scale-95",
+                          "flex flex-col items-center justify-center gap-2 py-4 px-2 rounded-lg transition-all duration-300 border active:scale-95",
                           active
-                            ? "bg-primary border-primary text-primary-foreground shadow-lg scale-105"
+                            ? cn(
+                                "border-primary/50 bg-primary/5 shadow-md scale-105",
+                                opt.color,
+                              )
                             : "bg-white/5 border-white/5 text-muted-foreground hover:bg-white/10 hover:border-white/10",
                         )}
                       >
-                        <Icon className={cn("w-5 h-5", !active && opt.color)} />
+                        <Icon className={cn("w-5 h-5", opt.color)} />
                         <span className="text-[10px] font-black uppercase tracking-widest">
                           {opt.label}
                         </span>
@@ -256,9 +257,8 @@ export default function SettingsPage() {
                   })}
                 </div>
               </Card>
-
-              <Card className="rounded-3xl p-6 border-white/10 bg-white/5 backdrop-blur-xl">
-                <div className="flex items-center gap-4 mb-5">
+              <Card className="rounded-xl p-6 border-white/10 bg-white/5 backdrop-blur-xl">
+                <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center text-green-500">
                     <Clock className="w-5 h-5" />
                   </div>
@@ -266,78 +266,86 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5 px-1">
+                  <div className="flex flex-col gap-2">
                     <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
                       من الساعة
                     </label>
-                    <div className="relative">
-                      <select
-                        value={settings.activeStart}
-                        onChange={(e) =>
-                          update({ activeStart: Number(e.target.value) })
-                        }
-                        className="w-full py-3 px-4 rounded-2xl bg-white/5 border border-white/10 text-sm font-bold focus:outline-none focus:border-primary/50 transition-all appearance-none cursor-pointer"
-                      >
+                    <Select
+                      value={String(settings.activeStart)}
+                      onValueChange={(value) =>
+                        update({ activeStart: Number(value) })
+                      }
+                    >
+                      <SelectTrigger className="w-full py-3 px-4 rounded-xl bg-white/5 border border-white/10 text-sm font-bold focus:outline-none focus:border-primary/50 transition-all">
+                        <SelectValue placeholder="Select time" />
+                      </SelectTrigger>
+
+                      <SelectContent>
                         {HOURS.map((h) => (
-                          <option key={h} value={h}>
+                          <SelectItem key={h} value={String(h)}>
                             {formatHour(h)}
-                          </option>
+                          </SelectItem>
                         ))}
-                      </select>
-                      <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
-                        <Sun className="w-4 h-4" />
-                      </div>
-                    </div>
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <div className="space-y-1.5 px-1">
+                  <div className="flex flex-col gap-2">
                     <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
                       إلى الساعة
                     </label>
-                    <div className="relative">
-                      <select
-                        value={settings.activeEnd}
-                        onChange={(e) =>
-                          update({ activeEnd: Number(e.target.value) })
-                        }
-                        className="w-full py-3 px-4 rounded-2xl bg-white/5 border border-white/10 text-sm font-bold focus:outline-none focus:border-primary/50 transition-all appearance-none cursor-pointer"
-                      >
+                    <Select
+                      value={String(settings.activeEnd)}
+                      onValueChange={(value) =>
+                        update({ activeEnd: Number(value) })
+                      }
+                    >
+                      <SelectTrigger className="w-full py-3 px-4 rounded-xl bg-white/5 border border-white/10 text-sm font-bold focus:outline-none focus:border-primary/50 transition-all">
+                        <SelectValue placeholder="Select time" />
+                      </SelectTrigger>
+
+                      <SelectContent>
                         {HOURS.map((h) => (
-                          <option key={h} value={h}>
+                          <SelectItem key={h} value={String(h)}>
                             {formatHour(h)}
-                          </option>
+                          </SelectItem>
                         ))}
-                      </select>
-                      <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
-                        <Moon className="w-4 h-4" />
-                      </div>
-                    </div>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
-                <p className="text-[10px] items-center flex gap-1.5 mt-4 text-muted-foreground/60 bg-white/5 p-2 rounded-lg border border-white/5">
+                <p className="text-xs items-center flex gap-1.5 mt-4 text-muted-foreground/60 bg-white/5 p-2 rounded-lg border border-white/5">
                   <Zap className="w-3 h-3 text-amber-500" />
                   <span>لن تظهر إشعارات خارج هذا النطاق الزمني</span>
                 </p>
               </Card>
             </div>
           )}
-
-          <div className="pt-4 grid gap-4">
+          <div className="grid gap-4">
             <Button
               onClick={handleTest}
               disabled={testing}
-              variant="outline"
               className={cn(
-                "h-14 rounded-3xl text-sm font-black uppercase tracking-widest border-2 transition-all active:scale-[0.98]",
+                "h-14 rounded-xl text-sm font-black tracking-widest transition-all duration-300 active:scale-[0.97] flex items-center justify-center gap-3 border",
                 testing
-                  ? "bg-green-500/10 text-green-500 border-green-500/20"
-                  : "bg-white/5 border-white/10 text-primary hover:bg-white/10 hover:border-primary/30",
+                  ? "bg-primary/10 text-primary border-primary/20"
+                  : "bg-white/5 text-white hover:bg-primary/5 hover:border-primary/20",
               )}
             >
-              {testing ? "✓ تم إرسال إشعار التجربة" : "🔔 اختبار إشعار الآن"}
+              {testing ? (
+                <>
+                  تم إرسال إشعار التجربة
+                  <Check className="w-5 h-5" />
+                </>
+              ) : (
+                <>
+                  <Bell className="w-5 h-5" />
+                  اختبار إشعار الآن
+                </>
+              )}
             </Button>
 
             {isTauri() && (
-              <Card className="rounded-3xl p-6 border-white/5 bg-white/5 backdrop-blur-sm">
+              <Card className="rounded-xl p-6 border-white/5 bg-white/5 backdrop-blur-sm">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-bold text-sm tracking-tight">
                     تحديثات التطبيق
@@ -349,7 +357,7 @@ export default function SettingsPage() {
                   <Button
                     onClick={handleCheckUpdate}
                     variant="ghost"
-                    className="w-full h-11 rounded-2xl bg-white/5 border border-white/5 text-xs font-bold hover:bg-white/10"
+                    className="w-full h-11 rounded-xl bg-white/5 border border-white/5 text-xs font-bold hover:bg-white/10"
                   >
                     التحقق من التحديثات
                   </Button>
@@ -364,7 +372,7 @@ export default function SettingsPage() {
                 )}
                 {updateState === "available" && (
                   <div className="space-y-4">
-                    <div className="flex items-center gap-3 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-500">
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500">
                       <PartyPopper className="w-5 h-5" />
                       <span className="text-xs font-bold">
                         يتوفر إصدار جديد: {updateVersion}
@@ -372,7 +380,7 @@ export default function SettingsPage() {
                     </div>
                     <Button
                       onClick={handleInstallUpdate}
-                      className="w-full h-12 rounded-2xl bg-amber-500 text-white font-black shadow-lg shadow-amber-500/20"
+                      className="w-full h-12 rounded-xl bg-amber-500 text-white font-black shadow-lg shadow-amber-500/20"
                     >
                       تحميل وتثبيت التحديث
                     </Button>
@@ -397,7 +405,7 @@ export default function SettingsPage() {
                   </div>
                 )}
                 {updateState === "done" && (
-                  <div className="p-3 rounded-2xl bg-green-500/10 border border-green-500/20 text-green-500 flex items-center gap-3">
+                  <div className="p-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-500 flex items-center gap-3">
                     <Zap className="w-5 h-5 animate-pulse" />
                     <span className="text-xs font-bold">
                       ✓ تم التحديث. أعد تشغيل التطبيق.
@@ -410,13 +418,20 @@ export default function SettingsPage() {
             <Button
               onClick={handleSave}
               className={cn(
-                "h-16 rounded-3xl text-lg font-black shadow-2xl transition-all active:scale-[0.98] mt-4 mb-10",
+                "h-12 rounded-xl text-base font-black transition-all active:scale-[0.98] mb-10",
                 saved
-                  ? "bg-green-500 text-white shadow-green-500/30"
-                  : "bg-primary text-primary-foreground shadow-primary/40 hover:shadow-primary/60",
+                  ? "bg-primary/10 hover:bg-primary/15 text-primary"
+                  : "bg-primary/80 text-primary-foreground shadow-primary/40",
               )}
             >
-              {saved ? "✓ تم حفظ الإعدادات بنجاح" : "حفظ الكل"}
+              {saved ? (
+                <>
+                  تم حفظ الإعدادات
+                  <Check className="w-5 h-5" />
+                </>
+              ) : (
+                "حفظ الكل"
+              )}
             </Button>
           </div>
         </div>
