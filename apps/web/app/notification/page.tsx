@@ -13,7 +13,6 @@ interface NotificationData {
 
 export default function NotificationPage() {
   const [data, setData] = useState<NotificationData | null>(null);
-  const [settings, setSettings] = useState(() => loadSettings());
   const [progress, setProgress] = useState(100);
   const rafRef = useRef<number | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -34,7 +33,6 @@ export default function NotificationPage() {
         cancelAnimationFrame(rafRef.current);
         rafRef.current = null;
       }
-      setSettings(loadSettings());
       setData({ title, body });
       setProgress(100);
 
@@ -77,49 +75,33 @@ export default function NotificationPage() {
     invoke("resize_notification", { height }).catch(() => {});
   }, [data]);
 
-  const theme = settings.theme;
-
   if (!data) return null;
 
   return (
     <div
       dir="rtl"
       ref={cardRef}
-      className="flex flex-col rounded-xl cursor-pointer overflow-hidden border"
-      style={{ borderColor: theme.borderColor }}
+      className="flex flex-col rounded-xl cursor-pointer overflow-hidden border border-[#15803d20]"
       onClick={hideWindow}
     >
       <div
         data-tauri-drag-region
-        className="flex items-center justify-between px-4 py-2"
-        style={{
-          background: `linear-gradient(to right, ${theme.primaryColor}, ${theme.secondaryColor})`,
-        }}
+        className="flex items-center justify-between px-4 py-2 bg-gradient-to-r from-[#064e3b] to-[#15803d]"
       >
-        <span
-          className="text-sm font-bold pointer-events-none"
-          style={{ color: theme.titleColor }}
-        >
+        <span className="text-sm font-bold pointer-events-none text-white">
           {data.title}
         </span>
 
-        <CircularProgress
-          progress={progress}
-          color={theme.titleColor}
-        />
+        <CircularProgress progress={progress} color="#ffffff" />
       </div>
 
       <p
-        className="p-4 arabic-text w-full whitespace-pre-line text-start text-base"
-        style={{
-          backgroundColor: theme.backgroundColor,
-          color: theme.textColor,
-          fontFamily: theme.fontFamily,
-        }}
+        className="p-4 arabic-text w-full whitespace-pre-line text-start text-base bg-white text-[#1a1a1a]"
+        style={{ fontFamily: "'Noto Naskh Arabic', serif" }}
         dangerouslySetInnerHTML={{
           __html: data.body.replace(
             /۝([\u0660-\u0669]+)/g,
-            `<span class="inline-flex items-center justify-center text-sm font-bold rounded-full w-6 h-6 align-middle font-serif border" style="background-color: ${theme.primaryColor}20; color: ${theme.primaryColor}; border-color: ${theme.primaryColor}20">$1</span>`,
+            `<span class="inline-flex items-center justify-center text-sm font-bold rounded-full w-6 h-6 align-middle font-serif border bg-[#064e3b20] text-[#064e3b] border-[#064e3b20]">$1</span>`,
           ),
         }}
       />
@@ -173,7 +155,7 @@ function CircularProgress({
       </svg>
 
       <div
-        className="absolute top-0 inset-s-0 size-full flex items-center justify-center text-[0.6rem] font-bold"
+        className="absolute top-0 inset-0 size-full flex items-center justify-center text-[0.6rem] font-bold"
         style={{ color }}
       >
         {Math.ceil((progress / 100) * (DURATION / 1000))}

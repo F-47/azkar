@@ -4,23 +4,12 @@ import type { Zekr, Category } from "@/types";
 
 const SETTINGS_KEY = "azkar-notification-settings";
 
-export interface NotificationTheme {
-  primaryColor: string;
-  secondaryColor: string;
-  backgroundColor: string;
-  textColor: string;
-  titleColor: string;
-  borderColor: string;
-  fontFamily: string;
-}
-
 export interface NotificationSettings {
   enabled: boolean;
   intervalMinutes: number;
   activeStart: number;
   activeEnd: number;
   category: Category | "both";
-  theme: NotificationTheme;
 }
 
 export const DEFAULT_SETTINGS: NotificationSettings = {
@@ -29,15 +18,6 @@ export const DEFAULT_SETTINGS: NotificationSettings = {
   activeStart: 6,
   activeEnd: 22,
   category: "both",
-  theme: {
-    primaryColor: "#064e3b", // green-900
-    secondaryColor: "#15803d", // green-700
-    backgroundColor: "#ffffff",
-    textColor: "#1a1a1a",
-    titleColor: "#ffffff",
-    borderColor: "#15803d20",
-    fontFamily: "Noto Naskh Arabic",
-  },
 };
 
 export const INTERVAL_OPTIONS = [
