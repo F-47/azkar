@@ -203,6 +203,7 @@ pub fn run() {
     tauri::Builder::default()
         .manage(Mutex::new(SchedulerState::default()))
         .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             if let Some(win) = app.get_webview_window("main") {
                 let _ = win.show();

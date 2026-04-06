@@ -15,3 +15,13 @@ export async function sendAzkarNotification(body: string): Promise<void> {
 export async function requestNotificationPermission(): Promise<boolean> {
   return isTauri()
 }
+
+export async function relaunchApp(): Promise<void> {
+  if (!isTauri()) return
+  try {
+    const { relaunch } = await import('@tauri-apps/plugin-process')
+    await relaunch()
+  } catch (e) {
+    console.error('Failed to relaunch:', e)
+  }
+}

@@ -20,6 +20,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect } from "react";
+import UpdateNotifier from "@/components/UpdateNotifier";
 
 export default function AzkarPage() {
   const {
@@ -41,6 +42,7 @@ export default function AzkarPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-500">
+      <UpdateNotifier />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.1),transparent_60%)]" />
       <header className="sticky top-0 z-20 border-b border-white/5 backdrop-blur-2xl">
         <div className="px-4 py-4 relative">

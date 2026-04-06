@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import type { Category, Zekr, ProgressMap } from '@/types'
 import { getActiveAzkars } from '@/lib/azkarStore'
 
@@ -68,7 +68,7 @@ export function useAzkar() {
   const [mounted, setMounted] = useState(false)
   const [azkarData, setAzkarData] = useState<Zekr[]>([])
 
-  const azkar = azkarData.filter((z) => z.category === category)
+  const azkar = useMemo(() => azkarData.filter((z) => z.category === category), [azkarData, category])
 
   const reloadAzkarData = useCallback(() => {
     setAzkarData(getActiveAzkars())
@@ -85,13 +85,15 @@ export function useAzkar() {
     };
   }, [reloadAzkarData]);
 
+  const lastCategoryRef = useRef(category)
   useEffect(() => {
-    const timer = setTimeout(() => {
+    // Only reload progress if the category changed or it's the first mount
+    if (!mounted || category !== lastCategoryRef.current) {
       setMounted(true)
       setProgress(loadProgress(category, azkar))
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [category, azkar]);
+      lastCategoryRef.current = category
+    }
+  }, [category, azkar, mounted]);
 
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
