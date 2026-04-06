@@ -1,5 +1,6 @@
 {
   "name": "azkar-monorepo",
+  "version": "0.1.0",
   "private": true,
   "workspaces": ["apps/web", "apps/desktop"],
   "scripts": {
