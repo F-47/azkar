@@ -40,6 +40,34 @@ struct SchedulerSettings {
 // ---------------------------------------------------------------------------
 
 async fn trigger_notification(app: &tauri::AppHandle, body: String) -> Result<(), String> {
+    // Lazy-create the notification window on first use to avoid loading
+    // a second WebView2 process until notifications are actually needed.
+    if app.get_webview_window("notification").is_none() {
+        #[cfg(debug_assertions)]
+        let notif_url = tauri::WebviewUrl::External(
+            "http://localhost:3000/notification".parse().unwrap(),
+        );
+        #[cfg(not(debug_assertions))]
+        let notif_url = tauri::WebviewUrl::App("notification/index.html".into());
+
+        tauri::WebviewWindowBuilder::new(app, "notification", notif_url)
+            .title("")
+            .inner_size(NOTIF_WIDTH, NOTIF_DEFAULT_HEIGHT)
+            .visible(false)
+            .decorations(false)
+            .transparent(true)
+            .always_on_top(true)
+            .resizable(false)
+            .skip_taskbar(true)
+            .focused(false)
+            .shadow(false)
+            .build()
+            .map_err(|e| e.to_string())?;
+
+        // Give the webview time to load before calling eval on it.
+        tokio::time::sleep(std::time::Duration::from_millis(1500)).await;
+    }
+
     let win = app
         .get_webview_window("notification")
         .ok_or_else(|| "notification window not found".to_string())?;
@@ -188,28 +216,6 @@ pub fn run() {
             configure_scheduler
         ])
         .setup(|app| {
-            // Pre-create the notification window hidden so it loads in the background.
-            // Dev uses the Next.js dev server; production uses the static export.
-            #[cfg(debug_assertions)]
-            let notif_url = tauri::WebviewUrl::External(
-                "http://localhost:3000/notification".parse().unwrap(),
-            );
-            #[cfg(not(debug_assertions))]
-            let notif_url = tauri::WebviewUrl::App("notification/index.html".into());
-
-            tauri::WebviewWindowBuilder::new(app, "notification", notif_url)
-                .title("")
-                .inner_size(NOTIF_WIDTH, NOTIF_DEFAULT_HEIGHT)
-                .visible(false)
-                .decorations(false)
-                .transparent(true)
-                .always_on_top(true)
-                .resizable(false)
-                .skip_taskbar(true)
-                .focused(false)
-                .shadow(false)
-                .build()?;
-
             let window = app.get_webview_window("main").unwrap();
 
             // Hide to tray instead of closing

@@ -5,6 +5,9 @@ const nextConfig = {
     unoptimized: true,
   },
   trailingSlash: true,
+  experimental: {
+    optimizePackageImports: ["lucide-react", "framer-motion"],
+  },
 };
 
 module.exports = nextConfig;

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import type { Category, Zekr, ProgressMap } from '@/types'
 import { getActiveAzkars } from '@/lib/azkarStore'
 
@@ -93,9 +93,16 @@ export function useAzkar() {
     return () => clearTimeout(timer);
   }, [category, azkar]);
 
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   useEffect(() => {
-    if (mounted) {
+    if (!mounted) return
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
+    saveTimerRef.current = setTimeout(() => {
       saveProgress(category, progress)
+    }, 300)
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
     }
   }, [progress, category, mounted])
 

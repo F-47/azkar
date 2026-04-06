@@ -78,7 +78,6 @@ export default function NotificationPage() {
 
   return (
     <div
-      dir="rtl"
       ref={cardRef}
       className="flex flex-col rounded-xl cursor-pointer overflow-hidden border border-[#15803d20]"
       onClick={hideWindow}
