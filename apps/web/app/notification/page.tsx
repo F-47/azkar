@@ -17,6 +17,10 @@ export default function NotificationPage() {
   const cardRef = useRef<HTMLDivElement>(null);
 
   async function hideWindow() {
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
     try {
       await invoke("hide_notification");
     } catch {}
@@ -79,13 +83,10 @@ export default function NotificationPage() {
   return (
     <div
       ref={cardRef}
-      className="flex flex-col rounded-xl cursor-pointer overflow-hidden border border-[#15803d20]"
+      className="flex flex-col rounded-xl cursor-pointer overflow-hidden border border-[#15803d20] transition-all duration-200 hover:scale-[1.02] hover:shadow-xl active:scale-[0.98] ring-1 ring-white/10"
       onClick={hideWindow}
     >
-      <div
-        data-tauri-drag-region
-        className="flex items-center justify-between px-4 py-2 bg-gradient-to-r from-[#064e3b] to-[#15803d]"
-      >
+      <div className="flex items-center justify-between px-4 py-2 bg-gradient-to-r from-[#064e3b] to-[#15803d]">
         <span className="text-sm font-bold pointer-events-none text-white">
           {data.title}
         </span>
