@@ -11,13 +11,14 @@ import {
   stopScheduler,
   type NotificationSettings,
 } from "@/lib/notificationScheduler";
-import { isTauri, sendAzkarNotification } from "@/lib/tauri";
+import { getAppVersion, isTauri, sendAzkarNotification } from "@/lib/tauri";
 import { checkForUpdate, installUpdate } from "@/lib/updater";
 import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
   Bell,
   Check,
+  CheckCircle2,
   Loader2,
   Moon,
   PartyPopper,
@@ -35,15 +36,19 @@ export default function SettingsPage() {
   const [saved, setSaved] = useState(false);
   const [testing, setTesting] = useState(false);
   const [updateState, setUpdateState] = useState<
-    "idle" | "checking" | "available" | "downloading" | "done"
+    "idle" | "checking" | "available" | "downloading" | "done" | "latest"
   >("idle");
   const [updateVersion, setUpdateVersion] = useState<string | null>(null);
   const [downloadProgress, setDownloadProgress] = useState(0);
+  const [appVersion, setAppVersion] = useState<string>("...");
 
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setMounted(true), 0);
+    const timer = setTimeout(() => {
+      setMounted(true);
+      getAppVersion().then(setAppVersion);
+    }, 0);
     return () => clearTimeout(timer);
   }, []);
 
@@ -81,7 +86,10 @@ export default function SettingsPage() {
     if (version) {
       setUpdateVersion(version);
       setUpdateState("available");
-    } else setUpdateState("idle");
+    } else {
+      setUpdateState("latest");
+      setTimeout(() => setUpdateState("idle"), 3000);
+    }
   }
 
   async function handleInstallUpdate() {
@@ -285,7 +293,7 @@ export default function SettingsPage() {
                     <div>
                       <h3 className="font-bold text-base">تحديثات التطبيق</h3>
                       <p className="text-xs text-muted-foreground/60">
-                        الإصدار الحالي: 3.1.9
+                        الإصدار الحالي: {appVersion}
                       </p>
                     </div>
                   </div>
@@ -298,6 +306,15 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="relative z-10">
+                  {updateState === "latest" && (
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-500 animate-in zoom-in-95 duration-300">
+                      <CheckCircle2 className="w-5 h-5 shrink-0" />
+                      <span className="text-xs font-bold leading-none">
+                        أنت تستخدم أحدث إصدار بالفعل!
+                      </span>
+                    </div>
+                  )}
+
                   {updateState === "idle" && (
                     <Button
                       onClick={handleCheckUpdate}
