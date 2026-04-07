@@ -11,6 +11,12 @@ import {
   stopScheduler,
   type NotificationSettings,
 } from "@/lib/notificationScheduler";
+import {
+  loadCoords,
+  requestCoords,
+  saveCoords,
+  type SavedCoords,
+} from "@/lib/prayerTimes";
 import { getAppVersion, isTauri, sendAzkarNotification } from "@/lib/tauri";
 import { checkForUpdate, installUpdate } from "@/lib/updater";
 import { cn } from "@/lib/utils";
@@ -19,6 +25,7 @@ import {
   Bell,
   Check,
   CheckCircle2,
+  Clock,
   Loader2,
   Moon,
   PartyPopper,
@@ -43,14 +50,30 @@ export default function SettingsPage() {
   const [appVersion, setAppVersion] = useState<string>("...");
 
   const [mounted, setMounted] = useState(false);
+  const [coords, setCoords] = useState<SavedCoords | null>(null);
+  const [locating, setLocating] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setMounted(true);
       getAppVersion().then(setAppVersion);
+      setCoords(loadCoords());
     }, 0);
     return () => clearTimeout(timer);
   }, []);
+
+  async function handleTogglePrayerTimes() {
+    if (!settings) return;
+    const turningOn = !settings.usePrayerTimes;
+    if (turningOn && !coords) {
+      setLocating(true);
+      const c = await requestCoords();
+      saveCoords(c);
+      setCoords(c);
+      setLocating(false);
+    }
+    update({ usePrayerTimes: turningOn });
+  }
 
   useEffect(() => {
     if (mounted) {
@@ -161,6 +184,7 @@ export default function SettingsPage() {
               </button>
             </div>
           </Card>
+
           {settings.enabled && (
             <div className="grid gap-4 animate-in fade-in zoom-in-95 duration-500">
               <Card className="rounded-xl p-6 border-white/10 bg-white/5 backdrop-blur-xl">
@@ -189,67 +213,115 @@ export default function SettingsPage() {
                   </div>
                 </div>
               </Card>
-              <Card className="rounded-xl p-6 border-white/10 bg-white/5 backdrop-blur-xl">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500">
-                    <Sparkles className="w-5 h-5" />
-                  </div>
-                  <h3 className="font-bold text-sm">
-                    نوع الأذكار في الإشعارات
-                  </h3>
-                </div>
-                <div className="grid grid-cols-3 gap-5">
-                  {[
-                    {
-                      label: "الصباح",
-                      value: "morning",
-                      icon: Sun,
-                      color: "text-amber-500",
-                    },
-                    {
-                      label: "المساء",
-                      value: "evening",
-                      icon: Moon,
-                      color: "text-blue-400",
-                    },
-                    {
-                      label: "الكل",
-                      value: "both",
-                      icon: Sparkles,
-                      color: "text-purple-400",
-                    },
-                  ].map((opt) => {
-                    const Icon = opt.icon;
-                    const active = settings.category === opt.value;
 
-                    return (
-                      <button
-                        key={opt.value}
-                        onClick={() =>
-                          update({
-                            category:
-                              opt.value as NotificationSettings["category"],
-                          })
-                        }
+              <Card className="rounded-xl p-5 border-white/10 bg-white/5 backdrop-blur-xl">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center text-teal-500">
+                      <Clock className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-sm">
+                        بناءً على أوقات الصلاة
+                      </h3>
+                      <p className="text-[10px] text-muted-foreground/70 mt-0.5">
+                        الصباح من الفجر • المساء من العصر حتى الفجر
+                      </p>
+                      {coords && (
+                        <p className="text-[10px] text-teal-500/70 mt-0.5">
+                          {coords.source === "gps"
+                            ? "موقع GPS"
+                            : "تقدير من المنطقة الزمنية"}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleTogglePrayerTimes}
+                    disabled={locating}
+                    className={cn(
+                      "relative w-14 h-8 rounded-full transition-all duration-500 p-1 shrink-0",
+                      settings.usePrayerTimes
+                        ? "bg-primary"
+                        : "bg-white/10 border border-white/5",
+                    )}
+                  >
+                    {locating ? (
+                      <Loader2 className="w-5 h-5 animate-spin text-primary mx-auto" />
+                    ) : (
+                      <div
                         className={cn(
-                          "flex flex-col items-center justify-center gap-2 py-4 px-2 rounded-lg transition-all duration-300 border active:scale-95",
-                          active
-                            ? cn(
-                                "border-primary/50 bg-primary/5 shadow-md scale-105",
-                                opt.color,
-                              )
-                            : "bg-white/5 border-white/5 text-muted-foreground hover:bg-white/10 hover:border-white/10",
+                          "w-6 h-6 rounded-full bg-white transition-all duration-500",
+                          settings.usePrayerTimes
+                            ? "translate-x-0 shadow-lg"
+                            : "-translate-x-6",
                         )}
-                      >
-                        <Icon className={cn("w-5 h-5", opt.color)} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">
-                          {opt.label}
-                        </span>
-                      </button>
-                    );
-                  })}
+                      />
+                    )}
+                  </button>
                 </div>
               </Card>
+
+              {!settings.usePrayerTimes && (
+                <Card className="rounded-xl p-6 border-white/10 bg-white/5 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-300">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500">
+                      <Sparkles className="w-5 h-5" />
+                    </div>
+                    <h3 className="font-bold text-sm">نوع الأذكار</h3>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    {[
+                      {
+                        label: "الصباح",
+                        value: "morning",
+                        icon: Sun,
+                        color: "text-amber-500",
+                      },
+                      {
+                        label: "المساء",
+                        value: "evening",
+                        icon: Moon,
+                        color: "text-blue-400",
+                      },
+                      {
+                        label: "الكل",
+                        value: "both",
+                        icon: Sparkles,
+                        color: "text-purple-400",
+                      },
+                    ].map((opt) => {
+                      const Icon = opt.icon;
+                      const active = settings.category === opt.value;
+                      return (
+                        <button
+                          key={opt.value}
+                          onClick={() =>
+                            update({
+                              category:
+                                opt.value as NotificationSettings["category"],
+                            })
+                          }
+                          className={cn(
+                            "flex flex-col items-center justify-center gap-2 py-4 px-2 rounded-lg transition-all duration-300 border active:scale-95",
+                            active
+                              ? cn(
+                                  "border-primary/50 bg-primary/5 shadow-md scale-105",
+                                  opt.color,
+                                )
+                              : "bg-white/5 border-white/5 text-muted-foreground hover:bg-white/10 hover:border-white/10",
+                          )}
+                        >
+                          <Icon className={cn("w-5 h-5", opt.color)} />
+                          <span className="text-[10px] font-black uppercase tracking-widest">
+                            {opt.label}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </Card>
+              )}
             </div>
           )}
           <div className="grid gap-4">

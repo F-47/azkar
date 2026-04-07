@@ -1,29 +1,58 @@
-import { isTauri, sendAzkarNotification } from "./tauri";
 import { getNotificationAzkars } from "@/lib/azkarStore";
+import { getTodayPrayerWindows, loadCoords } from "@/lib/prayerTimes";
 import type { Category } from "@/types";
+import { isTauri, sendAzkarNotification } from "./tauri";
 
 const SETTINGS_KEY = "azkar-notification-settings";
+
+interface TimeWindow {
+  start: string;
+  end: string;
+}
 
 export interface NotificationSettings {
   enabled: boolean;
   intervalMinutes: number;
   category: Category | "both";
+  usePrayerTimes: boolean;
 }
 
 export const DEFAULT_SETTINGS: NotificationSettings = {
   enabled: false,
   intervalMinutes: 30,
   category: "both",
+  usePrayerTimes: false,
 };
 
-export const INTERVAL_OPTIONS = [
-  { label: "كل ٥ دقائق", value: 5 },
-  { label: "كل ١٥ دقيقة", value: 15 },
-  { label: "كل ٣٠ دقيقة", value: 30 },
-  { label: "كل ساعة", value: 60 },
-  { label: "كل ساعتين", value: 120 },
-  { label: "كل ٣ ساعات", value: 180 },
-];
+const FALLBACK_PRAYER_WINDOWS = {
+  morning: { start: "04:30", end: "11:59" },
+  evening: { start: "15:30", end: "04:29" },
+};
+
+function getPrayerWindows(): { morning: TimeWindow; evening: TimeWindow } {
+  const coords = loadCoords();
+  if (!coords) return FALLBACK_PRAYER_WINDOWS;
+
+  const times = getTodayPrayerWindows(coords);
+  if (!times) return FALLBACK_PRAYER_WINDOWS;
+
+  const [fh, fm] = times.fajr.split(":").map(Number);
+  const [ah, am] = times.asr.split(":").map(Number);
+
+  const asrMinus1 =
+    am === 0
+      ? `${String(ah - 1).padStart(2, "0")}:59`
+      : `${String(ah).padStart(2, "0")}:${String(am - 1).padStart(2, "0")}`;
+  const fajrMinus1 =
+    fm === 0
+      ? `${String(fh === 0 ? 23 : fh - 1).padStart(2, "0")}:59`
+      : `${String(fh).padStart(2, "0")}:${String(fm - 1).padStart(2, "0")}`;
+
+  return {
+    morning: { start: times.fajr, end: asrMinus1 },
+    evening: { start: times.asr, end: fajrMinus1 },
+  };
+}
 
 export function loadSettings(): NotificationSettings {
   if (typeof window === "undefined") return DEFAULT_SETTINGS;
@@ -39,6 +68,35 @@ export function loadSettings(): NotificationSettings {
 export function saveSettings(settings: NotificationSettings): void {
   if (typeof window === "undefined") return;
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+}
+
+function isInWindow(window: TimeWindow): boolean {
+  const now = new Date();
+  const cur = now.getHours() * 60 + now.getMinutes();
+  const [sh, sm] = window.start.split(":").map(Number);
+  const [eh, em] = window.end.split(":").map(Number);
+  const start = sh * 60 + sm;
+  const end = eh * 60 + em;
+
+  return start <= end ? cur >= start && cur <= end : cur >= start || cur <= end;
+}
+
+function getEffectiveCategory(
+  settings: NotificationSettings,
+): Category | "both" | null {
+  if (!settings.usePrayerTimes) return settings.category;
+
+  const { category } = settings;
+  const windows = getPrayerWindows();
+  const inMorning = isInWindow(windows.morning);
+  const inEvening = isInWindow(windows.evening);
+
+  if (category === "morning") return inMorning ? "morning" : null;
+  if (category === "evening") return inEvening ? "evening" : null;
+
+  if (inMorning) return "morning";
+  if (inEvening) return "evening";
+  return null;
 }
 
 function pickRandomZekr(category: Category | "both") {
@@ -103,7 +161,9 @@ function startJsTimer(settings: NotificationSettings): void {
         stopJsTimer();
         return;
       }
-      const zekr = pickRandomZekr(current.category);
+      const effectiveCategory = getEffectiveCategory(current);
+      if (!effectiveCategory) return;
+      const zekr = pickRandomZekr(effectiveCategory);
       if (zekr) await sendAzkarNotification(formatForNotification(zekr.text));
     },
     settings.intervalMinutes * 60 * 1000,
@@ -114,7 +174,7 @@ export async function startScheduler(): Promise<void> {
   stopJsTimer();
   const settings = loadSettings();
 
-  if (isTauri()) {
+  if (isTauri() && !settings.usePrayerTimes) {
     await configureRustScheduler(settings);
   } else {
     startJsTimer(settings);
