@@ -2,12 +2,12 @@
 
 import { invoke } from "@tauri-apps/api/core";
 import { useEffect, useRef, useState } from "react";
-
-const DURATION = 6000;
+import { calculateZekrDuration } from "@/lib/azkarUtils";
 
 interface NotificationData {
   title: string;
   body: string;
+  duration: number;
 }
 
 export default function NotificationPage() {
@@ -31,19 +31,25 @@ export default function NotificationPage() {
     document.body.style.background = "transparent";
     document.documentElement.setAttribute("dir", "rtl");
 
-    function trigger(title: string, body: string) {
+    function trigger(title: string, body: string, duration?: number) {
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current);
         rafRef.current = null;
       }
-      setData({ title, body });
+
+      const effectiveDuration =
+        !duration || duration === 6000
+          ? calculateZekrDuration(body) * 1000
+          : duration;
+
+      setData({ title, body, duration: effectiveDuration });
       setProgress(100);
 
       const start = Date.now();
       function tick() {
         const elapsed = Date.now() - start;
-        setProgress(Math.max(0, 100 - (elapsed / DURATION) * 100));
-        if (elapsed < DURATION) {
+        setProgress(Math.max(0, 100 - (elapsed / effectiveDuration) * 100));
+        if (elapsed < effectiveDuration) {
           rafRef.current = requestAnimationFrame(tick);
         } else {
           rafRef.current = null;
@@ -63,7 +69,7 @@ export default function NotificationPage() {
     const pending = win.__pendingNotif;
     if (pending) {
       delete win.__pendingNotif;
-      trigger(pending.title, pending.body);
+      trigger(pending.title, pending.body, pending.duration);
     }
 
     return () => {
@@ -91,7 +97,11 @@ export default function NotificationPage() {
           {data.title}
         </span>
 
-        <CircularProgress progress={progress} color="#ffffff" />
+        <CircularProgress
+          progress={progress}
+          color="#ffffff"
+          duration={data.duration}
+        />
       </div>
 
       <p
@@ -111,9 +121,11 @@ export default function NotificationPage() {
 function CircularProgress({
   progress,
   color,
+  duration,
 }: {
   progress: number;
   color: string;
+  duration: number;
 }) {
   const size = 28;
   const stroke = 3;
@@ -157,7 +169,7 @@ function CircularProgress({
         className="absolute top-0 inset-0 size-full flex items-center justify-center text-[0.6rem] font-bold"
         style={{ color }}
       >
-        {Math.ceil((progress / 100) * (DURATION / 1000))}
+        {Math.ceil((progress / 100) * (duration / 1000))}
       </div>
     </div>
   );
