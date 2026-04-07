@@ -9,7 +9,6 @@ export default function Home() {
   return (
     <div className="min-h-screen text-foreground">
       <LandingPage />
-
       <section className="py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-linear-to-r from-accent/8 via-transparent to-accent/8" />
         <div className="container mx-auto px-4 relative z-10">
