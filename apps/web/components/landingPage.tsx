@@ -35,6 +35,7 @@ function LandingPage() {
             <Zikr text="لَا إِلَهَ إِلَّا اللَّهُ" />
             <Zikr text="الْحَمْدُ لِلَّهِ" />
             <Zikr text="اللَّهُ أَكْبَرُ" />
+            <Zikr text="لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ" />
           </OrbitingCircles>
         </div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.18),transparent_65%)]" />
