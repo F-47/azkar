@@ -2,7 +2,10 @@
   "name": "azkar-monorepo",
   "version": "0.1.0",
   "private": true,
-  "workspaces": ["apps/web", "apps/desktop"],
+  "workspaces": [
+    "apps/web",
+    "apps/desktop"
+  ],
   "scripts": {
     "dev": "npm run dev --workspace=apps/desktop",
     "dev:web": "npm run dev --workspace=apps/web",
@@ -12,5 +15,8 @@
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "dompurify": "^3.3.3"
   }
 }

@@ -1,35 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
-import {
-  ArrowLeft,
-  Plus,
-  Trash2,
-  ListChecks,
-  Bell,
-  BellOff,
-  X,
-  PlusCircle,
-  Eye,
-  EyeOff,
-} from "lucide-react";
-import {
-  getAllAzkars,
-  getDisabledIds,
-  getNotifDisabledIds,
-  addCustomZekr,
-  deleteCustomZekr,
-  toggleZekrStatus,
-  toggleZekrNotifStatus,
-  toggleAllZekrStatus,
-  toggleAllZekrNotifStatus,
-} from "@/lib/azkarStore";
-import type { Zekr } from "@/types";
-import { Card } from "@/components/ui/card";
+import { HtmlContent } from "@/components/HtmlContent";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { Textarea } from "@/components/ui/textarea";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -38,6 +11,34 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  addCustomZekr,
+  deleteCustomZekr,
+  getAllAzkars,
+  getDisabledIds,
+  getNotifDisabledIds,
+  toggleAllZekrNotifStatus,
+  toggleAllZekrStatus,
+  toggleZekrNotifStatus,
+  toggleZekrStatus,
+} from "@/lib/azkarStore";
+import { cn } from "@/lib/utils";
+import type { Zekr } from "@/types";
+import {
+  ArrowLeft,
+  Bell,
+  BellOff,
+  Eye,
+  EyeOff,
+  ListChecks,
+  Plus,
+  PlusCircle,
+  Trash2,
+  X,
+} from "lucide-react";
+import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
 
 export default function ManageAzkarPage() {
   const [azkars, setAzkars] = useState<Zekr[]>([]);
@@ -327,14 +328,10 @@ export default function ManageAzkarPage() {
 
                 <div className="relative z-10 flex flex-col md:flex-row justify-between items-start gap-6">
                   <div className="flex-1 space-y-3">
-                    <p
+                    <HtmlContent
+                      content={zekr.text}
                       className="arabic-text text-xl leading-[2.2] mb-2 text-right whitespace-pre-line text-foreground/90 transition-all duration-500"
-                      dangerouslySetInnerHTML={{
-                        __html: zekr.text.replace(
-                          /۝([\u0660-\u0669]+)/g,
-                          `<span class="inline-flex items-center justify-center bg-primary/20 text-primary text-sm font-bold rounded-full w-7 h-7 mx-1.5 align-middle font-serif border border-primary/20">$1</span>`,
-                        ),
-                      }}
+                      badgeClassName="inline-flex items-center justify-center bg-primary/20 text-primary text-sm font-bold rounded-full w-7 h-7 mx-1.5 align-middle font-serif border border-primary/20"
                     />
                     <div className="flex flex-wrap gap-2">
                       <span className="text-[10px] font-black px-3 py-1.5 rounded-full bg-white/5 border border-white/5 text-muted-foreground">

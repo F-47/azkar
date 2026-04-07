@@ -232,8 +232,6 @@ input[type="number"] {
 
 .arabic-text {
   font-family: "Amiri", "Noto Naskh Arabic", serif;
-  line-height: 2;
-  letter-spacing: 0.02em;
 }
 
 .pattern-islamic {

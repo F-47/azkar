@@ -1,5 +1,6 @@
 "use client";
 
+import { HtmlContent } from "@/components/HtmlContent";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { Zekr } from "@/types";
@@ -27,17 +28,13 @@ export default function ZekrCard({ zekr, remaining, onDecrement }: Props) {
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.08),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
       <div className="relative z-10 flex flex-col gap-4">
-        <p
+        <HtmlContent
+          content={zekr.text}
           className={cn(
             "arabic-text text-xl leading-[2.2] mb-2 text-right whitespace-pre-line text-foreground/90 transition-all duration-500",
             isDone && "text-muted-foreground/50",
           )}
-          dangerouslySetInnerHTML={{
-            __html: zekr.text.replace(
-              /۝([\u0660-\u0669]+)/g,
-              `<span class="inline-flex items-center justify-center bg-primary/20 text-primary text-sm font-bold rounded-full w-7 h-7 mx-1.5 align-middle font-serif border border-primary/20">$1</span>`,
-            ),
-          }}
+          badgeClassName="inline-flex items-center justify-center bg-primary/20 text-primary text-sm font-bold rounded-full w-7 h-7 mx-1.5 align-middle font-serif border border-primary/20"
         />
 
         <div className="space-y-4 pt-2 border-t border-white/5">
