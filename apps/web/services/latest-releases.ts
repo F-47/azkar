@@ -1,8 +1,10 @@
 export interface LatestReleaseData {
   version: string;
   allAssetsUrl: string;
-  windowsUrl: string | null;
-  linuxUrl: string | null;
+  windows: {
+    msi: string | null;
+    exe: string | null;
+  };
   linux: {
     appImage: string | null;
     deb: string | null;
@@ -20,20 +22,17 @@ export async function getLatestRelease(): Promise<LatestReleaseData> {
   const data = await res.json();
   const assets = data.assets || [];
 
-  const windowsAsset =
-    assets.find((a: any) => a.name.endsWith(".msi")) ||
-    assets.find((a: any) => a.name.endsWith(".exe"));
-
-  const linuxAsset =
-    assets.find((a: any) => a.name.endsWith(".deb")) ||
-    assets.find((a: any) => a.name.endsWith(".AppImage")) ||
-    assets.find((a: any) => a.name.endsWith(".rpm"));
-
   return {
     version: data.tag_name,
     allAssetsUrl: data.html_url,
-    windowsUrl: windowsAsset?.browser_download_url || null,
-    linuxUrl: linuxAsset?.browser_download_url || null,
+    windows: {
+      msi:
+        assets.find((a: any) => a.name.endsWith(".msi"))
+          ?.browser_download_url || null,
+      exe:
+        assets.find((a: any) => a.name.endsWith(".exe"))
+          ?.browser_download_url || null,
+    },
     linux: {
       appImage:
         assets.find((a: any) => a.name.endsWith(".AppImage"))

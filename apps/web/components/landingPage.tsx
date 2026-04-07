@@ -3,18 +3,22 @@
 import { MosqueIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { OrbitingCircles } from "@/components/ui/orbiting-circles";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useLatestRelease } from "@/hooks/useLatestRelease";
 import useOrbitRadius from "@/hooks/useOrbitRadius";
-import { Download, Loader2, Moon, Star } from "lucide-react";
+import { ChevronDown, Download, Loader2, Moon, Star } from "lucide-react";
 import Image from "next/image";
 
 function LandingPage() {
   const radius = useOrbitRadius();
   const { data, loading } = useLatestRelease();
 
-  const handleDownload = (platform: "windows" | "linux") => {
-    const url = platform === "windows" ? data?.windowsUrl : data?.linuxUrl;
-
+  const handleDownload = (url: string | null) => {
     if (url) {
       window.location.href = url;
     } else {
@@ -57,28 +61,79 @@ function LandingPage() {
           تجربة هادئة تساعدك على المواظبة على الذكر
         </p>
 
-        <div className="flex gap-4">
-          <Button
-            size="xl"
-            onClick={() => handleDownload("windows")}
-            disabled={loading}
-          >
-            {loading ? (
-              <Loader2 className="w-4 h-4 ml-2 animate-spin" />
-            ) : (
-              <Download className="w-4 h-4 ml-2" />
-            )}
-            تحميل {data?.version ? `(${data.version})` : ""}
-          </Button>
-          <Button
-            size="xl"
-            variant="outline"
-            onClick={() => handleDownload("linux")}
-            disabled={loading}
-          >
-            {loading && <Loader2 className="w-4 h-4 ml-2 animate-spin" />}
-            نسخة لينكس
-          </Button>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="xl" disabled={loading} className="min-w-[200px]">
+                {loading ? (
+                  <Loader2 className="w-4 h-4 ml-2 animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4 ml-2" />
+                )}
+                تحميل لويندوز {data?.version ? `(${data.version})` : ""}
+                <ChevronDown className="w-4 h-4 mr-2 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="center"
+              className="rounded-lg border-white/10 bg-white/5 backdrop-blur-xl"
+            >
+              <DropdownMenuItem
+                className="cursor-pointer hover:text-white! font-bold justify-start text-right py-3 rounded-lg"
+                onClick={() => handleDownload(data?.windows.msi || null)}
+              >
+                تحميل (MSI)
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer hover:text-white! font-bold justify-start text-right py-3 rounded-lg"
+                onClick={() => handleDownload(data?.windows.exe || null)}
+              >
+                تحميل (EXE)
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                size="xl"
+                variant="outline"
+                disabled={loading}
+                className="min-w-[200px]"
+              >
+                {loading ? (
+                  <Loader2 className="w-4 h-4 ml-2 animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4 ml-2 opacity-50" />
+                )}
+                نسخة لينكس
+                <ChevronDown className="w-4 h-4 mr-2 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="center"
+              className="rounded-lg border-white/10 bg-white/5 backdrop-blur-xl"
+            >
+              <DropdownMenuItem
+                className="cursor-pointer hover:text-white! font-bold justify-start text-right py-3 rounded-lg"
+                onClick={() => handleDownload(data?.linux.deb || null)}
+              >
+                تحميل (DEB)
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer hover:text-white! font-bold justify-start text-right py-3 rounded-lg"
+                onClick={() => handleDownload(data?.linux.appImage || null)}
+              >
+                تحميل (AppImage)
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer hover:text-white! font-bold justify-start text-right py-3 rounded-lg"
+                onClick={() => handleDownload(data?.linux.rpm || null)}
+              >
+                تحميل (RPM)
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
