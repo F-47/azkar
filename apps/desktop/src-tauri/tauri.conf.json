@@ -30,7 +30,7 @@
   "plugins": {
     "updater": {
       "active": true,
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDU1RTk1NDZEMDdEOENBQkEKUldTNnl0Z0hiVlRwVmNyS2NYR3FPNHpYeDZPeWlDSDE1Y1JHN3lOVS9RMXlqQjZLSHJJK1hxUlgK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEYwNzMzMEQ2OUYzRTE2MzcKUldRM0ZqNmYxakJ6OEdzSkF0Rzg2ZmJVQ1diSHdYUFRxWmZhZ3N6RDRzVFRPTFE3NWxXRjZ2L3cK",
       "endpoints": [
         "https://github.com/F-47/azkar/releases/latest/download/latest.json"
       ]
