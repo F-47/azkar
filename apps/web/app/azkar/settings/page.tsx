@@ -253,7 +253,7 @@ export default function SettingsPage() {
             </div>
           )}
           <div className="grid gap-4">
-            <Button
+            <button
               onClick={handleTest}
               disabled={testing}
               className={cn(
@@ -274,7 +274,7 @@ export default function SettingsPage() {
                   اختبار إشعار الآن
                 </>
               )}
-            </Button>
+            </button>
 
             {isTauri() && (
               <Card className="rounded-2xl p-6 border-white/10 bg-white/5 backdrop-blur-xl group overflow-hidden relative">
