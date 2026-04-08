@@ -122,7 +122,8 @@ jobs:
         uses: dsaltares/fetch-gh-release-asset@master
         with:
           version: ${{ github.ref_name }}
-          asset: "azkar-app_${{ github.ref_name }}_amd64.deb"
+          regex: true
+          file: "azkar-app_.*_amd64.deb"
           target: "azkar.deb"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
