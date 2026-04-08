@@ -105,35 +105,38 @@ jobs:
           args: --target ${{ matrix.target }}
 
   flatpak:
-    runs-on: ubuntu-22.04
+  runs-on: ubuntu-22.04
 
-    steps:
-      - uses: actions/checkout@v4
+  steps:
+    - uses: actions/checkout@v4
 
-      - name: Install Flatpak tools
-        run: |
-          sudo apt update
-          sudo apt install -y flatpak flatpak-builder
+    - name: Install Flatpak tools
+      run: |
+        sudo apt update
+        sudo apt install -y flatpak flatpak-builder
 
-      - name: Build Flatpak
-        run: |
-          flatpak-builder --force-clean build-dir apps/desktop/flatpak/com.azkar.app.json
+    - name: Setup Flathub (user mode)
+      run: |
+        flatpak --user remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
-      - name: Export Flatpak repo
-        run: |
-          flatpak build-export repo build-dir
+    - name: Install GNOME SDK 46
+      run: |
+        flatpak --user install -y flathub org.gnome.Platform//46 org.gnome.Sdk//46
 
-      - name: Create Flatpak bundle
-        run: |
-          flatpak build-bundle repo azkar.flatpak com.azkar.app
+    - name: Build Flatpak
+      run: |
+        flatpak-builder --force-clean build-dir apps/desktop/flatpak/com.azkar.app.json
 
-      - name: Upload Flatpak artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: flatpak
-          path: azkar.flatpak
+    - name: Export repo
+      run: |
+        flatpak build-export repo build-dir
 
-      - name: Upload Flatpak to GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: azkar.flatpak
+    - name: Create bundle
+      run: |
+        flatpak build-bundle repo azkar.flatpak com.azkar.app
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: flatpak
+        path: azkar.flatpak
