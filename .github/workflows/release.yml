@@ -91,6 +91,7 @@ jobs:
           "
 
       - name: Build and release
+        id: tauri_build
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -104,3 +105,65 @@ jobs:
           releaseDraft: false
           prerelease: false
           args: --target ${{ matrix.target }}
+
+  flatpak:
+    name: Build Flatpak
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install flatpak-builder
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak-builder
+
+      - name: Download Linux DEB from Release
+        uses: dsaltares/fetch-gh-release-asset@master
+        with:
+          version: ${{ github.ref_name }}
+          asset: "azkar-app_${{ github.ref_name }}_amd64.deb"
+          target: "azkar.deb"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Prepare Flatpak Dist
+        run: |
+          mkdir -p flatpak/dist/icons
+          dpkg-deb -x azkar.deb temp_deb
+          # Copy binary
+          cp temp_deb/usr/bin/azkar-app flatpak/dist/
+          # Copy icons (adjust paths based on where tauri puts them in deb)
+          cp temp_deb/usr/share/icons/hicolor/32x32/apps/azkar-app.png flatpak/dist/icons/32x32.png || cp apps/desktop/src-tauri/icons/32x32.png flatpak/dist/icons/32x32.png
+          cp temp_deb/usr/share/icons/hicolor/64x64/apps/azkar-app.png flatpak/dist/icons/64x64.png || cp apps/desktop/src-tauri/icons/64x64.png flatpak/dist/icons/64x64.png
+          cp temp_deb/usr/share/icons/hicolor/128x128/apps/azkar-app.png flatpak/dist/icons/128x128.png || cp apps/desktop/src-tauri/icons/128x128.png flatpak/dist/icons/128x128.png
+          # Use the high-res one for 256x256
+          cp apps/desktop/src-tauri/icons/icon.png flatpak/dist/icons/128x128@2x.png
+
+      - name: Setup Flatpak Repo
+        run: |
+          flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+
+      - name: Cache Flatpak Runtimes
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.local/share/flatpak
+          key: flatpak-runtimes-${{ runner.os }}-gnome47
+
+      - name: Install Runtimes
+        run: |
+          flatpak install --user -y flathub org.gnome.Sdk//47 org.gnome.Platform//47
+
+      - name: Build Flatpak
+        run: |
+          flatpak-builder --user --force-clean --repo=repo --bundle-sources build-dir flatpak/io.github.f47.Azkar.yml
+          flatpak build-bundle repo azkar.flatpak io.github.f47.Azkar
+
+      - name: Upload Flatpak to Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: azkar.flatpak
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
