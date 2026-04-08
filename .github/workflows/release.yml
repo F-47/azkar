@@ -6,11 +6,11 @@ on:
       - "v*"
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
-  tauri:
+  release:
+    permissions:
+      contents: write
+
     strategy:
       fail-fast: false
       matrix:
@@ -53,7 +53,7 @@ jobs:
           shared-key: ${{ matrix.target }}
           cache-on-failure: true
 
-      - name: Install dependencies
+      - name: Install Node dependencies
         run: npm ci
 
       - name: Sync version from tag
@@ -63,20 +63,21 @@ jobs:
           node -e "
             const fs = require('fs');
             const version = '${{ github.ref_name }}'.replace(/^v/, '');
-
-            const files = [
+            
+            const jsonFiles = [
               'package.json',
               'apps/desktop/package.json',
               'apps/web/package.json',
               'apps/desktop/src-tauri/tauri.conf.json'
             ];
-
-            files.forEach(file => {
+            
+            jsonFiles.forEach(file => {
               if (fs.existsSync(file)) {
-                const json = JSON.parse(fs.readFileSync(file, 'utf8'));
+                const content = fs.readFileSync(file, 'utf8');
+                const json = JSON.parse(content);
                 json.version = version;
                 fs.writeFileSync(file, JSON.stringify(json, null, 2) + '\n');
-                console.log('Updated ' + file);
+                console.log('Updated ' + file + ' to ' + version);
               }
             });
 
@@ -85,11 +86,11 @@ jobs:
               let cargo = fs.readFileSync(cargoPath, 'utf8');
               cargo = cargo.replace(/^version = \".*\"/m, 'version = \"' + version + '\"');
               fs.writeFileSync(cargoPath, cargo);
-              console.log('Updated Cargo.toml');
+              console.log('Updated ' + cargoPath + ' to ' + version);
             }
           "
 
-      - name: Build and release (Tauri)
+      - name: Build and release
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -103,40 +104,3 @@ jobs:
           releaseDraft: false
           prerelease: false
           args: --target ${{ matrix.target }}
-
-  flatpak:
-  runs-on: ubuntu-22.04
-
-  steps:
-    - uses: actions/checkout@v4
-
-    - name: Install Flatpak tools
-      run: |
-        sudo apt update
-        sudo apt install -y flatpak flatpak-builder
-
-    - name: Setup Flathub (user mode)
-      run: |
-        flatpak --user remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-
-    - name: Install GNOME SDK 46
-      run: |
-        flatpak --user install -y flathub org.gnome.Platform//46 org.gnome.Sdk//46
-
-    - name: Build Flatpak
-      run: |
-        flatpak-builder --force-clean build-dir apps/desktop/flatpak/com.azkar.app.json
-
-    - name: Export repo
-      run: |
-        flatpak build-export repo build-dir
-
-    - name: Create bundle
-      run: |
-        flatpak build-bundle repo azkar.flatpak com.azkar.app
-
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: flatpak
-        path: azkar.flatpak
