@@ -1,0 +1,34 @@
+{
+  "app-id": "com.azkar.app",
+  "runtime": "org.gnome.Platform",
+  "runtime-version": "46",
+  "sdk": "org.gnome.Sdk",
+  "command": "azkar-app",
+
+  "finish-args": [
+    "--share=network",
+    "--socket=wayland",
+    "--socket=fallback-x11",
+    "--device=dri",
+    "--filesystem=home"
+  ],
+
+  "modules": [
+    {
+      "name": "azkar",
+      "buildsystem": "simple",
+      "build-commands": [
+        "npm ci",
+        "cd apps/web && npm ci && npm run build",
+        "cargo build --release --manifest-path apps/desktop/src-tauri/Cargo.toml",
+        "install -Dm755 apps/desktop/src-tauri/target/release/azkar-app /app/bin/azkar-app"
+      ],
+      "sources": [
+        {
+          "type": "dir",
+          "path": "../../"
+        }
+      ]
+    }
+  ]
+}
