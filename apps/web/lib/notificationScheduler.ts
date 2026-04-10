@@ -10,18 +10,32 @@ interface TimeWindow {
   end: string;
 }
 
+export interface NotificationAppearance {
+  headerBgColor: string;
+  backgroundColor: string;
+  textColor: string;
+  opacity: number;
+}
+
 export interface NotificationSettings {
   enabled: boolean;
   intervalMinutes: number;
   category: Category | "both";
   usePrayerTimes: boolean;
+  appearance: NotificationAppearance;
 }
 
 export const DEFAULT_SETTINGS: NotificationSettings = {
-  enabled: false,
-  intervalMinutes: 30,
+  enabled: true,
+  intervalMinutes: 5,
   category: "both",
-  usePrayerTimes: false,
+  usePrayerTimes: true,
+  appearance: {
+    headerBgColor: "#064e3b",
+    backgroundColor: "#ffffff",
+    textColor: "#1a1a1a",
+    opacity: 100,
+  },
 };
 
 const FALLBACK_PRAYER_WINDOWS = {
@@ -173,6 +187,20 @@ function startJsTimer(settings: NotificationSettings): void {
 export async function startScheduler(): Promise<void> {
   stopJsTimer();
   const settings = loadSettings();
+
+  if (settings.enabled && settings.usePrayerTimes) {
+    const { loadCoords, requestCoords, saveCoords } =
+      await import("./prayerTimes");
+    const coords = loadCoords();
+    if (!coords) {
+      try {
+        const c = await requestCoords();
+        if (c) saveCoords(c);
+      } catch (e) {
+        console.warn("Failed to silently auto-fetch coordinates:", e);
+      }
+    }
+  }
 
   if (isTauri() && !settings.usePrayerTimes) {
     await configureRustScheduler(settings);

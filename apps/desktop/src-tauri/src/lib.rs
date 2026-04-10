@@ -1,11 +1,11 @@
 use std::sync::Mutex;
 use tauri::{
     Manager,
-    LogicalPosition,
     LogicalSize,
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
 };
+use tauri_plugin_positioner::{WindowExt, Position};
 
 const NOTIF_WIDTH: f64 = 360.0;
 const NOTIF_DEFAULT_HEIGHT: f64 = 140.0;
@@ -40,8 +40,6 @@ struct SchedulerSettings {
 // ---------------------------------------------------------------------------
 
 async fn trigger_notification(app: &tauri::AppHandle, body: String) -> Result<(), String> {
-    // Lazy-create the notification window on first use to avoid loading
-    // a second WebView2 process until notifications are actually needed.
     if app.get_webview_window("notification").is_none() {
         #[cfg(debug_assertions)]
         let notif_url = tauri::WebviewUrl::External(
@@ -76,18 +74,15 @@ async fn trigger_notification(app: &tauri::AppHandle, body: String) -> Result<()
     win.set_size(LogicalSize::new(NOTIF_WIDTH, NOTIF_DEFAULT_HEIGHT))
         .map_err(|e| e.to_string())?;
 
-    // Position bottom-right, relative to a fixed margin
-    if let Ok(Some(monitor)) = win.current_monitor() {
-        let size = monitor.size();
-        let position = monitor.position();
-        let scale = monitor.scale_factor();
-        let logical_w = size.width as f64 / scale;
-        let logical_h = size.height as f64 / scale;
-        let logical_x = position.x as f64 / scale;
-        let logical_y = position.y as f64 / scale;
-        let x = logical_x + logical_w - NOTIF_WIDTH - NOTIF_RIGHT_MARGIN;
-        let y = logical_y + logical_h - NOTIF_DEFAULT_HEIGHT - NOTIF_BOTTOM_MARGIN;
-        let _ = win.set_position(LogicalPosition::new(x, y));
+    // Position bottom-right safely (accounts for taskbar using positioner plugin)
+    let _ = win.move_window(Position::BottomRight);
+    if let Ok(pos) = win.outer_position() {
+        if let Ok(scale) = win.scale_factor() {
+            let mut logical_pos = pos.to_logical::<f64>(scale);
+            logical_pos.x -= NOTIF_RIGHT_MARGIN;
+            logical_pos.y -= NOTIF_BOTTOM_MARGIN;
+            let _ = win.set_position(logical_pos);
+        }
     }
 
     // Push data directly via eval — reliable for hidden windows (no event system needed).
@@ -101,8 +96,6 @@ async fn trigger_notification(app: &tauri::AppHandle, body: String) -> Result<()
     ))
     .map_err(|e: tauri::Error| e.to_string())?;
 
-    win.show().map_err(|e: tauri::Error| e.to_string())?;
-
     Ok(())
 }
 
@@ -114,20 +107,29 @@ async fn trigger_notification(app: &tauri::AppHandle, body: String) -> Result<()
 async fn resize_notification(app: tauri::AppHandle, height: f64) -> Result<(), String> {
     if let Some(win) = app.get_webview_window("notification") {
         let h = height.min(420.0).max(100.0);
-        win.set_size(LogicalSize::new(NOTIF_WIDTH, h))
-            .map_err(|e: tauri::Error| e.to_string())?;
+        
         if let Ok(Some(monitor)) = win.current_monitor() {
-            let size = monitor.size();
-            let position = monitor.position();
-            let scale = monitor.scale_factor();
-            let logical_w = size.width as f64 / scale;
-            let logical_h = size.height as f64 / scale;
-            let logical_x = position.x as f64 / scale;
-            let logical_y = position.y as f64 / scale;
-            let x = logical_x + logical_w - NOTIF_WIDTH - NOTIF_RIGHT_MARGIN;
-            let y = logical_y + logical_h - h - NOTIF_BOTTOM_MARGIN;
-            let _ = win.set_position(LogicalPosition::new(x, y));
+            if let Ok(scale) = win.scale_factor() {
+                // Completely bypass unreliable positioner plugins.
+                // We fetch the raw mathematical dimensions of the monitor,
+                // and compute the bottom-right corner absolutely.
+                let monitor_size = monitor.size().to_logical::<f64>(scale);
+                let monitor_pos = monitor.position().to_logical::<f64>(scale);
+
+                // 60px accounts for large Windows taskbars, ensuring it ALWAYS sits above it visually.
+                // If they have no taskbar, a 60px bottom margin still looks completely natural and beautiful.
+                let anchor_margin_y = 60.0;
+                let anchor_margin_x = 24.0;
+
+                let final_x = monitor_pos.x + monitor_size.width - NOTIF_WIDTH - anchor_margin_x;
+                let final_y = monitor_pos.y + monitor_size.height - h - anchor_margin_y;
+
+                let _ = win.set_position(tauri::LogicalPosition::new(final_x, final_y));
+            }
         }
+        
+        let _ = win.set_size(LogicalSize::new(NOTIF_WIDTH, h));
+        let _ = win.show();
     }
     Ok(())
 }
@@ -202,6 +204,7 @@ pub fn run() {
 
     tauri::Builder::default()
         .manage(Mutex::new(SchedulerState::default()))
+        .plugin(tauri_plugin_positioner::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {

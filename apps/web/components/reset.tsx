@@ -9,12 +9,10 @@ import {
 } from "@/components/ui/dialog";
 import { RotateCw } from "lucide-react";
 import { Button } from "./ui/button";
-import { useAzkar } from "@/hooks/useAzkar";
 import { useState } from "react";
 
-function Reset() {
+function Reset({ onReset }: { onReset: () => void }) {
   const [isResetOpen, setIsResetOpen] = useState(false);
-  const { reset } = useAzkar();
 
   return (
     <Dialog open={isResetOpen} onOpenChange={setIsResetOpen}>
@@ -46,7 +44,7 @@ function Reset() {
             variant="destructive"
             className="rounded"
             onClick={() => {
-              reset();
+              onReset();
               setIsResetOpen(false);
             }}
           >

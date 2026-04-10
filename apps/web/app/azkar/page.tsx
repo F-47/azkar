@@ -29,7 +29,7 @@ export default function AzkarPage() {
     progress,
     mounted,
     decrement,
-
+    reset,
     switchCategory,
     totalCount,
     completedCount,
@@ -89,7 +89,7 @@ export default function AzkarPage() {
                 </Link>
               </Button>
 
-              <Reset />
+              <Reset onReset={reset} />
             </div>
           </div>
           <CategoryToggle active={category} onChange={switchCategory} />
@@ -144,7 +144,7 @@ export default function AzkarPage() {
               </Link>
             </div>
           ) : (
-            <div className="grid gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="grid gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700 border-none">
               {azkar.map((zekr) => (
                 <ZekrCard
                   key={zekr.id}

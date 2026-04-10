@@ -4,6 +4,8 @@ import { invoke } from "@tauri-apps/api/core";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { calculateZekrDuration } from "@/lib/azkarUtils";
 import { HtmlContent } from "@/components/HtmlContent";
+import { loadSettings, DEFAULT_SETTINGS } from "@/lib/notificationScheduler";
+import { cn } from "@/lib/utils";
 
 interface NotificationData {
   title: string;
@@ -23,10 +25,17 @@ const DEFAULT_DURATION = 6000;
 export default function NotificationPage() {
   const [data, setData] = useState<NotificationData | null>(null);
   const [progress, setProgress] = useState(100);
+  const [appearance, setAppearance] = useState(() => {
+    if (typeof window !== "undefined") {
+      return loadSettings().appearance || DEFAULT_SETTINGS.appearance;
+    }
+    return DEFAULT_SETTINGS.appearance;
+  });
 
   const rafRef = useRef<number | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const lastUpdateRef = useRef(0);
+  const isHoveredRef = useRef(false);
 
   const hideWindow = useCallback(async () => {
     if (rafRef.current !== null) {
@@ -55,18 +64,28 @@ export default function NotificationPage() {
       setData({ title, body, duration: effectiveDuration });
       setProgress(100);
 
-      const start = performance.now();
+      let lastTime = 0;
+      let totalElapsed = 0;
       lastUpdateRef.current = 0;
+      isHoveredRef.current = false; // Reset hover state for the new notification
 
       const tick = (now: number) => {
-        const elapsed = now - start;
+        if (lastTime === 0) lastTime = now;
+        const delta = now - lastTime;
+        lastTime = now;
 
-        if (elapsed - lastUpdateRef.current > 50) {
-          setProgress(Math.max(0, 100 - (elapsed / effectiveDuration) * 100));
-          lastUpdateRef.current = elapsed;
+        if (!isHoveredRef.current) {
+          totalElapsed += delta;
         }
 
-        if (elapsed < effectiveDuration) {
+        if (totalElapsed - lastUpdateRef.current > 50) {
+          setProgress(
+            Math.max(0, 100 - (totalElapsed / effectiveDuration) * 100),
+          );
+          lastUpdateRef.current = totalElapsed;
+        }
+
+        if (totalElapsed < effectiveDuration) {
           rafRef.current = requestAnimationFrame(tick);
         } else {
           rafRef.current = null;
@@ -97,7 +116,10 @@ export default function NotificationPage() {
     const pending = win.__pendingNotif;
     if (pending) {
       delete win.__pendingNotif;
-      trigger(pending.title, pending.body, pending.duration);
+      setTimeout(
+        () => trigger(pending.title, pending.body, pending.duration),
+        0,
+      );
     }
 
     return () => {
@@ -116,17 +138,39 @@ export default function NotificationPage() {
     invoke<void>("resize_notification", { height }).catch(() => {});
   }, [data]);
 
+  useEffect(() => {
+    const handleStorage = () => {
+      setAppearance(loadSettings().appearance || DEFAULT_SETTINGS.appearance);
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
   if (!data) return null;
 
+  const bgColor =
+    appearance.backgroundColor +
+    Math.round((appearance.opacity ?? 100) * 2.55)
+      .toString(16)
+      .padStart(2, "0");
 
   return (
     <div
       ref={cardRef}
-      className="flex flex-col pointer-events-auto select-none rounded-xl cursor-pointer overflow-hidden border border-[#15803d20] transition-all duration-200 active:scale-[0.98] ring-1 ring-white/10"
+      className={`flex flex-col z-10 pointer-events-auto select-none rounded-xl cursor-pointer overflow-hidden transition-all duration-200 active:scale-[0.98]`}
       onClick={hideWindow}
+      onMouseEnter={() => {
+        isHoveredRef.current = true;
+      }}
+      onMouseLeave={() => {
+        isHoveredRef.current = false;
+      }}
     >
-      <div className="flex items-center justify-between px-4 py-2 bg-linear-to-r from-[#064e3b] to-[#15803d]">
-        <span className="text-sm font-bold pointer-events-none text-white">
+      <header
+        className="flex items-center rounded-t-xl justify-between px-4 py-2"
+        style={{ backgroundColor: appearance.headerBgColor }}
+      >
+        <span className="text-sm font-bold pointer-events-none">
           {data.title}
         </span>
 
@@ -135,12 +179,18 @@ export default function NotificationPage() {
           color="#ffffff"
           duration={data.duration}
         />
-      </div>
+      </header>
 
       <HtmlContent
         content={data.body}
-        className="p-4 pointer-events-none arabic-text w-full whitespace-pre-line text-start text-base bg-white text-[#1a1a1a]"
-        badgeClassName="inline-flex items-center justify-center text-sm font-bold rounded-full w-6 h-6 align-middle font-serif border bg-[#064e3b20] text-[#064e3b] border-[#064e3b20]"
+        className="p-4 pointer-events-none arabic-text leading-8! w-full whitespace-pre-line text-base flex-1"
+        style={{ color: appearance.textColor, background: bgColor }}
+        badgeStyle={{
+          backgroundColor: appearance.headerBgColor + "30",
+          borderColor: appearance.headerBgColor + "30",
+          color: appearance.headerBgColor,
+        }}
+        badgeClassName="inline-flex items-center justify-center text-sm font-bold rounded-full w-6 h-6 align-middle font-serif border"
       />
     </div>
   );
