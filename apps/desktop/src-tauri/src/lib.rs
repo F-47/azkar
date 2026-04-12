@@ -204,7 +204,7 @@ pub fn run() {
 
     tauri::Builder::default()
         .manage(Mutex::new(SchedulerState::default()))
-        .plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, None))
+        .plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, Some(vec!["--hidden"])))
         .plugin(tauri_plugin_positioner::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
@@ -267,9 +267,13 @@ pub fn run() {
                 })
                 .build(app)?;
 
-            // DevTools manual access only in debug mode
-            // #[cfg(debug_assertions)]
-            // window.open_devtools();
+            #[cfg(debug_assertions)]
+            let _ = window.set_title("Azkar App (DEBUG)");
+
+            let args: Vec<String> = std::env::args().collect();
+            if !args.contains(&"--hidden".to_string()) {
+                let _ = window.show();
+            }
 
             Ok(())
         })
