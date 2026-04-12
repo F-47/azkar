@@ -1,4 +1,4 @@
-# Azkar App
+# Azkar — Daily Dhikr Notifications
 
 A lightweight desktop reminder app for daily spiritual adhkar, designed for performance, simplicity, and native system integration.
 
