@@ -9,12 +9,6 @@ Azkar App is a professional desktop application designed for daily spiritual rem
 
 ---
 
-## Technical Specifications
-
-Azkar App is built on the **Tauri v2** framework, ensuring high security and a minimal resource footprint. The frontend leverages **Next.js 16** and **React 19** for a fast, responsive user experience. It supports cross-platform deployment on both **Windows** and **Linux** systems.
-
----
-
 ## Screenshots
 
 <div align="center">
@@ -26,6 +20,12 @@ Azkar App is built on the **Tauri v2** framework, ensuring high security and a m
   <br />
   <img src="screenshots/5.png" width="35%" />
 </div>
+
+---
+
+## Technical Specifications
+
+Azkar App is built on the **Tauri v2** framework, ensuring high security and a minimal resource footprint. The frontend leverages **Next.js 16** and **React 19** for a fast, responsive user experience. It supports cross-platform deployment on both **Windows** and **Linux** systems.
 
 ---
 
@@ -43,25 +43,27 @@ Azkar App is built on the **Tauri v2** framework, ensuring high security and a m
 
 ## Technology Stack
 
-| Layer | Technology |
-|-------|-----------|
-| **Core** | [Tauri v2](https://tauri.app) |
+| Layer        | Technology                                  |
+| ------------ | ------------------------------------------- |
+| **Core**     | [Tauri v2](https://tauri.app)               |
 | **Frontend** | [Next.js 16](https://nextjs.org/), React 19 |
-| **Styling** | Tailwind CSS 4, Framer Motion |
+| **Styling**  | Tailwind CSS 4, Framer Motion               |
 
 ---
 
 ## Installation and Development
 
 ### Downloads
+
 Installers are available for Windows and Linux on the [Releases Page](https://github.com/F-47/azkar/releases).
 
-| Operating System | Recommended Format |
-|------------------|-------------------|
-| **Windows** | `.msi` (Installer) or `.exe` (NSIS) |
-| **Linux** | `.deb` (Debian/Ubuntu) or `.AppImage` |
+| Operating System | Recommended Format                    |
+| ---------------- | ------------------------------------- |
+| **Windows**      | `.msi` (Installer) or `.exe` (NSIS)   |
+| **Linux**        | `.deb` (Debian/Ubuntu) or `.AppImage` |
 
 ### Building from Source
+
 To set up a local development environment:
 
 1. **Requirements**: Node.js 20+ and Rust (Stable).
@@ -81,9 +83,11 @@ To set up a local development environment:
 ---
 
 ## Patch Notes
+
 Detailed version history and changes are documented in the [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
 ## License
+
 Distributed under the MIT License. See [LICENSE.md](LICENSE.md) for more information.

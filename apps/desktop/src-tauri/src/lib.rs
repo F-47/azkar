@@ -267,8 +267,9 @@ pub fn run() {
                 })
                 .build(app)?;
 
-            #[cfg(debug_assertions)]
-            window.open_devtools();
+            // DevTools manual access only in debug mode
+            // #[cfg(debug_assertions)]
+            // window.open_devtools();
 
             Ok(())
         })
