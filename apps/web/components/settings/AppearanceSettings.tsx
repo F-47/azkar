@@ -121,7 +121,7 @@ export function AppearanceSettings({
       .padStart(2, "0");
 
   return (
-    <Card className="rounded-xl p-6 border-white/10 bg-white/5 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-400">
+    <Card className="rounded-xl p-5 border-white/10 bg-white/5 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-400">
       <header className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 rounded-xl bg-pink-500/10 flex items-center justify-center text-pink-500">

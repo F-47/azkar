@@ -267,7 +267,7 @@ export default function ManageAzkarPage() {
                   </div>
                   <div className="flex flex-col gap-2">
                     <label className="text-xs font-black uppercase tracking-widest text-muted-foreground px-1">
-                      التكرار
+                      نوع الفترة
                     </label>
                     <Select
                       value={category}

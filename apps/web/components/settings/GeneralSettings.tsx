@@ -2,11 +2,21 @@
 
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Bell, Clock, Loader2, Moon, RefreshCw, Sparkles, Sun } from "lucide-react";
+import {
+  Bell,
+  Clock,
+  Loader2,
+  Moon,
+  Power,
+  RefreshCw,
+  Sparkles,
+  Sun,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type NotificationSettings } from "@/lib/notificationScheduler";
 import { requestCoords, saveCoords, type SavedCoords } from "@/lib/prayerTimes";
-import { useState } from "react";
+import { getAutostartEnabled, isTauri, setAutostartEnabled } from "@/lib/tauri";
+import { useEffect, useState } from "react";
 
 export function GeneralSettings({
   settings,
@@ -20,6 +30,19 @@ export function GeneralSettings({
   onUpdateCoords: (c: SavedCoords) => void;
 }) {
   const [locating, setLocating] = useState(false);
+  const [autostart, setAutostart] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (isTauri()) {
+      getAutostartEnabled().then(setAutostart);
+    }
+  }, []);
+
+  async function handleToggleAutostart() {
+    const next = !autostart;
+    setAutostart(next);
+    await setAutostartEnabled(next);
+  }
 
   async function handleTogglePrayerTimes() {
     const turningOn = !settings.usePrayerTimes;
@@ -39,8 +62,8 @@ export function GeneralSettings({
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.03),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
         <div className="relative z-10 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-              <Bell className="w-6 h-6" />
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+              <Bell className="w-5 h-5" />
             </div>
             <div>
               <h3 className="font-bold text-base">تفعيل الإشعارات</h3>
@@ -67,6 +90,39 @@ export function GeneralSettings({
           </button>
         </div>
       </Card>
+
+      {isTauri() && autostart !== null && (
+        <Card className="rounded-xl p-6 border-white/10 bg-white/5 backdrop-blur-xl group overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.03),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+          <div className="relative z-10 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
+                <Power className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-bold text-base">تشغيل عند بدء النظام</h3>
+                <p className="text-xs text-muted-foreground">
+                  يبدأ التطبيق تلقائياً مع تشغيل الجهاز
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleToggleAutostart}
+              className={cn(
+                "relative w-14 h-8 rounded-full transition-all duration-500 p-1",
+                autostart ? "bg-primary" : "bg-white/10 border border-white/5",
+              )}
+            >
+              <div
+                className={cn(
+                  "w-6 h-6 rounded-full bg-white transition-all duration-500",
+                  autostart ? "translate-x-0 shadow-lg" : "-translate-x-6",
+                )}
+              />
+            </button>
+          </div>
+        </Card>
+      )}
 
       {settings.enabled && (
         <div className="grid gap-4 animate-in fade-in zoom-in-95 duration-500">
@@ -144,7 +200,7 @@ export function GeneralSettings({
           </Card>
 
           {!settings.usePrayerTimes && (
-            <Card className="rounded-xl p-6 border-white/10 bg-white/5 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-300">
+            <Card className="rounded-xl p-5 border-white/10 bg-white/5 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-300">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500">
                   <Sparkles className="w-5 h-5" />
@@ -179,7 +235,8 @@ export function GeneralSettings({
                       key={opt.value}
                       onClick={() =>
                         update({
-                          category: opt.value as NotificationSettings["category"],
+                          category:
+                            opt.value as NotificationSettings["category"],
                         })
                       }
                       className={cn(

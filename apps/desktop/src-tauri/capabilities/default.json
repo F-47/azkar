@@ -13,6 +13,9 @@
     "core:tray:allow-new",
     "core:tray:allow-set-tooltip",
     "core:tray:allow-set-icon",
-    "process:allow-restart"
+    "process:allow-restart",
+    "autostart:allow-enable",
+    "autostart:allow-disable",
+    "autostart:allow-is-enabled"
   ]
 }

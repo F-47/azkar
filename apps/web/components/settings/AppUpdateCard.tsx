@@ -5,7 +5,15 @@ import { Card } from "@/components/ui/card";
 import { getAppVersion, isTauri } from "@/lib/tauri";
 import { checkForUpdate, installUpdate } from "@/lib/updater";
 import { cn } from "@/lib/utils";
-import { Check, CheckCircle2, Loader2, PartyPopper, RefreshCw, Sparkles, Zap } from "lucide-react";
+import {
+  Check,
+  CheckCircle2,
+  Loader2,
+  PartyPopper,
+  RefreshCw,
+  Sparkles,
+  Zap,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 
 export function AppUpdateCard() {
@@ -44,15 +52,15 @@ export function AppUpdateCard() {
   if (!isTauri()) return null;
 
   return (
-    <Card className="rounded-2xl p-6 border-white/10 bg-white/5 backdrop-blur-xl group overflow-hidden relative">
+    <Card className="rounded-xl p-5 border-white/10 bg-white/5 backdrop-blur-xl group overflow-hidden relative">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.05),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-500">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-500">
             <RefreshCw
               className={cn(
-                "w-6 h-6",
+                "w-5 h-5",
                 updateState === "checking" && "animate-spin",
               )}
             />

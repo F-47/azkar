@@ -26,6 +26,27 @@ export async function relaunchApp(): Promise<void> {
   }
 }
 
+export async function getAutostartEnabled(): Promise<boolean> {
+  if (!isTauri()) return false;
+  try {
+    const { isEnabled } = await import("@tauri-apps/plugin-autostart");
+    return await isEnabled();
+  } catch {
+    return false;
+  }
+}
+
+export async function setAutostartEnabled(enabled: boolean): Promise<void> {
+  if (!isTauri()) return;
+  try {
+    const { enable, disable } = await import("@tauri-apps/plugin-autostart");
+    if (enabled) await enable();
+    else await disable();
+  } catch (e) {
+    console.error("Failed to set autostart:", e);
+  }
+}
+
 export async function getAppVersion(): Promise<string> {
   if (!isTauri()) return "Web Version";
   try {
