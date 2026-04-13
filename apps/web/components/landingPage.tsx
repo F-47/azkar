@@ -65,14 +65,14 @@ function LandingPage() {
         <div className="flex flex-col sm:flex-row gap-4">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button size="xl" disabled={loading} className="min-w-[200px]">
+              <Button size="xl" disabled={loading} className="min-w-50">
                 {loading ? (
                   <Loader2 className="w-4 h-4 ml-2 animate-spin" />
                 ) : (
-                  <Download className="w-4 h-4 ml-2" />
+                  <Download className="w-4 h-4 me-2" />
                 )}
-                تحميل لويندوز {data?.version ? `(${data.version})` : ""}
-                <ChevronDown className="w-4 h-4 mr-2 opacity-50" />
+                Windows {data?.version ? `(${data.version})` : ""}
+                <ChevronDown className="w-4 h-4 me-2 opacity-50" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
@@ -83,13 +83,13 @@ function LandingPage() {
                 className="cursor-pointer hover:text-white! font-bold justify-start text-right py-3 rounded-lg"
                 onClick={() => handleDownload(data?.windows.msi || null)}
               >
-                تحميل (MSI)
+                MSI Installer
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer hover:text-white! font-bold justify-start text-right py-3 rounded-lg"
                 onClick={() => handleDownload(data?.windows.exe || null)}
               >
-                تحميل (EXE)
+                EXE Installer
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -100,15 +100,15 @@ function LandingPage() {
                 size="xl"
                 variant="outline"
                 disabled={loading}
-                className="min-w-[200px]"
+                className="min-w-50"
               >
                 {loading ? (
-                  <Loader2 className="w-4 h-4 ml-2 animate-spin" />
+                  <Loader2 className="w-4 h-4 me-2 animate-spin" />
                 ) : (
-                  <Download className="w-4 h-4 ml-2 opacity-50" />
+                  <Download className="w-4 h-4 me-2 opacity-50" />
                 )}
-                نسخة لينكس
-                <ChevronDown className="w-4 h-4 mr-2 opacity-50" />
+                Linux
+                <ChevronDown className="w-4 h-4 me-2 opacity-50" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
@@ -119,19 +119,19 @@ function LandingPage() {
                 className="cursor-pointer hover:text-white! font-bold justify-start text-right py-3 rounded-lg"
                 onClick={() => handleDownload(data?.linux.deb || null)}
               >
-                تحميل (DEB)
+                Debian (.deb)
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer hover:text-white! font-bold justify-start text-right py-3 rounded-lg"
                 onClick={() => handleDownload(data?.linux.appImage || null)}
               >
-                تحميل (AppImage)
+                AppImage
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer hover:text-white! font-bold justify-start text-right py-3 rounded-lg"
                 onClick={() => handleDownload(data?.linux.rpm || null)}
               >
-                تحميل (RPM)
+                RPM Package
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
