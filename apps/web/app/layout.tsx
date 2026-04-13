@@ -1,13 +1,19 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Noto_Sans_Arabic } from "next/font/google";
+import { Cairo, Amiri } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { DirectionProvider } from "@/components/ui/direction";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-const notoSansArabic = Noto_Sans_Arabic({
+const cairo = Cairo({
   subsets: ["arabic"],
   variable: "--font-sans",
+});
+
+const amiri = Amiri({
+  subsets: ["arabic"],
+  weight: ["400", "700"],
+  variable: "--font-amiri",
 });
 
 export const metadata: Metadata = {
@@ -24,7 +30,7 @@ export default function RootLayout({
     <html
       lang="ar"
       dir="rtl"
-      className={cn("font-sans", notoSansArabic.variable)}
+      className={cn("font-sans", cairo.variable, amiri.variable)}
     >
       <head>
         <script

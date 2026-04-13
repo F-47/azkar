@@ -1,4 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Amiri:ital,wght@0,400;0,700;1,400&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap");
 
 @import "tailwindcss";
 @import "tw-animate-css";
@@ -86,8 +85,9 @@
 }
 
 @theme inline {
-  --font-sans: "Cairo", sans-serif;
-  --font-mono: "Cairo", sans-serif;
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-sans);
+  --font-amiri: var(--font-amiri);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -231,7 +231,7 @@ input[type="number"] {
 }
 
 .arabic-text {
-  font-family: "Amiri", "Noto Naskh Arabic", serif;
+  font-family: var(--font-amiri), serif;
 }
 
 .pattern-islamic {
