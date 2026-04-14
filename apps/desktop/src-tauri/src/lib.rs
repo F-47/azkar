@@ -33,13 +33,14 @@ struct SchedulerSettings {
     enabled: bool,
     interval_minutes: u32,
     texts: Vec<String>,
+    titles: Vec<String>,
 }
 
 // ---------------------------------------------------------------------------
 // Notification display logic (shared between the command and the scheduler)
 // ---------------------------------------------------------------------------
 
-async fn trigger_notification(app: &tauri::AppHandle, body: String) -> Result<(), String> {
+async fn trigger_notification(app: &tauri::AppHandle, title: String, body: String) -> Result<(), String> {
     if app.get_webview_window("notification").is_none() {
         #[cfg(debug_assertions)]
         let notif_url = tauri::WebviewUrl::External(
@@ -87,7 +88,7 @@ async fn trigger_notification(app: &tauri::AppHandle, body: String) -> Result<()
 
     // Push data directly via eval — reliable for hidden windows (no event system needed).
     // If __showNotification isn't registered yet, stash in __pendingNotif for the page to pick up.
-    let title_json = serde_json::to_string("أذكار").map_err(|e| e.to_string())?;
+    let title_json = serde_json::to_string(&title).map_err(|e| e.to_string())?;
     let body_json = serde_json::to_string(&body).map_err(|e| e.to_string())?;
     win.eval(&format!(
         "(function(){{var p={{title:{t},body:{b}}};if(window.__showNotification)window.__showNotification(p.title,p.body);else window.__pendingNotif=p;}})()",
@@ -143,8 +144,8 @@ async fn hide_notification(app: tauri::AppHandle) -> Result<(), String> {
 }
 
 #[tauri::command]
-async fn show_notification(app: tauri::AppHandle, body: String) -> Result<(), String> {
-    trigger_notification(&app, body).await
+async fn show_notification(app: tauri::AppHandle, title: String, body: String) -> Result<(), String> {
+    trigger_notification(&app, title, body).await
 }
 
 #[tauri::command]
@@ -168,6 +169,7 @@ async fn configure_scheduler(
 
     let interval = std::time::Duration::from_secs(settings.interval_minutes as u64 * 60);
     let texts = settings.texts;
+    let titles = settings.titles;
     let app_handle = app.clone();
 
 
@@ -185,7 +187,12 @@ async fn configure_scheduler(
                     .subsec_nanos() as usize
                     % texts.len();
                 let body = texts[index].clone();
-                let _ = trigger_notification(&app_handle, body).await;
+                let title = if !titles.is_empty() {
+                    titles[index % titles.len()].clone()
+                } else {
+                    "أذكار".to_string()
+                };
+                let _ = trigger_notification(&app_handle, title, body).await;
             }
         }));
     }

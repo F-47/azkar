@@ -35,7 +35,7 @@ export default function UpdateNotifier() {
 
             <div className="flex-1 flex flex-col gap-1">
               <div className="flex items-center justify-between">
-                <h4 className="text-sm font-black text-amber-200 uppercase tracking-widest">
+                <h4 className="text-sm font-black text-amber-200 uppercase">
                   تحديث جديد متاح
                 </h4>
                 <button
@@ -55,7 +55,7 @@ export default function UpdateNotifier() {
                 <Button
                   asChild
                   size="sm"
-                  className="h-9 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-black text-[10px] uppercase tracking-widest shadow-lg shadow-amber-500/20 active:scale-95 transition-all"
+                  className="h-9 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs uppercase shadow-lg shadow-amber-500/20 active:scale-95 transition-all"
                 >
                   <Link href="/azkar/settings">
                     <Zap className="w-3 h-3 ml-1.5 fill-current" />
@@ -65,7 +65,7 @@ export default function UpdateNotifier() {
 
                 <button
                   onClick={() => setDismissed(true)}
-                  className="h-9 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-white hover:bg-white/5 transition-all"
+                  className="h-9 px-4 rounded-xl text-xs uppercase text-muted-foreground hover:text-white hover:bg-white/5 transition-all"
                 >
                   تخطي
                 </button>

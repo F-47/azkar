@@ -45,8 +45,8 @@ export default function SettingsPage() {
   async function handleTest() {
     if (!settings) return;
     setTesting(true);
-    const zekr = pickRandomZekrForTest(settings.category);
-    if (zekr) await sendAzkarNotification(zekr);
+    const result = pickRandomZekrForTest(settings.category);
+    if (result) await sendAzkarNotification(result.title, result.text);
     setTimeout(() => setTesting(false), 2000);
   }
 
@@ -107,7 +107,7 @@ export default function SettingsPage() {
               onClick={handleTest}
               disabled={testing}
               className={cn(
-                "h-14 rounded-xl text-sm font-black tracking-widest transition-all duration-300 active:scale-[0.97] flex items-center justify-center gap-3 border",
+                "h-14 rounded-xl text-sm font-black transition-all duration-300 active:scale-[0.97] flex items-center justify-center gap-3 border",
                 testing
                   ? "bg-primary/10 text-primary border-primary/20"
                   : "bg-white/5 text-white hover:bg-primary/5 hover:border-primary/20",

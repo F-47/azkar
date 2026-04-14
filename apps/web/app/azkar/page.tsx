@@ -127,7 +127,7 @@ export default function AzkarPage() {
           {!mounted ? (
             <div className="flex flex-col items-center justify-center py-32 opacity-50">
               <Loader2 className="w-10 h-10 animate-spin text-primary mb-4" />
-              <p className="text-sm font-bold tracking-widest uppercase">
+              <p className="text-sm font-bold uppercase">
                 جاري تحميل الأذكار...
               </p>
             </div>

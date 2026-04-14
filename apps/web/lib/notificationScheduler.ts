@@ -23,6 +23,7 @@ export interface NotificationSettings {
   category: Category | "both";
   usePrayerTimes: boolean;
   appearance: NotificationAppearance;
+  durationFactor: number;
 }
 
 export const DEFAULT_SETTINGS: NotificationSettings = {
@@ -36,6 +37,7 @@ export const DEFAULT_SETTINGS: NotificationSettings = {
     textColor: "#1a1a1a",
     opacity: 100,
   },
+  durationFactor: 1.0,
 };
 
 const FALLBACK_PRAYER_WINDOWS = {
@@ -121,11 +123,21 @@ function pickRandomZekr(category: Category | "both") {
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
+function categoryTitle(category: Category | "both"): string {
+  if (category === "morning") return "أذكار الصباح";
+  if (category === "evening") return "أذكار المساء";
+  return "أذكار";
+}
+
 export function pickRandomZekrForTest(
   category: Category | "both",
-): string | null {
+): { title: string; text: string } | null {
   const zekr = pickRandomZekr(category);
-  return zekr ? formatForNotification(zekr.text) : null;
+  if (!zekr) return null;
+  return {
+    title: categoryTitle(zekr.category),
+    text: formatForNotification(zekr.text),
+  };
 }
 
 function formatForNotification(text: string): string {
@@ -137,11 +149,11 @@ async function configureRustScheduler(
 ): Promise<void> {
   if (!isTauri()) return;
   try {
-    const texts = settings.enabled
-      ? getNotificationAzkars(settings.category).map((z) =>
-          formatForNotification(z.text),
-        )
+    const azkars = settings.enabled
+      ? getNotificationAzkars(settings.category)
       : [];
+    const texts = azkars.map((z) => formatForNotification(z.text));
+    const titles = azkars.map((z) => categoryTitle(z.category));
 
     const { invoke } = await import("@tauri-apps/api/core");
     await invoke("configure_scheduler", {
@@ -149,6 +161,7 @@ async function configureRustScheduler(
         enabled: settings.enabled,
         intervalMinutes: settings.intervalMinutes,
         texts,
+        titles,
       },
     });
   } catch (e) {
@@ -178,7 +191,11 @@ function startJsTimer(settings: NotificationSettings): void {
       const effectiveCategory = getEffectiveCategory(current);
       if (!effectiveCategory) return;
       const zekr = pickRandomZekr(effectiveCategory);
-      if (zekr) await sendAzkarNotification(formatForNotification(zekr.text));
+      if (zekr)
+        await sendAzkarNotification(
+          categoryTitle(zekr.category),
+          formatForNotification(zekr.text),
+        );
     },
     settings.intervalMinutes * 60 * 1000,
   );

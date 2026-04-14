@@ -122,7 +122,7 @@ export default function ManageAzkarPage() {
           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-yellow-500">
             <ListChecks className="w-5 h-5" />
           </div>
-          <h1 className="text-xl font-black tracking-tight">إدارة الأذكار</h1>
+          <h1 className="text-xl  tracking-tight">إدارة الأذكار</h1>
         </div>
         <Button
           variant="ghost"
@@ -183,7 +183,7 @@ export default function ManageAzkarPage() {
           <div className="flex items-center justify-between px-6 py-4 bg-white/5 rounded-xl border border-white/5 shadow-inner">
             <div className="flex items-center gap-6">
               <div className="flex flex-col gap-1.5">
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">
+                <span className="text-xs uppercase text-muted-foreground/50">
                   الظهور في القائمة
                 </span>
                 <div className="flex items-center gap-3">
@@ -206,7 +206,7 @@ export default function ManageAzkarPage() {
             <div className="w-px h-8 bg-white/5 hidden md:block" />
             <div className="flex items-center gap-6">
               <div className="flex flex-col gap-1.5 items-end">
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">
+                <span className="text-xs uppercase text-muted-foreground/50">
                   إشعارات سطح المكتب
                 </span>
                 <div className="flex items-center gap-3">
@@ -235,12 +235,12 @@ export default function ManageAzkarPage() {
                 <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
                   <Plus className="w-4 h-4" />
                 </div>
-                <h3 className="font-black text-xl">إضافة ذكر جديد</h3>
+                <h3 className="text-xl">إضافة ذكر جديد</h3>
               </div>
 
               <div className="space-y-4">
                 <div className="flex flex-col gap-2">
-                  <label className="text-xs font-black uppercase tracking-widest text-muted-foreground px-1">
+                  <label className="text-xs uppercase text-muted-foreground px-1">
                     الذكر
                   </label>
                   <Textarea
@@ -253,7 +253,7 @@ export default function ManageAzkarPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex flex-col gap-2">
-                    <label className="text-xs font-black uppercase tracking-widest text-muted-foreground px-1">
+                    <label className="text-xs uppercase text-muted-foreground px-1">
                       العدد الافتراضي
                     </label>
                     <Input
@@ -266,7 +266,7 @@ export default function ManageAzkarPage() {
                     />
                   </div>
                   <div className="flex flex-col gap-2">
-                    <label className="text-xs font-black uppercase tracking-widest text-muted-foreground px-1">
+                    <label className="text-xs uppercase text-muted-foreground px-1">
                       نوع الفترة
                     </label>
                     <Select
@@ -287,7 +287,7 @@ export default function ManageAzkarPage() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="text-xs font-black uppercase tracking-widest text-muted-foreground px-1">
+                  <label className="text-xs uppercase text-muted-foreground px-1">
                     ملاحظة فضل الذكر (اختياري)
                   </label>
                   <Input
@@ -302,7 +302,7 @@ export default function ManageAzkarPage() {
 
               <Button
                 type="submit"
-                className="w-full h-12 rounded-lg font-black active:scale-[0.98] transition-all"
+                className="w-full h-12 rounded-lg  active:scale-[0.98] transition-all"
               >
                 حفظ الذكر في القائمة
               </Button>
@@ -334,16 +334,16 @@ export default function ManageAzkarPage() {
                       badgeClassName="inline-flex items-center justify-center bg-primary/20 text-primary text-sm font-bold rounded-full w-7 h-7 mx-1.5 align-middle font-serif border border-primary/20"
                     />
                     <div className="flex flex-wrap gap-2">
-                      <span className="text-[10px] font-black px-3 py-1.5 rounded-full bg-white/5 border border-white/5 text-muted-foreground">
+                      <span className="text-xs  px-3 py-1.5 rounded-full bg-white/5 border border-white/5 text-muted-foreground">
                         العدد: {zekr.count}
                       </span>
                       {zekr.note && (
-                        <span className="text-[10px] font-black px-3 py-1.5 rounded-full bg-primary/10 border border-primary/10 text-primary">
+                        <span className="text-xs  px-3 py-1.5 rounded-full bg-primary/10 border border-primary/10 text-primary">
                           {zekr.note}
                         </span>
                       )}
                       {zekr.isCustom && (
-                        <span className="text-[10px] font-black px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/10 text-amber-500">
+                        <span className="text-xs  px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/10 text-amber-500">
                           مخصص
                         </span>
                       )}
@@ -425,7 +425,7 @@ export default function ManageAzkarPage() {
       </main>
 
       <footer className="py-8 px-4 text-center text-muted-foreground/20 relative z-10 border-t border-white/5 mt-auto">
-        <p className="text-[10px] font-black uppercase tracking-[0.3em]">
+        <p className="text-xs uppercase tracking-[0.3em]">
           Adhkar Settings • Management Console
         </p>
       </footer>

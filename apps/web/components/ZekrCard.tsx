@@ -90,7 +90,7 @@ export default function ZekrCard({ zekr, remaining, onDecrement }: Props) {
                   / {zekr.count}
                 </span>
               </div>
-              <span className="text-[10px] uppercase tracking-widest text-muted-foreground/40 font-bold">
+              <span className="text-xs uppercase text-muted-foreground/40 font-bold">
                 المرات
               </span>
             </div>

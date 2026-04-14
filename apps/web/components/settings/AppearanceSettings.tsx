@@ -129,7 +129,7 @@ export function AppearanceSettings({
           </div>
           <div>
             <h3 className="font-bold text-sm">مظهر الإشعار</h3>
-            <p className="text-[10px] text-muted-foreground mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5">
               خصص ألوان نافذة الأذكار المنبثقة
             </p>
           </div>

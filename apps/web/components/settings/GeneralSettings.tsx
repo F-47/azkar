@@ -11,6 +11,7 @@ import {
   RefreshCw,
   Sparkles,
   Sun,
+  Timer,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type NotificationSettings } from "@/lib/notificationScheduler";
@@ -102,7 +103,7 @@ export function GeneralSettings({
               <div>
                 <h3 className="font-bold text-base">تشغيل عند بدء النظام</h3>
                 <p className="text-xs text-muted-foreground">
-                  يبدأ التطبيق تلقائياً مع تشغيل الجهاز
+                  يبدأ التطبيق تلقائيا مع تشغيل الجهاز
                 </p>
               </div>
             </div>
@@ -144,10 +145,47 @@ export function GeneralSettings({
                       intervalMinutes: Math.max(1, Number(e.target.value)),
                     })
                   }
-                  className="w-16 py-4 rounded-lg bg-white/5 border border-white/10 text-center text-lg font-black tabular-nums focus:outline-none focus:border-primary transition-all"
+                  className="w-12 py-4 rounded-lg bg-white/5 border border-white/10 text-center text-lg font-black tabular-nums focus:outline-none focus:border-primary transition-all"
                 />
-                <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                <span className="text-xs font-bold text-muted-foreground uppercase">
                   دقيقة
+                </span>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="rounded-xl p-6 border-white/10 bg-white/5 backdrop-blur-xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
+                  <Timer className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm">مدة عرض الذكر</h3>
+                  <p className="text-xs text-muted-foreground/70 mt-0.5">
+                    كلما زادت القيمة زادت مدة عرض الذكر
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="number"
+                  min={0.5}
+                  max={5}
+                  step={0.1}
+                  value={settings.durationFactor}
+                  onChange={(e) =>
+                    update({
+                      durationFactor: Math.max(
+                        0.5,
+                        Math.min(5, Number(e.target.value)),
+                      ),
+                    })
+                  }
+                  className="w-12 py-4 rounded-lg bg-white/5 border border-white/10 text-center text-lg font-black tabular-nums focus:outline-none focus:border-primary transition-all"
+                />
+                <span className="text-xs font-bold text-muted-foreground uppercase">
+                  مرة
                 </span>
               </div>
             </div>
@@ -161,11 +199,11 @@ export function GeneralSettings({
                 </div>
                 <div>
                   <h3 className="font-bold text-sm">بناءً على أوقات الصلاة</h3>
-                  <p className="text-[10px] text-muted-foreground/70 mt-0.5">
+                  <p className="text-xs text-muted-foreground/70 mt-0.5">
                     الصباح من الفجر • المساء من العصر حتى الفجر
                   </p>
                   {coords && (
-                    <p className="text-[10px] text-teal-500/70 mt-0.5">
+                    <p className="text-xs text-teal-500/70 mt-0.5">
                       {coords.source === "gps"
                         ? "موقع GPS"
                         : "تقدير من المنطقة الزمنية"}
@@ -250,7 +288,7 @@ export function GeneralSettings({
                       )}
                     >
                       <Icon className={cn("w-5 h-5", opt.color)} />
-                      <span className="text-[10px] font-black uppercase tracking-widest">
+                      <span className="text-xs uppercase tracking-widest">
                         {opt.label}
                       </span>
                     </button>

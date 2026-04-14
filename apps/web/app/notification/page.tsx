@@ -5,7 +5,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { calculateZekrDuration } from "@/lib/azkarUtils";
 import { HtmlContent } from "@/components/HtmlContent";
 import { loadSettings, DEFAULT_SETTINGS } from "@/lib/notificationScheduler";
-import { cn } from "@/lib/utils";
 
 interface NotificationData {
   title: string;
@@ -20,29 +19,37 @@ type WindowWithNotif = Window & {
   __pendingNotif?: NotificationData;
 };
 
-const DEFAULT_DURATION = 6000;
+const DEFAULT_DURATION = 3000;
 
 export default function NotificationPage() {
   const [data, setData] = useState<NotificationData | null>(null);
   const [progress, setProgress] = useState(100);
-  const [appearance, setAppearance] = useState(() => {
+  const [settings, setSettings] = useState(() => {
     if (typeof window !== "undefined") {
-      return loadSettings().appearance || DEFAULT_SETTINGS.appearance;
+      const s = loadSettings();
+      return {
+        appearance: s.appearance || DEFAULT_SETTINGS.appearance,
+        durationFactor: s.durationFactor ?? DEFAULT_SETTINGS.durationFactor,
+      };
     }
-    return DEFAULT_SETTINGS.appearance;
+    return {
+      appearance: DEFAULT_SETTINGS.appearance,
+      durationFactor: DEFAULT_SETTINGS.durationFactor,
+    };
   });
 
   const rafRef = useRef<number | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
-  const lastUpdateRef = useRef(0);
   const isHoveredRef = useRef(false);
+  const pausedElapsedRef = useRef(0);
+  const hoverStartRef = useRef<number | null>(null);
+  const startTimeRef = useRef<number>(0);
 
   const hideWindow = useCallback(async () => {
     if (rafRef.current !== null) {
       cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
     }
-
     try {
       await invoke<void>("hide_notification");
     } catch {}
@@ -56,46 +63,43 @@ export default function NotificationPage() {
       }
 
       const isDefault = duration == null || duration === DEFAULT_DURATION;
-
       const effectiveDuration = isDefault
-        ? calculateZekrDuration(body) * 1000
+        ? calculateZekrDuration(body, settings.durationFactor) * 1000
         : duration;
+      isHoveredRef.current = false;
+      pausedElapsedRef.current = 0;
+      hoverStartRef.current = null;
+      startTimeRef.current = performance.now();
 
       setData({ title, body, duration: effectiveDuration });
       setProgress(100);
 
-      let lastTime = 0;
-      let totalElapsed = 0;
-      lastUpdateRef.current = 0;
-      isHoveredRef.current = false; // Reset hover state for the new notification
+      const tick = () => {
+        const now = performance.now();
 
-      const tick = (now: number) => {
-        if (lastTime === 0) lastTime = now;
-        const delta = now - lastTime;
-        lastTime = now;
-
-        if (!isHoveredRef.current) {
-          totalElapsed += delta;
-        }
-
-        if (totalElapsed - lastUpdateRef.current > 50) {
-          setProgress(
-            Math.max(0, 100 - (totalElapsed / effectiveDuration) * 100),
-          );
-          lastUpdateRef.current = totalElapsed;
-        }
-
-        if (totalElapsed < effectiveDuration) {
+        if (isHoveredRef.current) {
           rafRef.current = requestAnimationFrame(tick);
-        } else {
+          return;
+        }
+
+        const activeElapsed =
+          now - startTimeRef.current - pausedElapsedRef.current;
+        const remaining = effectiveDuration - activeElapsed;
+
+        if (remaining <= 0) {
+          setProgress(0);
           rafRef.current = null;
           hideWindow();
+          return;
         }
+
+        setProgress((remaining / effectiveDuration) * 100);
+        rafRef.current = requestAnimationFrame(tick);
       };
 
       rafRef.current = requestAnimationFrame(tick);
     },
-    [hideWindow],
+    [hideWindow, settings.durationFactor],
   );
 
   useEffect(() => {
@@ -104,21 +108,16 @@ export default function NotificationPage() {
     document.documentElement.style.background = "transparent";
     document.body.style.background = "transparent";
     document.documentElement.setAttribute("dir", "rtl");
+    win.__showNotification = (title, body, duration) => {
+      trigger(title, body, duration);
+    };
 
-    // expose safely (no spread nonsense)
-    if (!win.__showNotification) {
-      win.__showNotification = (title, body, duration) => {
-        trigger(title, body, duration);
-      };
-    }
-
-    // handle pending notification
     const pending = win.__pendingNotif;
     if (pending) {
       delete win.__pendingNotif;
       setTimeout(
         () => trigger(pending.title, pending.body, pending.duration),
-        0,
+        32,
       );
     }
 
@@ -132,25 +131,44 @@ export default function NotificationPage() {
 
   useEffect(() => {
     if (!data || !cardRef.current) return;
-
     const height = cardRef.current.scrollHeight + 16;
-
     invoke<void>("resize_notification", { height }).catch(() => {});
   }, [data]);
 
   useEffect(() => {
     const handleStorage = () => {
-      setAppearance(loadSettings().appearance || DEFAULT_SETTINGS.appearance);
+      const s = loadSettings();
+      setSettings({
+        appearance: s.appearance || DEFAULT_SETTINGS.appearance,
+        durationFactor: s.durationFactor ?? DEFAULT_SETTINGS.durationFactor,
+      });
     };
     window.addEventListener("storage", handleStorage);
     return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
+  const handleMouseEnter = useCallback(() => {
+    if (!isHoveredRef.current) {
+      isHoveredRef.current = true;
+      hoverStartRef.current = performance.now();
+    }
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    if (isHoveredRef.current) {
+      isHoveredRef.current = false;
+      if (hoverStartRef.current !== null) {
+        pausedElapsedRef.current += performance.now() - hoverStartRef.current;
+        hoverStartRef.current = null;
+      }
+    }
+  }, []);
+
   if (!data) return null;
 
   const bgColor =
-    appearance.backgroundColor +
-    Math.round((appearance.opacity ?? 100) * 2.55)
+    settings.appearance.backgroundColor +
+    Math.round((settings.appearance.opacity ?? 100) * 2.55)
       .toString(16)
       .padStart(2, "0");
 
@@ -159,16 +177,12 @@ export default function NotificationPage() {
       ref={cardRef}
       className={`flex flex-col z-10 pointer-events-auto select-none rounded-xl cursor-pointer overflow-hidden transition-all duration-200 active:scale-[0.98]`}
       onClick={hideWindow}
-      onMouseEnter={() => {
-        isHoveredRef.current = true;
-      }}
-      onMouseLeave={() => {
-        isHoveredRef.current = false;
-      }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <header
         className="flex items-center rounded-t-xl justify-between px-4 py-2"
-        style={{ backgroundColor: appearance.headerBgColor }}
+        style={{ backgroundColor: settings.appearance.headerBgColor }}
       >
         <span className="text-sm font-bold pointer-events-none">
           {data.title}
@@ -184,11 +198,11 @@ export default function NotificationPage() {
       <HtmlContent
         content={data.body}
         className="p-4 pointer-events-none arabic-text leading-8! w-full whitespace-pre-line text-base flex-1"
-        style={{ color: appearance.textColor, background: bgColor }}
+        style={{ color: settings.appearance.textColor, background: bgColor }}
         badgeStyle={{
-          backgroundColor: appearance.headerBgColor + "30",
-          borderColor: appearance.headerBgColor + "30",
-          color: appearance.headerBgColor,
+          backgroundColor: settings.appearance.headerBgColor + "30",
+          borderColor: settings.appearance.headerBgColor + "30",
+          color: settings.appearance.headerBgColor,
         }}
         badgeClassName="inline-flex items-center justify-center text-sm font-bold rounded-full w-6 h-6 align-middle font-serif border"
       />

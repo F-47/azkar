@@ -2,11 +2,11 @@ export function isTauri(): boolean {
   return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 }
 
-export async function sendAzkarNotification(body: string): Promise<void> {
+export async function sendAzkarNotification(title: string, body: string): Promise<void> {
   if (!isTauri()) return;
   try {
     const { invoke } = await import("@tauri-apps/api/core");
-    await invoke("show_notification", { body });
+    await invoke("show_notification", { title, body });
   } catch (e) {
     console.warn("Notification failed:", e);
   }

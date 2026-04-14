@@ -74,9 +74,7 @@ export function AppUpdateCard() {
         </div>
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20">
           <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-          <span className="text-[10px] font-black text-green-500 uppercase tracking-widest">
-            تلقائي
-          </span>
+          <span className="text-xs text-green-500 uppercase">تلقائي</span>
         </div>
       </div>
 
@@ -117,7 +115,7 @@ export function AppUpdateCard() {
             <div className="flex items-center gap-4 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500">
               <PartyPopper className="w-6 h-6 shrink-0" />
               <div className="flex flex-col gap-1">
-                <span className="text-xs font-black uppercase tracking-widest opacity-80">
+                <span className="text-xs font-black uppercase opacity-80">
                   يتوفر تحديث جديد
                 </span>
                 <span className="text-xs font-bold">
@@ -140,7 +138,7 @@ export function AppUpdateCard() {
             <div className="flex justify-between items-end">
               <div className="flex items-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+                <span className="text-xs font-black uppercase text-muted-foreground">
                   جار تحميل التحديث
                 </span>
               </div>
@@ -164,7 +162,7 @@ export function AppUpdateCard() {
                 <Check className="w-6 h-6" />
               </div>
               <div className="flex flex-col gap-1">
-                <span className="text-xs font-black uppercase tracking-widest opacity-80">
+                <span className="text-xs font-black uppercase opacity-80">
                   اكتمل التحميل
                 </span>
                 <span className="text-xs font-bold">
