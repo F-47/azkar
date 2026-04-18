@@ -1,6 +1,6 @@
 "use client";
 
-import { MosqueIcon } from "@/components/icons";
+import { GitHubIcon, MosqueIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { OrbitingCircles } from "@/components/ui/orbiting-circles";
 import {
@@ -28,6 +28,13 @@ function LandingPage() {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+      <Button
+        variant="link"
+        className="absolute top-4 right-4 z-50 text-white"
+        onClick={() => window.open("https://github.com/F-47/azkar", "_blank")}
+      >
+        <GitHubIcon className="size-9" />
+      </Button>
       <div className="absolute inset-0">
         <div className="absolute hidden sm:flex inset-0 items-center justify-center -z-10 pointer-events-none">
           <OrbitingCircles iconSize={48} radius={radius} duration={50}>
