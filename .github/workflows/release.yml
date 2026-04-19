@@ -104,3 +104,89 @@ jobs:
           releaseDraft: false
           prerelease: false
           args: --target ${{ matrix.target }}
+
+  release-store:
+    needs: release
+    permissions:
+      contents: write
+    runs-on: windows-latest
+    env:
+      CARGO_INCREMENTAL: 0
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop/src-tauri -> target
+          shared-key: x86_64-pc-windows-msvc
+          cache-on-failure: true
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Sync version from tag
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: |
+          node -e "
+            const fs = require('fs');
+            const version = '${{ github.ref_name }}'.replace(/^v/, '');
+            const jsonFiles = [
+              'package.json',
+              'apps/desktop/package.json',
+              'apps/web/package.json',
+              'apps/desktop/src-tauri/tauri.conf.json'
+            ];
+            jsonFiles.forEach(file => {
+              if (fs.existsSync(file)) {
+                const content = fs.readFileSync(file, 'utf8');
+                const json = JSON.parse(content);
+                json.version = version;
+                fs.writeFileSync(file, JSON.stringify(json, null, 2) + '\n');
+                console.log('Updated ' + file + ' to ' + version);
+              }
+            });
+            const cargoPath = 'apps/desktop/src-tauri/Cargo.toml';
+            if (fs.existsSync(cargoPath)) {
+              let cargo = fs.readFileSync(cargoPath, 'utf8');
+              cargo = cargo.replace(/^version = \".*\"/m, 'version = \"' + version + '\"');
+              fs.writeFileSync(cargoPath, cargo);
+            }
+          "
+
+      - name: Build web frontend
+        run: npm run build --workspace=apps/web
+
+      - name: Build Microsoft Store installer
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        working-directory: apps/desktop
+        run: npm run build:store
+
+      - name: Upload store installer to release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          INSTALLER=$(find apps/desktop/src-tauri/target/release/bundle/nsis -name "*-setup.exe" 2>/dev/null | head -1)
+          if [ -z "$INSTALLER" ]; then
+            INSTALLER=$(find apps/desktop/src-tauri/target/release/bundle/msi -name "*.msi" 2>/dev/null | head -1)
+          fi
+          EXT="${INSTALLER##*.}"
+          STORE_FILE="Azkar-App_store-setup.${EXT}"
+          cp "$INSTALLER" "$STORE_FILE"
+          gh release upload "${{ github.ref_name }}" "$STORE_FILE" --clobber

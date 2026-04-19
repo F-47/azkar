@@ -177,15 +177,12 @@ async fn configure_scheduler(
     {
         let mut scheduler = state.lock().map_err(|e| e.to_string())?;
         scheduler.handle = Some(tauri::async_runtime::spawn(async move {
+            let mut pointer = 0usize;
+
             loop {
                 tokio::time::sleep(interval).await;
 
-                // Pick a pseudo-random text from the pool
-                let index = std::time::SystemTime::now()
-                    .duration_since(std::time::UNIX_EPOCH)
-                    .unwrap_or_default()
-                    .subsec_nanos() as usize
-                    % texts.len();
+                let index = pointer % texts.len();
                 let body = texts[index].clone();
                 let title = if !titles.is_empty() {
                     titles[index % titles.len()].clone()
@@ -193,6 +190,11 @@ async fn configure_scheduler(
                     "أذكار".to_string()
                 };
                 let _ = trigger_notification(&app_handle, title, body).await;
+
+                pointer += 1;
+                if pointer >= texts.len() {
+                    pointer = 0;
+                }
             }
         }));
     }
@@ -248,6 +250,7 @@ pub fn run() {
                 .icon(app.default_window_icon().unwrap().clone())
                 .tooltip("أذكار")
                 .menu(&menu)
+                .show_menu_on_left_click(false)
                 .on_menu_event(|app, event| match event.id.as_ref() {
                     "show" => {
                         if let Some(win) = app.get_webview_window("main") {

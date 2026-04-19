@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.7] - 2026-04-19
+
+### Added
+
+- Privacy policy page at `/privacy` with link in site footer.
+- Microsoft Store support: offline WebView2 installer config and dedicated `build:store` script.
+- Automated Microsoft Store installer build in CI/CD pipeline.
+
+### Fixed
+
+- Notification scheduler now cycles through azkar in sequential order — no more random repeats until all have been shown.
+- Tray icon left-click now opens the app window; right-click shows the Open/Quit menu.
+
+### Changed
+
+- Build optimizations: `panic = "abort"` for smaller release binary, `incremental = true` for faster dev rebuilds, `removeUnusedCommands` to strip dead Tauri commands.
+
+---
+
 ## [1.0.6] - 2026-04-14
 
 ### Changed

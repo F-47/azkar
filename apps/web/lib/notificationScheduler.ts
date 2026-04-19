@@ -1,6 +1,6 @@
 import { getNotificationAzkars } from "@/lib/azkarStore";
 import { getTodayPrayerWindows, loadCoords } from "@/lib/prayerTimes";
-import type { Category } from "@/types";
+import type { Category, Zekr } from "@/types";
 import { isTauri, sendAzkarNotification } from "./tauri";
 
 const SETTINGS_KEY = "azkar-notification-settings";
@@ -115,12 +115,38 @@ function getEffectiveCategory(
   return null;
 }
 
-function pickRandomZekr(category: Category | "both") {
-  const all = getNotificationAzkars();
-  const pool =
-    category === "both" ? all : all.filter((z) => z.category === category);
+const QUEUE_KEY = "azkar-shuffled-queue";
+
+function getNextFromQueue(category: Category | "both"): Zekr | null {
+  const pool = getNotificationAzkars(category);
   if (!pool.length) return null;
-  return pool[Math.floor(Math.random() * pool.length)];
+
+  if (typeof window === "undefined") return pool[0];
+
+  const stored = localStorage.getItem(QUEUE_KEY);
+  const queues: Record<string, number[]> = stored ? JSON.parse(stored) : {};
+
+  let queue = queues[category] || [];
+
+  // Filter queue to only include IDs currently in the pool (in case settings changed)
+  const poolIds = new Set(pool.map((z) => z.id));
+  queue = queue.filter((id) => poolIds.has(id));
+
+  if (queue.length === 0) {
+    // Rebuild in original list order (no shuffling)
+    queue = pool.map((z) => z.id);
+  }
+
+  const id = queue.shift()!;
+  queues[category] = queue;
+
+  localStorage.setItem(QUEUE_KEY, JSON.stringify(queues));
+
+  return pool.find((z) => z.id === id) || pool[0];
+}
+
+function pickRandomZekr(category: Category | "both") {
+  return getNextFromQueue(category);
 }
 
 function categoryTitle(category: Category | "both"): string {

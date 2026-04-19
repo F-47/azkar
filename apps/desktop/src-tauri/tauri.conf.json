@@ -7,7 +7,8 @@
     "beforeDevCommand": "cd ../web && npm run dev",
     "devUrl": "http://localhost:3000",
     "beforeBuildCommand": "cd ../web && npm run build",
-    "frontendDist": "../../web/out"
+    "frontendDist": "../../web/out",
+    "removeUnusedCommands": true
   },
   "app": {
     "withGlobalTauri": false,
