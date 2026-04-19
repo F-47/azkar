@@ -4,6 +4,7 @@ import LandingPage from "@/components/landingPage";
 import { Card } from "@/components/ui/card";
 import { Bell, Book, GlobeOff, Lock, LucideIcon, Star } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -69,7 +70,7 @@ export default function Home() {
       </section>
 
       <footer className="border-t border-border/30 bg-card/30 backdrop-blur py-12 flex-col flex items-center">
-        <div className="absolute inset-0 bg-linear-to-r from-accent/8 via-transparent to-accent/8" />
+        <div className="absolute inset-0 bg-linear-to-r from-accent/8 via-transparent to-accent/8 -z-10" />
         <div className="relative w-20 h-20 mb-6">
           <Image src="/logo.png" alt="icon" fill className="object-contain" />
         </div>
@@ -81,6 +82,12 @@ export default function Home() {
         <p className="text-xs text-muted-foreground/60">
           © {new Date().getFullYear()} أذكار. جميع الحقوق محفوظة.
         </p>
+        <Link
+          href="/privacy"
+          className="text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors mt-2"
+        >
+          سياسة الخصوصية
+        </Link>
 
         <div className="absolute bottom-6 right-10 opacity-10 hidden md:block">
           <Star className="w-10 h-10" />
