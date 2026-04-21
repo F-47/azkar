@@ -15,7 +15,7 @@
     "windows": [
       {
         "title": "Azkar App",
-        "url": "index.html",
+        "url": "azkar/index.html",
         "width": 400,
         "height": 700,
         "minWidth": 360,
