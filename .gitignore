@@ -13,7 +13,11 @@ build/
 
 # Tauri
 apps/desktop/src-tauri/target/
-apps/desktop/src-tauri/gen/
+apps/desktop/src-tauri/gen/*
+!apps/desktop/src-tauri/gen/windows
+apps/desktop/src-tauri/gen/windows/*
+!apps/desktop/src-tauri/gen/windows/bundle.config.json
+!apps/desktop/src-tauri/gen/windows/AppxManifest.xml.template
 
 # Environment
 .env

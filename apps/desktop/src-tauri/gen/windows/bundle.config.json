@@ -1,0 +1,22 @@
+{
+  "publisher": "CN=1BA92512-2519-44FE-AEA2-899D33306F88",
+  "publisherDisplayName": "Fares Galal",
+  "capabilities": {
+    "general": [
+      "internetClient"
+    ]
+  },
+  "extensions": {
+    "shareTarget": false,
+    "fileAssociations": [],
+    "protocolHandlers": []
+  },
+  "signing": {
+    "pfx": null,
+    "pfxPassword": null
+  },
+  "resourceIndex": {
+    "enabled": false,
+    "keepConfig": false
+  }
+}

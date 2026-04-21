@@ -9,6 +9,9 @@ edition = "2021"
 name = "azkar_app_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
+[features]
+store = []
+
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 

@@ -211,11 +211,9 @@ pub fn run() {
     #[cfg(target_os = "linux")]
     std::env::set_var("GDK_BACKEND", "x11");
 
-    tauri::Builder::default()
+    let builder = tauri::Builder::default()
         .manage(Mutex::new(SchedulerState::default()))
-        .plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, Some(vec!["--hidden"])))
         .plugin(tauri_plugin_positioner::init())
-        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             if let Some(win) = app.get_webview_window("main") {
@@ -228,7 +226,14 @@ pub fn run() {
             hide_notification,
             resize_notification,
             configure_scheduler
-        ])
+        ]);
+
+    #[cfg(not(feature = "store"))]
+    let builder = builder
+        .plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, Some(vec!["--hidden"])))
+        .plugin(tauri_plugin_updater::Builder::new().build());
+
+    builder
         .setup(|app| {
             let window = app.get_webview_window("main").unwrap();
 

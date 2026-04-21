@@ -1,8 +1,17 @@
 {
+  "version": "1.0.8",
   "bundle": {
+    "targets": ["msix"],
     "windows": {
       "webviewInstallMode": {
         "type": "offlineInstaller"
+      },
+      "msix": {
+        "publisher": "CN=1BA92512-2519-44FE-AEA2-899D33306F88",
+        "packageName": "FaresGalal.AzkarApp",
+        "packageDisplayName": "Azkar App",
+        "publisherDisplayName": "Fares Galal",
+        "installMode": "perUser"
       }
     }
   }
