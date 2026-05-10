@@ -1,0 +1,163 @@
+"use client";
+
+import { GitHubIcon, MosqueIcon } from "@/components/icons";
+import { Button } from "@/components/ui/button";
+import { OrbitingCircles } from "@/components/ui/orbiting-circles";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useLatestRelease } from "@/hooks/useLatestRelease";
+import useOrbitRadius from "@/hooks/useOrbitRadius";
+import { ChevronDown, Download, Loader2, Moon, Star } from "lucide-react";
+import Image from "next/image";
+
+function LandingPage() {
+  const radius = useOrbitRadius();
+  const { data, loading } = useLatestRelease();
+
+  const handleDownload = (url: string | null) => {
+    if (url) {
+      window.location.href = url;
+    } else {
+      window.open("https://github.com/F-47/azkar/releases/latest", "_blank");
+    }
+  };
+
+  return (
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+      <Button
+        variant="link"
+        className="absolute top-4 right-4 z-50 text-white"
+        onClick={() => window.open("https://github.com/F-47/azkar", "_blank")}
+      >
+        <GitHubIcon className="size-9" />
+      </Button>
+      <div className="absolute inset-0">
+        <div className="absolute hidden sm:flex inset-0 items-center justify-center -z-10 pointer-events-none">
+          <OrbitingCircles iconSize={48} radius={radius} duration={50}>
+            <Zikr text="سُبْحَانَ اللَّهِ وَبِحَمْدِهِ" />
+            <Zikr text="لَا إِلَهَ إِلَّا اللَّهُ" />
+            <Zikr text="الْحَمْدُ لِلَّهِ" />
+            <Zikr text="اللَّهُ أَكْبَرُ" />
+            <Zikr text="لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ" />
+          </OrbitingCircles>
+        </div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.18),transparent_65%)]" />
+        <div className="absolute inset-0 pattern-islamic opacity-25 mask-[radial-gradient(circle_at_center,black,transparent_75%)]" />
+      </div>
+
+      <div className="absolute top-32 left-16 opacity-15">
+        <Star className="w-12 h-12" />
+      </div>
+      <div className="absolute bottom-40 right-20 opacity-15 ">
+        <Moon className="w-12 h-12" />
+      </div>
+
+      <div className="relative w-full max-w-3xl mx-auto flex flex-col items-center text-center z-10">
+        <div className="absolute w-28 h-28 -top-32">
+          <Image src="/logo.png" alt="icon" fill className="object-contain" />
+        </div>
+
+        <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold leading-tight mb-6">
+          اجعل الذكر جزءًا من <span className="text-primary">يومك</span>
+        </h1>
+
+        <p className="text-lg md:text-xl text-muted-foreground mb-10">
+          تجربة هادئة تساعدك على المواظبة على الذكر
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-4">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="xl" disabled={loading} className="min-w-50">
+                {loading ? (
+                  <Loader2 className="w-4 h-4 ml-2 animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4 me-2" />
+                )}
+                Windows {data?.version ? `(${data.version})` : ""}
+                <ChevronDown className="w-4 h-4 me-2 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="center"
+              className="rounded-lg border-white/10 bg-white/5 backdrop-blur-xl"
+            >
+              <DropdownMenuItem
+                className="cursor-pointer hover:text-white! font-bold justify-start text-right py-3 rounded-lg"
+                onClick={() => handleDownload(data?.windows.msi || null)}
+              >
+                MSI Installer
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer hover:text-white! font-bold justify-start text-right py-3 rounded-lg"
+                onClick={() => handleDownload(data?.windows.exe || null)}
+              >
+                EXE Installer
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                size="xl"
+                variant="outline"
+                disabled={loading}
+                className="min-w-50"
+              >
+                {loading ? (
+                  <Loader2 className="w-4 h-4 me-2 animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4 me-2 opacity-50" />
+                )}
+                Linux
+                <ChevronDown className="w-4 h-4 me-2 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="center"
+              className="rounded-lg border-white/10 bg-white/5 backdrop-blur-xl"
+            >
+              <DropdownMenuItem
+                className="cursor-pointer hover:text-white! font-bold justify-start text-right py-3 rounded-lg"
+                onClick={() => handleDownload(data?.linux.deb || null)}
+              >
+                Debian (.deb)
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer hover:text-white! font-bold justify-start text-right py-3 rounded-lg"
+                onClick={() => handleDownload(data?.linux.appImage || null)}
+              >
+                AppImage
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer hover:text-white! font-bold justify-start text-right py-3 rounded-lg"
+                onClick={() => handleDownload(data?.linux.rpm || null)}
+              >
+                RPM Package
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 opacity-10 pointer-events-none z-10">
+        <MosqueIcon />
+      </div>
+    </section>
+  );
+}
+
+export default LandingPage;
+
+function Zikr({ text }: { text: string }) {
+  return (
+    <div className="px-3 py-1 rounded-full bg-white/5 backdrop-blur-md border border-white/10 text-muted-foreground/80 text-sm shadow-[0_0_12px_rgba(255,255,255,0.05)] whitespace-nowrap">
+      {text}
+    </div>
+  );
+}

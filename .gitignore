@@ -7,9 +7,6 @@ node_modules/
 apps/web/.next
 apps/web/out
 
-# Nested web app repo
-apps/web/
-
 # Production build
 dist/
 build/
