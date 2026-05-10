@@ -1,11 +1,10 @@
 use std::sync::Mutex;
 use tauri::{
-    Manager,
-    LogicalSize,
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
+    LogicalSize, Manager,
 };
-use tauri_plugin_positioner::{WindowExt, Position};
+use tauri_plugin_positioner::{Position, WindowExt};
 
 const NOTIF_WIDTH: f64 = 360.0;
 const NOTIF_DEFAULT_HEIGHT: f64 = 140.0;
@@ -36,16 +35,37 @@ struct SchedulerSettings {
     titles: Vec<String>,
 }
 
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct DesktopLocation {
+    lat: f64,
+    lon: f64,
+    accuracy: Option<f64>,
+}
+
+#[derive(serde::Deserialize, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct NotificationAction {
+    #[serde(rename = "type")]
+    action_type: String,
+    label: String,
+    prayer: String,
+}
+
 // ---------------------------------------------------------------------------
 // Notification display logic (shared between the command and the scheduler)
 // ---------------------------------------------------------------------------
 
-async fn trigger_notification(app: &tauri::AppHandle, title: String, body: String) -> Result<(), String> {
+async fn trigger_notification(
+    app: &tauri::AppHandle,
+    title: String,
+    body: String,
+    action: Option<NotificationAction>,
+) -> Result<(), String> {
     if app.get_webview_window("notification").is_none() {
         #[cfg(debug_assertions)]
-        let notif_url = tauri::WebviewUrl::External(
-            "http://localhost:3000/notification".parse().unwrap(),
-        );
+        let notif_url =
+            tauri::WebviewUrl::External("http://localhost:3000/notification".parse().unwrap());
         #[cfg(not(debug_assertions))]
         let notif_url = tauri::WebviewUrl::App("notification/index.html".into());
 
@@ -90,10 +110,12 @@ async fn trigger_notification(app: &tauri::AppHandle, title: String, body: Strin
     // If __showNotification isn't registered yet, stash in __pendingNotif for the page to pick up.
     let title_json = serde_json::to_string(&title).map_err(|e| e.to_string())?;
     let body_json = serde_json::to_string(&body).map_err(|e| e.to_string())?;
+    let action_json = serde_json::to_string(&action).map_err(|e| e.to_string())?;
     win.eval(&format!(
-        "(function(){{var p={{title:{t},body:{b}}};if(window.__showNotification)window.__showNotification(p.title,p.body);else window.__pendingNotif=p;}})()",
+        "(function(){{var p={{title:{t},body:{b},action:{a}}};if(window.__showNotification)window.__showNotification(p.title,p.body,undefined,p.action);else window.__pendingNotif=p;}})()",
         t = title_json,
         b = body_json,
+        a = action_json,
     ))
     .map_err(|e: tauri::Error| e.to_string())?;
 
@@ -108,7 +130,7 @@ async fn trigger_notification(app: &tauri::AppHandle, title: String, body: Strin
 async fn resize_notification(app: tauri::AppHandle, height: f64) -> Result<(), String> {
     if let Some(win) = app.get_webview_window("notification") {
         let h = height.min(420.0).max(100.0);
-        
+
         if let Ok(Some(monitor)) = win.current_monitor() {
             if let Ok(scale) = win.scale_factor() {
                 // Completely bypass unreliable positioner plugins.
@@ -128,7 +150,7 @@ async fn resize_notification(app: tauri::AppHandle, height: f64) -> Result<(), S
                 let _ = win.set_position(tauri::LogicalPosition::new(final_x, final_y));
             }
         }
-        
+
         let _ = win.set_size(LogicalSize::new(NOTIF_WIDTH, h));
         let _ = win.show();
     }
@@ -144,8 +166,62 @@ async fn hide_notification(app: tauri::AppHandle) -> Result<(), String> {
 }
 
 #[tauri::command]
-async fn show_notification(app: tauri::AppHandle, title: String, body: String) -> Result<(), String> {
-    trigger_notification(&app, title, body).await
+async fn show_notification(
+    app: tauri::AppHandle,
+    title: String,
+    body: String,
+    action: Option<NotificationAction>,
+) -> Result<(), String> {
+    trigger_notification(&app, title, body, action).await
+}
+
+#[cfg(target_os = "windows")]
+fn request_windows_location() -> Result<DesktopLocation, String> {
+    use windows::Devices::Geolocation::{GeolocationAccessStatus, Geolocator, PositionAccuracy};
+
+    let access = Geolocator::RequestAccessAsync()
+        .map_err(|e| e.to_string())?
+        .get()
+        .map_err(|e| e.to_string())?;
+
+    if access != GeolocationAccessStatus::Allowed {
+        return Err("denied".to_string());
+    }
+
+    let geolocator = Geolocator::new().map_err(|e| e.to_string())?;
+    geolocator
+        .SetDesiredAccuracy(PositionAccuracy::High)
+        .map_err(|e| e.to_string())?;
+
+    let position = geolocator
+        .GetGeopositionAsync()
+        .map_err(|e| e.to_string())?
+        .get()
+        .map_err(|e| e.to_string())?;
+    let coordinate = position.Coordinate().map_err(|e| e.to_string())?;
+    let point = coordinate.Point().map_err(|e| e.to_string())?;
+    let basic = point.Position().map_err(|e| e.to_string())?;
+
+    Ok(DesktopLocation {
+        lat: basic.Latitude,
+        lon: basic.Longitude,
+        accuracy: coordinate.Accuracy().ok(),
+    })
+}
+
+#[tauri::command]
+async fn request_desktop_location() -> Result<DesktopLocation, String> {
+    #[cfg(target_os = "windows")]
+    {
+        return tauri::async_runtime::spawn_blocking(request_windows_location)
+            .await
+            .map_err(|e| e.to_string())?;
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    {
+        Err("unsupported".to_string())
+    }
 }
 
 #[tauri::command]
@@ -172,7 +248,6 @@ async fn configure_scheduler(
     let titles = settings.titles;
     let app_handle = app.clone();
 
-
     // Relock to set the new handle
     {
         let mut scheduler = state.lock().map_err(|e| e.to_string())?;
@@ -189,7 +264,7 @@ async fn configure_scheduler(
                 } else {
                     "أذكار".to_string()
                 };
-                let _ = trigger_notification(&app_handle, title, body).await;
+                let _ = trigger_notification(&app_handle, title, body, None).await;
 
                 pointer += 1;
                 if pointer >= texts.len() {
@@ -225,12 +300,16 @@ pub fn run() {
             show_notification,
             hide_notification,
             resize_notification,
+            request_desktop_location,
             configure_scheduler
         ]);
 
     #[cfg(not(feature = "store"))]
     let builder = builder
-        .plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, Some(vec!["--hidden"])))
+        .plugin(tauri_plugin_autostart::init(
+            tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+            Some(vec!["--hidden"]),
+        ))
         .plugin(tauri_plugin_updater::Builder::new().build());
 
     builder

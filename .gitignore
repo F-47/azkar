@@ -52,3 +52,6 @@ Thumbs.db
 *.key
 *.key.pub
 **/.tauri/
+
+# msi
+tmp_msix_extract
