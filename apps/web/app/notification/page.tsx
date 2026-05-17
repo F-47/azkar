@@ -11,6 +11,7 @@ import {
   markPrayerAsPrayed,
 } from "@/lib/notificationScheduler";
 import { Check } from "lucide-react";
+import { dirForLanguage } from "@/i18n/locale";
 
 interface NotificationAction {
   type: "markPrayerPrayed";
@@ -48,11 +49,13 @@ export default function NotificationPage() {
       return {
         appearance: s.appearance || DEFAULT_SETTINGS.appearance,
         durationFactor: s.durationFactor ?? DEFAULT_SETTINGS.durationFactor,
+        language: s.language ?? DEFAULT_SETTINGS.language,
       };
     }
     return {
       appearance: DEFAULT_SETTINGS.appearance,
       durationFactor: DEFAULT_SETTINGS.durationFactor,
+      language: DEFAULT_SETTINGS.language,
     };
   });
 
@@ -125,7 +128,11 @@ export default function NotificationPage() {
 
     document.documentElement.style.background = "transparent";
     document.body.style.background = "transparent";
-    document.documentElement.setAttribute("dir", "rtl");
+    document.documentElement.setAttribute(
+      "dir",
+      dirForLanguage(settings.language),
+    );
+    document.body.setAttribute("dir", "rtl");
     win.__showNotification = (title, body, duration, action) => {
       trigger(title, body, duration, action);
     };
@@ -151,7 +158,7 @@ export default function NotificationPage() {
       }
       delete win.__showNotification;
     };
-  }, [trigger]);
+  }, [settings.language, trigger]);
 
   useEffect(() => {
     if (!data || !cardRef.current) return;
@@ -165,6 +172,7 @@ export default function NotificationPage() {
       setSettings({
         appearance: s.appearance || DEFAULT_SETTINGS.appearance,
         durationFactor: s.durationFactor ?? DEFAULT_SETTINGS.durationFactor,
+        language: s.language ?? DEFAULT_SETTINGS.language,
       });
     };
     window.addEventListener("storage", handleStorage);
@@ -210,6 +218,7 @@ export default function NotificationPage() {
   return (
     <div
       ref={cardRef}
+      dir="rtl"
       className={`flex flex-col z-10 pointer-events-auto select-none rounded-xl cursor-pointer overflow-hidden transition-all duration-200 active:scale-[0.98]`}
       onClick={hideWindow}
       onMouseEnter={handleMouseEnter}
@@ -232,6 +241,7 @@ export default function NotificationPage() {
 
       <HtmlContent
         content={data.body}
+        dir="rtl"
         className="p-4 pointer-events-none arabic-text leading-8! w-full whitespace-pre-line text-base flex-1"
         style={{ color: settings.appearance.textColor, background: bgColor }}
         badgeStyle={{

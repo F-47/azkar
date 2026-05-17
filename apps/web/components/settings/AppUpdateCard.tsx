@@ -15,6 +15,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 export function AppUpdateCard() {
   const [updateState, setUpdateState] = useState<
@@ -23,6 +24,7 @@ export function AppUpdateCard() {
   const [updateVersion, setUpdateVersion] = useState<string | null>(null);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [appVersion, setAppVersion] = useState<string>("...");
+  const t = useTranslations();
 
   useEffect(() => {
     if (isTauri()) {
@@ -66,15 +68,15 @@ export function AppUpdateCard() {
             />
           </div>
           <div>
-            <h3 className="font-bold text-base">تحديثات التطبيق</h3>
+            <h3 className="font-bold text-base">{t("updateCardTitle")}</h3>
             <p className="text-xs text-muted-foreground/60">
-              الإصدار الحالي: {appVersion}
+              {t("currentVersion", { version: appVersion })}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20">
           <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-          <span className="text-xs text-green-500 uppercase">تلقائي</span>
+          <span className="text-xs text-green-500 uppercase">{t("automatic")}</span>
         </div>
       </div>
 
@@ -83,7 +85,7 @@ export function AppUpdateCard() {
           <div className="flex items-center gap-3 p-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-500 animate-in zoom-in-95 duration-300">
             <CheckCircle2 className="w-5 h-5 shrink-0" />
             <span className="text-xs font-bold leading-none">
-              أنت تستخدم أحدث إصدار بالفعل!
+              {t("latestVersion")}
             </span>
           </div>
         )}
@@ -95,7 +97,7 @@ export function AppUpdateCard() {
             className="w-full h-12 rounded-xl bg-white/5 border border-white/10 text-sm font-bold hover:bg-white/10 hover:border-primary/30 hover:text-primary transition-all duration-300"
           >
             <Sparkles className="w-4 h-4 ml-2 opacity-50" />
-            التحقق من التحديثات
+            {t("checkUpdates")}
           </Button>
         )}
 
@@ -105,7 +107,7 @@ export function AppUpdateCard() {
             variant="ghost"
             className="w-full h-12 rounded-xl bg-white/5 border border-white/10 text-sm font-bold opacity-70 transition-all duration-300"
           >
-            جار التحقق من وجود تحديثات
+            {t("checkingUpdates")}
             <RefreshCw className="w-4 h-4 ml-2 opacity-50 animate-spin" />
           </Button>
         )}
@@ -116,10 +118,10 @@ export function AppUpdateCard() {
               <PartyPopper className="w-6 h-6 shrink-0" />
               <div className="flex flex-col gap-1">
                 <span className="text-xs font-black uppercase opacity-80">
-                  يتوفر تحديث جديد
+                  {t("newUpdateAvailable")}
                 </span>
                 <span className="text-xs font-bold">
-                  الإصدار v{updateVersion} متاح الآن
+                  {t("versionAvailable", { version: updateVersion ?? "" })}
                 </span>
               </div>
             </div>
@@ -128,7 +130,7 @@ export function AppUpdateCard() {
               className="w-full h-14 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-black text-sm shadow-[0_10px_20px_rgba(245,158,11,0.2)] active:scale-[0.98] transition-all"
             >
               <Zap className="w-5 h-5 ml-2 fill-current" />
-              تثبيت التحديث الآن
+              {t("installUpdate")}
             </Button>
           </div>
         )}
@@ -139,7 +141,7 @@ export function AppUpdateCard() {
               <div className="flex items-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin text-primary" />
                 <span className="text-xs font-black uppercase text-muted-foreground">
-                  جار تحميل التحديث
+                  {t("downloadingUpdate")}
                 </span>
               </div>
               <span className="text-xs font-black text-primary tabular-nums tracking-tighter">
@@ -163,10 +165,10 @@ export function AppUpdateCard() {
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-xs font-black uppercase opacity-80">
-                  اكتمل التحميل
+                  {t("downloadDone")}
                 </span>
                 <span className="text-xs font-bold">
-                  تم تجهيز التحديث بنجاح!
+                  {t("updateReady")}
                 </span>
               </div>
             </div>
@@ -177,7 +179,7 @@ export function AppUpdateCard() {
               className="w-full h-14 rounded-xl bg-green-500 hover:bg-green-600 text-white font-black text-sm shadow-[0_10px_20px_rgba(34,197,94,0.2)] active:scale-[0.98] transition-all"
             >
               <RefreshCw className="w-5 h-5 ml-2" />
-              إعادة التشغيل والتثبيت
+              {t("restartInstall")}
             </Button>
           </div>
         )}

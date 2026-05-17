@@ -2,9 +2,11 @@
 
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import {
   Bell,
   Clock,
+  Languages,
   Loader2,
   Moon,
   Power,
@@ -22,6 +24,9 @@ import {
 import { requestCoords, saveCoords, type SavedCoords } from "@/lib/prayerTimes";
 import { isTauri } from "@/lib/tauri";
 import { useState } from "react";
+import { languageOptions, saveLanguage, type Language } from "@/i18n/locale";
+import { usePathname, useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 
 export function GeneralSettings({
   settings,
@@ -39,6 +44,15 @@ export function GeneralSettings({
   updateAutostart: (next: boolean) => void;
 }) {
   const [locating, setLocating] = useState(false);
+  const t = useTranslations();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  function handleLanguageChange(language: Language) {
+    update({ language });
+    saveLanguage(language);
+    router.replace(pathname || "/", { locale: language });
+  }
 
   async function handleTogglePrayerTimes() {
     const turningOn = !settings.usePrayerTimes;
@@ -56,34 +70,59 @@ export function GeneralSettings({
     <>
       <Card className="rounded-xl p-6 border-white/10 bg-white/5 backdrop-blur-xl group overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.03),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+        <div className="relative z-10 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center text-teal-400">
+              <Languages className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-bold text-base">{t("language")}</h3>
+              <p className="text-xs text-muted-foreground">
+                {t("languageDescription")}
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2 rounded-lg border border-white/10 bg-white/5 p-1">
+            {languageOptions.map((option) => {
+              const active = settings.language === option.value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => handleLanguageChange(option.value as Language)}
+                  className={cn(
+                    "h-9 min-w-20 rounded-md px-3 text-xs font-black transition-colors",
+                    active
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-white/10 hover:text-white",
+                  )}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </Card>
+
+      <Card className="rounded-xl p-6 border-white/10 bg-white/5 backdrop-blur-xl group overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.03),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
         <div className="relative z-10 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
               <Bell className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-base">تفعيل الإشعارات</h3>
+              <h3 className="font-bold text-base">{t("notifications")}</h3>
               <p className="text-xs text-muted-foreground">
-                تظهر أذكار عشوائية على سطح المكتب
+                {t("notificationsDescription")}
               </p>
             </div>
           </div>
-          <button
-            onClick={() => update({ enabled: !settings.enabled })}
-            className={cn(
-              "relative w-14 h-8 rounded-full transition-all duration-500 p-1",
-              settings.enabled
-                ? "bg-primary"
-                : "bg-white/10 border border-white/5",
-            )}
-          >
-            <div
-              className={cn(
-                "w-6 h-6 rounded-full bg-white transition-all duration-500",
-                settings.enabled ? "translate-x-0 shadow-lg" : "-translate-x-6",
-              )}
-            />
-          </button>
+          <Switch
+            checked={settings.enabled}
+            onCheckedChange={(checked) => update({ enabled: checked })}
+          />
         </div>
       </Card>
 
@@ -96,26 +135,16 @@ export function GeneralSettings({
                 <Power className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-bold text-base">تشغيل عند بدء النظام</h3>
+                <h3 className="font-bold text-base">{t("autostart")}</h3>
                 <p className="text-xs text-muted-foreground">
-                  يبدأ التطبيق تلقائيا مع تشغيل الجهاز
+                  {t("autostartDescription")}
                 </p>
               </div>
             </div>
-            <button
-              onClick={() => updateAutostart(!autostart)}
-              className={cn(
-                "relative w-14 h-8 rounded-full transition-all duration-500 p-1",
-                autostart ? "bg-primary" : "bg-white/10 border border-white/5",
-              )}
-            >
-              <div
-                className={cn(
-                  "w-6 h-6 rounded-full bg-white transition-all duration-500",
-                  autostart ? "translate-x-0 shadow-lg" : "-translate-x-6",
-                )}
-              />
-            </button>
+            <Switch
+              checked={autostart}
+              onCheckedChange={(checked) => updateAutostart(checked)}
+            />
           </div>
         </Card>
       )}
@@ -129,7 +158,7 @@ export function GeneralSettings({
                 <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500">
                   <RefreshCw className="w-5 h-5" />
                 </div>
-                <h3 className="font-bold text-sm">الفاصل بين الأذكار</h3>
+                <h3 className="font-bold text-sm">{t("interval")}</h3>
               </div>
               <div className="flex items-center gap-2">
                 <Input
@@ -146,7 +175,7 @@ export function GeneralSettings({
                   className="w-12 py-4 rounded-lg bg-white/5 border border-white/10 text-center text-lg font-black tabular-nums focus:outline-none focus:border-primary transition-all"
                 />
                 <span className="text-xs font-bold text-muted-foreground uppercase">
-                  دقيقة
+                  {t("minute")}
                 </span>
               </div>
             </div>
@@ -161,9 +190,9 @@ export function GeneralSettings({
                   <Timer className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm">مدة عرض الذكر</h3>
+                  <h3 className="font-bold text-sm">{t("displayDuration")}</h3>
                   <p className="text-xs text-muted-foreground/70 mt-0.5">
-                    كلما زادت القيمة زادت مدة عرض الذكر
+                    {t("displayDurationDescription")}
                   </p>
                 </div>
               </div>
@@ -185,7 +214,7 @@ export function GeneralSettings({
                   className="w-12 py-4 rounded-lg bg-white/5 border border-white/10 text-center text-lg font-black tabular-nums focus:outline-none focus:border-primary transition-all"
                 />
                 <span className="text-xs font-bold text-muted-foreground uppercase">
-                  مرة
+                  {t("multiplier")}
                 </span>
               </div>
             </div>
@@ -199,42 +228,31 @@ export function GeneralSettings({
                   <Clock className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm">بناءً على أوقات الصلاة</h3>
+                  <h3 className="font-bold text-sm">
+                    {t("basedOnPrayerTimes")}
+                  </h3>
                   <p className="text-xs text-muted-foreground/70 mt-0.5">
-                    الصباح من الفجر • المساء من العصر حتى الفجر
+                    {t("basedOnPrayerTimesDescription")}
                   </p>
                   {coords && (
                     <p className="text-xs text-teal-500/70 mt-0.5">
                       {coords.source === "gps"
-                        ? "موقع GPS"
-                        : "تقدير من المنطقة الزمنية"}
+                        ? t("gpsLocation")
+                        : t("timezoneEstimate")}
                     </p>
                   )}
                 </div>
               </div>
-              <button
-                onClick={handleTogglePrayerTimes}
-                disabled={locating}
-                className={cn(
-                  "relative w-14 h-8 rounded-full transition-all duration-500 p-1 shrink-0",
-                  settings.usePrayerTimes
-                    ? "bg-primary"
-                    : "bg-white/10 border border-white/5",
+              <div className="relative shrink-0">
+                <Switch
+                  checked={settings.usePrayerTimes}
+                  disabled={locating}
+                  onCheckedChange={handleTogglePrayerTimes}
+                />
+                {locating && (
+                  <Loader2 className="absolute inset-0 m-auto size-4 animate-spin text-primary" />
                 )}
-              >
-                {locating ? (
-                  <Loader2 className="w-5 h-5 animate-spin text-primary mx-auto" />
-                ) : (
-                  <div
-                    className={cn(
-                      "w-6 h-6 rounded-full bg-white transition-all duration-500",
-                      settings.usePrayerTimes
-                        ? "translate-x-0 shadow-lg"
-                        : "-translate-x-6",
-                    )}
-                  />
-                )}
-              </button>
+              </div>
             </div>
           </Card>
 
@@ -245,24 +263,24 @@ export function GeneralSettings({
                 <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500">
                   <Sparkles className="w-5 h-5" />
                 </div>
-                <h3 className="font-bold text-sm">نوع الأذكار</h3>
+                <h3 className="font-bold text-sm">{t("azkarType")}</h3>
               </div>
               <div className="grid grid-cols-3 gap-3">
                 {[
                   {
-                    label: "الصباح",
+                    label: t("morning"),
                     value: "morning",
                     icon: Sun,
                     color: "text-amber-500",
                   },
                   {
-                    label: "المساء",
+                    label: t("evening"),
                     value: "evening",
                     icon: Moon,
                     color: "text-blue-400",
                   },
                   {
-                    label: "الكل",
+                    label: t("all"),
                     value: "both",
                     icon: Sparkles,
                     color: "text-purple-400",

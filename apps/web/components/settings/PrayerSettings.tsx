@@ -2,6 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -50,6 +51,8 @@ import {
   type NotificationSettings,
 } from "@/lib/notificationScheduler";
 import { openLocationSettings } from "@/lib/tauri";
+import { type Language } from "@/i18n/locale";
+import { useTranslations } from "next-intl";
 
 const methodOptions: Array<{ value: PrayerCalculationMethod; label: string }> =
   [
@@ -92,6 +95,22 @@ const prayerNames: Array<{ value: PrayerName; label: string }> = [
   { value: "maghrib", label: "المغرب" },
   { value: "isha", label: "العشاء" },
 ];
+
+const englishPrayerNames: Record<PrayerName, string> = {
+  fajr: "Fajr",
+  sunrise: "Sunrise",
+  dhuhr: "Dhuhr",
+  asr: "Asr",
+  maghrib: "Maghrib",
+  isha: "Isha",
+};
+
+function getPrayerLabel(
+  prayer: { value: PrayerName; label: string },
+  language: Language,
+) {
+  return language === "en" ? englishPrayerNames[prayer.value] : prayer.label;
+}
 
 function parseTimeToDate(time: string, baseDate = new Date()) {
   const [hours, minutes] = time.split(":").map(Number);
@@ -155,6 +174,8 @@ export function PrayerSettings({
     useState<LocationRequestError | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const prayerTimes = settings.prayerTimes ?? DEFAULT_PRAYER_SETTINGS;
+  const language = settings.language;
+  const t = useTranslations();
   const prayerReminders = {
     ...DEFAULT_SETTINGS.prayerReminders,
     ...settings.prayerReminders,
@@ -197,6 +218,7 @@ export function PrayerSettings({
   const currentPrayer = [...prayerSchedule]
     .reverse()
     .find((prayer) => prayer.date.getTime() <= now);
+
   useEffect(() => {
     const interval = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(interval);
@@ -266,16 +288,16 @@ export function PrayerSettings({
                 <DialogTrigger asChild>
                   <button className="h-11 rounded-lg bg-teal-500/10 border border-teal-500/20 text-sm font-bold text-teal-300 hover:bg-teal-500/15 transition-colors flex items-center justify-center gap-2">
                     <Eye className="w-4 h-4" />
-                    عرض المواقيت
+                    {t("showPrayerTimes")}
                   </button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-xl gap-3">
                   <DialogHeader>
                     <DialogTitle className="text-lg font-black">
-                      مواقيت الصلاة اليوم
+                      {t("prayerTimes")}
                     </DialogTitle>
                     <DialogDescription>
-                      المواقيت محسوبة حسب الإعدادات الحالية والموقع المحفوظ.
+                      {t("prayerTimesDescription")}
                     </DialogDescription>
                   </DialogHeader>
 
@@ -286,10 +308,10 @@ export function PrayerSettings({
                           <div className="grid gap-4">
                             <div>
                               <p className="text-xs font-bold text-orange-300">
-                                الصلاة القادمة
+                                {t("nextPrayer")}
                               </p>
                               <h4 className="mt-1 text-2xl font-black text-orange-50">
-                                {nextPrayer.label}
+                                {getPrayerLabel(nextPrayer, language)}
                               </h4>
                             </div>
                             <div className="flex items-end justify-between gap-3">
@@ -305,10 +327,10 @@ export function PrayerSettings({
                         <div className="flex items-center justify-between rounded-lg border border-white/10 bg-primary/10 px-4 py-3">
                           <div>
                             <p className="text-xs text-muted-foreground">
-                              الصلاة الحالية
+                              {t("currentPrayer")}
                             </p>
                             <p className="text-sm font-bold">
-                              {currentPrayer.label}
+                              {getPrayerLabel(currentPrayer, language)}
                             </p>
                           </div>
                           <span className="text-xs sm:text-lg font-black tabular-nums text-muted-foreground">
@@ -354,14 +376,14 @@ export function PrayerSettings({
                                 </span>
                                 <div>
                                   <span className="block text-sm font-bold">
-                                    {prayer.label}
+                                    {getPrayerLabel(prayer, language)}
                                   </span>
                                   <span className="text-[11px] text-muted-foreground">
                                     {isNext
-                                      ? "قادمة"
+                                      ? t("upcoming")
                                       : isPassed
-                                        ? "انتهت"
-                                        : "لاحقا"}
+                                        ? t("ended")
+                                        : t("later")}
                                   </span>
                                 </div>
                               </div>
@@ -380,8 +402,7 @@ export function PrayerSettings({
                     </div>
                   ) : (
                     <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-sm text-muted-foreground">
-                      لعرض مواقيت دقيقة، فعّل الموقع واضغط تحديث. لن نعرض مواقيت
-                      تقريبية حتى لا تظهر معلومات غير دقيقة.
+                      {t("enableLocationForAccurateTimes")}
                     </div>
                   )}
                   <div className="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/5 p-3">
@@ -390,8 +411,8 @@ export function PrayerSettings({
                       <div className="min-w-0">
                         <p className="text-xs font-bold">
                           {coords?.source === "gps"
-                            ? "الموقع الحالي"
-                            : "موقع تقريبي"}
+                            ? t("currentLocation")
+                            : t("approximateLocation")}
                         </p>
                         <p className="text-[11px] text-muted-foreground tabular-nums truncate">
                           {coords?.source === "gps"
@@ -399,7 +420,7 @@ export function PrayerSettings({
                             : (coords?.label ??
                               (coords
                                 ? `${coords.lat.toFixed(4)}, ${coords.lon.toFixed(4)}`
-                                : "لا يوجد موقع محفوظ"))}
+                                : t("noSavedLocation")))}
                         </p>
                       </div>
                     </div>
@@ -413,7 +434,7 @@ export function PrayerSettings({
                       ) : (
                         <MapPin className="w-4 h-4" />
                       )}
-                      تحديث
+                      {t("refresh")}
                     </button>
                   </div>
 
@@ -421,15 +442,15 @@ export function PrayerSettings({
                     <div className="grid gap-3 rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-xs leading-6 text-red-200">
                       <p>
                         {locationError === "denied" &&
-                          "تم رفض إذن الموقع. افتح إعدادات الموقع للنظام، فعّل الإذن للتطبيق، ثم اضغط تحديث."}
+                          t("locationDenied")}
                         {locationError === "unsupported" &&
-                          "الموقع غير متاح داخل هذه البيئة. جرّب تشغيل التطبيق من المتصفح أو فعّل خدمات الموقع للنظام."}
+                          t("locationUnsupported")}
                         {locationError === "unavailable" &&
-                          "تعذر تحديد الموقع الحالي. تأكد من تشغيل خدمات الموقع ثم اضغط تحديث مرة أخرى."}
+                          t("locationUnavailable")}
                         {locationError === "timeout" &&
-                          "استغرق تحديد الموقع وقتا طويلا. تأكد من اتصال الجهاز وخدمات الموقع ثم حاول مرة أخرى."}
+                          t("locationTimeout")}
                         {locationError === "unknown" &&
-                          "تعذر طلب الموقع لسبب غير معروف. تأكد من صلاحيات الموقع ثم حاول مرة أخرى."}
+                          t("locationUnknown")}
                       </p>
                       {locationError !== "timeout" && (
                         <button
@@ -437,7 +458,7 @@ export function PrayerSettings({
                           onClick={handleOpenLocationSettings}
                           className="h-9 w-fit rounded-lg border border-red-400/30 bg-red-400/10 px-3 text-xs font-bold text-red-100 transition-colors hover:bg-red-400/15"
                         >
-                          فتح إعدادات الموقع
+                          {t("openLocationSettings")}
                         </button>
                       )}
                     </div>
@@ -462,34 +483,20 @@ export function PrayerSettings({
                     <BellRing className="w-4 h-4" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold">تنبيهات الصلاة</h4>
+                    <h4 className="text-sm font-bold">{t("prayerNotifications")}</h4>
                     <p className="text-xs text-muted-foreground">
-                      تذكير قبل الصلاة وعند دخول وقتها
+                      {t("prayerNotificationsDescription")}
                     </p>
                   </div>
                 </div>
-                <button
-                  onClick={() =>
+                <Switch
+                  checked={prayerReminders.enabled}
+                  onCheckedChange={() =>
                     updatePrayerReminders({
                       enabled: !prayerReminders.enabled,
                     })
                   }
-                  className={cn(
-                    "relative w-12 h-7 rounded-full transition-all duration-300 p-1 shrink-0",
-                    prayerReminders.enabled
-                      ? "bg-primary"
-                      : "bg-white/10 border border-white/10",
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "block w-5 h-5 rounded-full bg-white transition-transform duration-300",
-                      prayerReminders.enabled
-                        ? "translate-x-0"
-                        : "-translate-x-5",
-                    )}
-                  />
-                </button>
+                />
               </div>
 
               {prayerReminders.enabled && (
@@ -498,48 +505,35 @@ export function PrayerSettings({
                     <div className="flex items-center justify-between gap-3">
                       <div className="min-w-0">
                         <p className="text-sm font-bold">
-                          تذكير عند دخول الوقت
+                          {t("atPrayerTime")}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          يظهر تنبيه مباشر عند بداية الصلاة
+                          {t("atPrayerTimeDescription")}
                         </p>
                       </div>
-                      <button
+                      <Switch
                         type="button"
-                        onClick={() =>
+                        checked={prayerReminders.notifyAtTime}
+                        onCheckedChange={() =>
                           updatePrayerReminders({
                             notifyAtTime: !prayerReminders.notifyAtTime,
                           })
                         }
-                        className={cn(
-                          "relative w-12 h-7 rounded-full transition-all duration-300 p-1 shrink-0",
-                          prayerReminders.notifyAtTime
-                            ? "bg-primary"
-                            : "bg-white/10 border border-white/10",
-                        )}
-                      >
-                        <span
-                          className={cn(
-                            "block w-5 h-5 rounded-full bg-white transition-transform duration-300",
-                            prayerReminders.notifyAtTime
-                              ? "translate-x-0"
-                              : "-translate-x-5",
-                          )}
-                        />
-                      </button>
+                      />
                     </div>
                   </div>
                   <div className="grid gap-3 rounded-xl border border-white/10 bg-white/5 p-4">
                     <div className="flex items-center justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="text-sm font-bold">التذكير قبل الصلاة</p>
+                        <p className="text-sm font-bold">{t("beforePrayer")}</p>
                         <p className="text-xs text-muted-foreground">
-                          اختر كم دقيقة قبل الصلاة تريد التنبيه
+                          {t("beforePrayerDescription")}
                         </p>
                       </div>
-                      <button
+                      <Switch
                         type="button"
-                        onClick={() =>
+                        checked={beforeMinutes > 0}
+                        onCheckedChange={() =>
                           updatePrayerReminders({
                             beforeMinutes:
                               beforeMinutes > 0
@@ -548,22 +542,7 @@ export function PrayerSettings({
                                     .beforeMinutes,
                           })
                         }
-                        className={cn(
-                          "relative w-12 h-7 rounded-full transition-all duration-300 p-1 shrink-0",
-                          beforeMinutes > 0
-                            ? "bg-primary"
-                            : "bg-white/10 border border-white/10",
-                        )}
-                      >
-                        <span
-                          className={cn(
-                            "block w-5 h-5 rounded-full bg-white transition-transform duration-300",
-                            beforeMinutes > 0
-                              ? "translate-x-0"
-                              : "-translate-x-5",
-                          )}
-                        />
-                      </button>
+                      />
                     </div>
 
                     {beforeMinutes > 0 && (
@@ -601,7 +580,7 @@ export function PrayerSettings({
 
                     {beforeMinutes > 0 && (
                       <p className="text-[11px] text-muted-foreground">
-                        التوقيت الحالي: قبل الصلاة بـ {beforeMinutes} دقائق
+                        {t("currentTiming", { minutes: beforeMinutes })}
                       </p>
                     )}
                   </div>
@@ -609,46 +588,32 @@ export function PrayerSettings({
                     <div className="flex items-center justify-between gap-3">
                       <div className="min-w-0">
                         <p className="text-sm font-bold">
-                          إعادة التذكير حتى الصلاة التالية
+                          {t("repeatUntilNextPrayer")}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          يعاد التنبيه كل عدة دقائق إذا لم تصل للصلاة بعد
+                          {t("repeatUntilNextPrayerDescription")}
                         </p>
                       </div>
-                      <button
+                      <Switch
                         type="button"
-                        onClick={() =>
+                        checked={prayerReminders.repeatUntilNextPrayer}
+                        onCheckedChange={() =>
                           updatePrayerReminders({
                             repeatUntilNextPrayer:
                               !prayerReminders.repeatUntilNextPrayer,
                           })
                         }
-                        className={cn(
-                          "relative w-12 h-7 rounded-full transition-all duration-300 p-1 shrink-0",
-                          prayerReminders.repeatUntilNextPrayer
-                            ? "bg-primary"
-                            : "bg-white/10 border border-white/10",
-                        )}
-                      >
-                        <span
-                          className={cn(
-                            "block w-5 h-5 rounded-full bg-white transition-transform duration-300",
-                            prayerReminders.repeatUntilNextPrayer
-                              ? "translate-x-0"
-                              : "-translate-x-5",
-                          )}
-                        />
-                      </button>
+                      />
                     </div>
 
                     {prayerReminders.repeatUntilNextPrayer && (
                       <div className="grid gap-3 rounded-lg border border-white/10 bg-white/5 px-3 py-3">
                         <div>
                           <p className="text-xs font-bold text-muted-foreground">
-                            كل كم دقيقة؟
+                            {t("everyHowManyMinutes")}
                           </p>
                           <p className="text-[11px] text-muted-foreground">
-                            الحد الأدنى 5 دقائق
+                            {t("minimumFiveMinutes")}
                           </p>
                         </div>
                         <div className="grid grid-cols-5 gap-2">
@@ -683,7 +648,7 @@ export function PrayerSettings({
             </div>
             <div className="pt-6 border-t border-white/10 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field label="طريقة الحساب">
+                <Field label={t("calculationMethod")}>
                   <Select
                     value={prayerTimes.method}
                     onValueChange={(value) =>
@@ -705,7 +670,7 @@ export function PrayerSettings({
                   </Select>
                 </Field>
 
-                <Field label="المذهب الفقهي">
+                <Field label={t("madhab")}>
                   <Select
                     value={prayerTimes.madhab}
                     onValueChange={(value) =>
@@ -726,7 +691,7 @@ export function PrayerSettings({
                 </Field>
               </div>
 
-              <Field label="وضع خطوط العرض العالية">
+              <Field label={t("highLatitudeRule")}>
                 <Select
                   value={prayerTimes.highLatitudeRule}
                   onValueChange={(value) =>
@@ -751,11 +716,11 @@ export function PrayerSettings({
               <div className="grid gap-3">
                 <div className="flex items-center gap-3 text-xs font-bold text-muted-foreground uppercase">
                   <Clock3 className="w-4 h-4 text-teal-500" />
-                  تعديل مواقيت الصلاة
+                  {t("prayerAdjustments")}
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {prayerNames.map((prayer) => (
-                    <Field key={prayer.value} label={prayer.label}>
+                    <Field key={prayer.value} label={getPrayerLabel(prayer, language)}>
                       <div className="flex items-center justify-between gap-2 rounded-lg bg-white/5 border border-white/10 px-2">
                         <Input
                           type="number"
@@ -775,7 +740,7 @@ export function PrayerSettings({
                           className="h-10 w-fit bg-transparent border-0 p-0 text-center text-sm font-black tabular-nums focus-visible:ring-0"
                         />
                         <span className="text-[10px] font-bold text-muted-foreground">
-                          دقيقة
+                          {t("minute")}
                         </span>
                       </div>
                     </Field>

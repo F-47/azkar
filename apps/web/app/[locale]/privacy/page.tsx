@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import {
   ShieldCheck,
   MapPin,
@@ -9,10 +9,12 @@ import {
   Baby,
   ScrollText,
   Mail,
-  ArrowRight,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { GitHubIcon } from "@/components/icons";
+import { BackArrow } from "@/components/DirectionalArrow";
+import { isLocale, type Language } from "@/i18n/locale";
+import { routing } from "@/i18n/routing";
 
 export const metadata: Metadata = {
   title: "سياسة الخصوصية | أذكار",
@@ -84,7 +86,14 @@ const sections: {
   },
 ];
 
-export default function PrivacyPage() {
+export default async function PrivacyPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale: rawLocale } = await params;
+  const language: Language = isLocale(rawLocale) ? rawLocale : routing.defaultLocale;
+
   return (
     <main className="min-h-screen bg-background text-foreground">
       <div className="relative overflow-hidden border-b border-border">
@@ -93,9 +102,10 @@ export default function PrivacyPage() {
         <div className="relative max-w-3xl mx-auto px-6 py-16 text-center">
           <Link
             href="/"
+            locale={language}
             className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8 text-sm"
           >
-            <ArrowRight className="w-4 h-4" />
+            <BackArrow className="w-4 h-4" />
             <span>العودة إلى الرئيسية</span>
           </Link>
           <div className="flex justify-center mb-4">

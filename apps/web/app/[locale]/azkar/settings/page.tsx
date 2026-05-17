@@ -19,7 +19,6 @@ import {
 } from "@/lib/tauri";
 import { cn } from "@/lib/utils";
 import {
-  ArrowLeft,
   Bell,
   Check,
   Palette,
@@ -28,16 +27,24 @@ import {
   Wrench,
   X,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { AppearanceSettings } from "@/components/settings/AppearanceSettings";
 import { AppUpdateCard } from "@/components/settings/AppUpdateCard";
 import { GeneralSettings } from "@/components/settings/GeneralSettings";
 import { PrayerSettings } from "@/components/settings/PrayerSettings";
+import {
+  dirForLanguage,
+  type Language,
+} from "@/i18n/locale";
+import { BackArrow } from "@/components/DirectionalArrow";
+import { useLocale, useTranslations } from "next-intl";
 
 export default function SettingsPage() {
   const router = useRouter();
+  const t = useTranslations();
+  const language = useLocale() as Language;
   const [settings, setSettings] = useState<NotificationSettings | null>(null);
   const [savedSettings, setSavedSettings] =
     useState<NotificationSettings | null>(null);
@@ -60,7 +67,7 @@ export default function SettingsPage() {
   useEffect(() => {
     if (mounted) {
       const timer = setTimeout(() => {
-        const loaded = loadSettings();
+        const loaded = { ...loadSettings(), language };
         setSettings(loaded);
         setSavedSettings(loaded);
         if (isTauri()) {
@@ -72,7 +79,7 @@ export default function SettingsPage() {
       }, 0);
       return () => clearTimeout(timer);
     }
-  }, [mounted]);
+  }, [language, mounted]);
 
   const hasUnsavedChanges = useMemo(
     () =>
@@ -153,13 +160,16 @@ export default function SettingsPage() {
       return;
     }
 
-    router.push("/azkar");
+    router.push("/azkar", { locale: language });
   }
 
   if (!mounted || !settings) return null;
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-500">
+    <div
+      dir={dirForLanguage(settings.language)}
+      className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-500"
+    >
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.1),transparent_60%)]" />
       </div>
@@ -169,7 +179,7 @@ export default function SettingsPage() {
           <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
             <Settings className="w-5 h-5" />
           </div>
-          <h1 className="text-xl font-black tracking-tight">الإعدادات</h1>
+          <h1 className="text-xl font-black tracking-tight">{t("settings")}</h1>
         </div>
         <Button
           type="button"
@@ -178,7 +188,7 @@ export default function SettingsPage() {
           onClick={handleBack}
           className="rounded-xl bg-white/5 border border-accent/20 focus-visible:ring-accent/20 focus-visible:border-accent text-muted-foreground hover:text-accent transition-all"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <BackArrow className="w-5 h-5" />
         </Button>
       </header>
 
@@ -194,10 +204,10 @@ export default function SettingsPage() {
               <span className="flex size-2.5 shrink-0 rounded-full bg-primary shadow-[0_0_16px_rgba(34,197,94,0.8)]" />
               <div className="min-w-0">
                 <p className="text-sm font-black text-foreground">
-                  لديك تغييرات غير محفوظة
+                  {t("unsavedTitle")}
                 </p>
                 <p className="text-[11px] font-bold text-muted-foreground">
-                  احفظ التغييرات لتطبيقها أو تجاهلها للرجوع للإعدادات السابقة
+                  {t("unsavedDescription")}
                 </p>
               </div>
             </div>
@@ -209,7 +219,7 @@ export default function SettingsPage() {
                 className="h-9 rounded-lg border border-white/10 bg-white/5 px-3 text-xs font-bold text-muted-foreground hover:bg-white/10"
               >
                 <X className="h-4 w-4" />
-                تجاهل
+                {t("discard")}
               </Button>
               <Button
                 type="button"
@@ -217,7 +227,7 @@ export default function SettingsPage() {
                 className="h-9 rounded-lg px-4 text-xs font-black shadow-[0_0_24px_rgba(34,197,94,0.25)]"
               >
                 <Check className="h-4 w-4" />
-                حفظ
+                {t("save")}
               </Button>
             </div>
           </div>
@@ -230,19 +240,19 @@ export default function SettingsPage() {
             <TabsList className="grid h-11! w-full grid-cols-4 rounded-xl border border-white/10 bg-white/5 p-1">
               <TabsTrigger value="general" className="rounded-lg text-sm">
                 <Settings className="h-4 w-4" />
-                عام
+                {t("general")}
               </TabsTrigger>
               <TabsTrigger value="prayer" className="rounded-lg text-sm">
                 <Bell className="h-4 w-4" />
-                الصلاة
+                {t("prayer")}
               </TabsTrigger>
               <TabsTrigger value="appearance" className="rounded-lg text-sm">
                 <Palette className="h-4 w-4" />
-                المظهر
+                {t("appearance")}
               </TabsTrigger>
               <TabsTrigger value="maintenance" className="rounded-lg text-sm">
                 <Wrench className="h-4 w-4" />
-                الصيانة
+                {t("maintenance")}
               </TabsTrigger>
             </TabsList>
 
@@ -273,10 +283,10 @@ export default function SettingsPage() {
                     </div>
                     <div>
                       <h3 className="text-sm font-bold">
-                        إعدادات الصلاة غير مفعلة
+                        {t("prayerSettingsDisabled")}
                       </h3>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        فعّل الإشعارات واستخدام أوقات الصلاة من تبويب عام.
+                        {t("prayerSettingsDisabledDescription")}
                       </p>
                     </div>
                   </div>
@@ -295,10 +305,10 @@ export default function SettingsPage() {
                     </div>
                     <div>
                       <h3 className="text-sm font-bold">
-                        مظهر الإشعار غير متاح
+                        {t("appearanceDisabled")}
                       </h3>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        فعّل الإشعارات من تبويب عام لتعديل مظهر النافذة.
+                        {t("appearanceDisabledDescription")}
                       </p>
                     </div>
                   </div>
@@ -320,13 +330,13 @@ export default function SettingsPage() {
                 >
                   {testing ? (
                     <>
-                      تم إرسال إشعار التجربة
+                      {t("testSent")}
                       <Check className="w-5 h-5" />
                     </>
                   ) : (
                     <>
                       <Bell className="w-5 h-5" />
-                      اختبار إشعار الآن
+                      {t("testNotification")}
                     </>
                   )}
                 </button>

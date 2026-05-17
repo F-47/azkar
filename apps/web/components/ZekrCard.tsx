@@ -2,6 +2,7 @@
 
 import { HtmlContent } from "@/components/HtmlContent";
 import { Card } from "@/components/ui/card";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import type { Zekr } from "@/types";
 import { Check, Star } from "lucide-react";
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export default function ZekrCard({ zekr, remaining, onDecrement }: Props) {
+  const t = useTranslations();
   const isDone = remaining === 0;
   const progress =
     zekr.count > 0 ? ((zekr.count - remaining) / zekr.count) * 100 : 100;
@@ -63,12 +65,12 @@ export default function ZekrCard({ zekr, remaining, onDecrement }: Props) {
             >
               {isDone ? (
                 <>
-                  <span>تمّ الذكر</span>
+                  <span>{t("completedZekr")}</span>
                   <Check className="w-4 h-4" />
                 </>
               ) : (
                 <>
-                  <span>سبّح</span>
+                  <span>{t("countZekr")}</span>
                   <Star className="w-4 h-4 transition-transform group-hover:rotate-45" />
                 </>
               )}
@@ -91,7 +93,7 @@ export default function ZekrCard({ zekr, remaining, onDecrement }: Props) {
                 </span>
               </div>
               <span className="text-xs uppercase text-muted-foreground/40 font-bold">
-                المرات
+                {t("times")}
               </span>
             </div>
           </div>

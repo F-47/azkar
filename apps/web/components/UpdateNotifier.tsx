@@ -2,13 +2,15 @@
 
 import { checkForUpdate } from "@/lib/updater";
 import { PartyPopper, X, Zap } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
+import { useTranslations } from "next-intl";
 
 export default function UpdateNotifier() {
   const [updateVersion, setUpdateVersion] = useState<string | null>(null);
   const [dismissed, setDismissed] = useState(false);
+  const t = useTranslations();
 
   useEffect(() => {
     const hasChecked = sessionStorage.getItem("startup-update-check");
@@ -34,7 +36,7 @@ export default function UpdateNotifier() {
             <div className="flex-1 flex flex-col gap-1">
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-black text-amber-200 uppercase">
-                  تحديث جديد متاح
+                  {t("updateAvailableTitle")}
                 </h4>
                 <button
                   onClick={() => setDismissed(true)}
@@ -45,8 +47,7 @@ export default function UpdateNotifier() {
               </div>
 
               <p className="text-xs font-bold text-white/80 leading-relaxed">
-                الإصدار v{updateVersion} متوفر الآن مع تحسينات جديدة وميزات
-                رائعة.
+                {t("updateAvailableBody", { version: updateVersion })}
               </p>
 
               <div className="flex items-center gap-2 mt-3">
@@ -57,7 +58,7 @@ export default function UpdateNotifier() {
                 >
                   <Link href="/azkar/settings">
                     <Zap className="w-3 h-3 ml-1.5 fill-current" />
-                    تحديث الآن
+                    {t("updateNow")}
                   </Link>
                 </Button>
 
@@ -65,7 +66,7 @@ export default function UpdateNotifier() {
                   onClick={() => setDismissed(true)}
                   className="h-9 px-4 rounded-xl text-xs uppercase text-muted-foreground hover:text-white hover:bg-white/5 transition-all"
                 >
-                  تخطي
+                  {t("skip")}
                 </button>
               </div>
             </div>

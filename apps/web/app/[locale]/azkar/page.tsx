@@ -18,11 +18,15 @@ import {
   Sun,
 } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useEffect } from "react";
 import UpdateNotifier from "@/components/UpdateNotifier";
+import { dirForLanguage, type Language } from "@/i18n/locale";
+import { useLocale, useTranslations } from "next-intl";
 
 export default function AzkarPage() {
+  const language = useLocale() as Language;
+  const t = useTranslations();
   const {
     azkar,
     category,
@@ -41,7 +45,10 @@ export default function AzkarPage() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-500">
+    <div
+      dir={dirForLanguage(language)}
+      className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-500"
+    >
       <UpdateNotifier />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.1),transparent_60%)]" />
       <header className="sticky top-0 z-20 border-b border-white/5 backdrop-blur-2xl">
@@ -64,7 +71,7 @@ export default function AzkarPage() {
               </div>
 
               <h1 className="text-xl font-black tracking-tight">
-                {category === "morning" ? "أذكار الصباح" : "أذكار المساء"}
+                {category === "morning" ? t("morningAzkar") : t("eveningAzkar")}
               </h1>
             </div>
 
@@ -72,7 +79,7 @@ export default function AzkarPage() {
               <Button
                 asChild
                 className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 focus-visible:ring-yellow-500/20 focus-visible:border-yellow-500 flex items-center justify-center text-muted-foreground hover:text-yellow-500 hover:bg-white/10 hover:border-yellow-500/30 transition-all"
-                title="إدارة الأذكار"
+                title={t("manageAzkar")}
               >
                 <Link href="/azkar/manage" prefetch={false}>
                   <ListChecks className="w-5 h-5" />
@@ -80,7 +87,7 @@ export default function AzkarPage() {
               </Button>
 
               <Button
-                title="الإعدادات"
+                title={t("settings")}
                 className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 focus-visible:ring-accent/20 focus-visible:border-accent flex items-center justify-center text-muted-foreground hover:text-accent hover:bg-white/10 hover:border-accent/30 transition-all"
                 asChild
               >
@@ -111,14 +118,13 @@ export default function AzkarPage() {
                   <LayoutDashboard className="w-8 h-8 text-white" />
                 </div>
                 <h2 className="text-2xl font-black mb-2 text-white">
-                  ما شاء الله!
+                  {t("doneTitle")}
                 </h2>
                 <p className="text-muted-foreground font-medium">
-                  اكتملت جميع أذكار{" "}
-                  {category === "morning" ? "الصباح" : "المساء"}
+                  {t("allDone")} {category === "morning" ? t("morning") : t("evening")}
                 </p>
                 <p className="text-sm mt-1 text-green-400/80">
-                  تقبّل الله منك طاعتك
+                  {t("accepted")}
                 </p>
               </div>
             </div>
@@ -128,19 +134,19 @@ export default function AzkarPage() {
             <div className="flex flex-col items-center justify-center py-32 opacity-50">
               <Loader2 className="w-10 h-10 animate-spin text-primary mb-4" />
               <p className="text-sm font-bold uppercase">
-                جاري تحميل الأذكار...
+                {t("loadingAzkar")}
               </p>
             </div>
           ) : azkar.length === 0 ? (
             <div className="text-center py-32 border-2 border-dashed border-white/5 rounded-2xl">
               <p className="text-xl font-bold text-muted-foreground">
-                لا توجد أذكار مفعلة
+                {t("noEnabledAzkar")}
               </p>
               <Link
                 href="/azkar/manage"
                 className="mt-4 inline-block text-primary font-bold hover:underline"
               >
-                انتقل لصفحة الإدارة لتفعيل الأذكار
+                {t("goManage")}
               </Link>
             </div>
           ) : (
@@ -163,7 +169,7 @@ export default function AzkarPage() {
           <Image src="/logo.png" alt="icon" fill className="object-contain" />
         </div>
         <p className="text-xs font-bold uppercase tracking-[0.2em]">
-          أذكار المسلم • {new Date().getFullYear()}
+          {t("muslimAzkar")} • {new Date().getFullYear()}
         </p>
       </footer>
     </div>

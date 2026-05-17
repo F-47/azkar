@@ -9,6 +9,7 @@ import {
   DEFAULT_SETTINGS,
   type NotificationSettings,
 } from "@/lib/notificationScheduler";
+import { useTranslations } from "next-intl";
 
 function ColorPicker({
   value,
@@ -114,6 +115,7 @@ export function AppearanceSettings({
   settings: NotificationSettings;
   update: (patch: Partial<NotificationSettings>) => void;
 }) {
+  const t = useTranslations();
   const bgColor =
     (settings.appearance?.backgroundColor ?? "#ffffff") +
     Math.round((settings.appearance?.opacity ?? 100) * 2.55)
@@ -128,9 +130,9 @@ export function AppearanceSettings({
             <Palette className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="font-bold text-sm">مظهر الإشعار</h3>
+            <h3 className="font-bold text-sm">{t("notificationAppearance")}</h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              خصص ألوان نافذة الأذكار المنبثقة
+              {t("notificationAppearanceDescription")}
             </p>
           </div>
         </div>
@@ -152,7 +154,7 @@ export function AppearanceSettings({
               backgroundColor: settings.appearance?.headerBgColor ?? "#064e3b",
             }}
           >
-            <span className="text-sm font-bold text-white">أذكار</span>
+            <span className="text-sm font-bold text-white">{t("appName")}</span>
             <div className="relative w-7 h-7">
               <svg width="28" height="28" className="absolute top-0 left-0">
                 <circle
@@ -198,7 +200,7 @@ export function AppearanceSettings({
       {/* Controls  */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <ColorPicker
-          label="لون خلفية العنوان"
+          label={t("titleBgColor")}
           value={
             settings.appearance?.headerBgColor ??
             DEFAULT_SETTINGS.appearance.headerBgColor
@@ -213,7 +215,7 @@ export function AppearanceSettings({
           }
         />
         <ColorPicker
-          label="لون الخلفية"
+          label={t("backgroundColor")}
           value={
             settings.appearance?.backgroundColor ??
             DEFAULT_SETTINGS.appearance.backgroundColor
@@ -228,7 +230,7 @@ export function AppearanceSettings({
           }
         />
         <ColorPicker
-          label="لون النص"
+          label={t("textColor")}
           value={
             settings.appearance?.textColor ??
             DEFAULT_SETTINGS.appearance.textColor
@@ -243,7 +245,7 @@ export function AppearanceSettings({
           }
         />
         <OpacitySlider
-          label="الشفافية"
+          label={t("opacity")}
           value={settings.appearance?.opacity ?? 100}
           onChange={(n) =>
             update({

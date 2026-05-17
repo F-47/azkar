@@ -25,8 +25,8 @@ import {
 } from "@/lib/azkarStore";
 import { cn } from "@/lib/utils";
 import type { Zekr } from "@/types";
+import { dirForLanguage, type Language } from "@/i18n/locale";
 import {
-  ArrowLeft,
   Bell,
   BellOff,
   Eye,
@@ -37,10 +37,14 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { BackArrow } from "@/components/DirectionalArrow";
+import { useLocale, useTranslations } from "next-intl";
 
 export default function ManageAzkarPage() {
+  const language = useLocale() as Language;
+  const t = useTranslations();
   const [azkars, setAzkars] = useState<Zekr[]>([]);
   const [disabledIds, setDisabledIds] = useState<number[]>([]);
   const [notifDisabledIds, setNotifDisabledIds] = useState<number[]>([]);
@@ -112,7 +116,10 @@ export default function ManageAzkarPage() {
   if (!mounted) return null;
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-500">
+    <div
+      dir={dirForLanguage(language)}
+      className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-500"
+    >
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.1),transparent_60%)]" />
       </div>
@@ -122,7 +129,7 @@ export default function ManageAzkarPage() {
           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-yellow-500">
             <ListChecks className="w-5 h-5" />
           </div>
-          <h1 className="text-xl  tracking-tight">إدارة الأذكار</h1>
+          <h1 className="text-xl  tracking-tight">{t("manageAzkar")}</h1>
         </div>
         <Button
           variant="ghost"
@@ -131,7 +138,7 @@ export default function ManageAzkarPage() {
           asChild
         >
           <Link href="/azkar">
-            <ArrowLeft className="w-5 h-5" />
+            <BackArrow className="w-5 h-5" />
           </Link>
         </Button>
       </header>
@@ -148,7 +155,7 @@ export default function ManageAzkarPage() {
                   : "text-muted-foreground hover:text-white",
               )}
             >
-              أذكار الصباح
+              {t("morningAzkar")}
             </button>
             <button
               onClick={() => setTab("evening")}
@@ -159,7 +166,7 @@ export default function ManageAzkarPage() {
                   : "text-muted-foreground hover:text-white",
               )}
             >
-              أذكار المساء
+              {t("eveningAzkar")}
             </button>
           </div>
           <Button
@@ -171,7 +178,7 @@ export default function ManageAzkarPage() {
                 : "bg-primary text-primary-foreground",
             )}
           >
-            {isAdding ? "إلغاء الإضافة" : "إضافة ذكر جديد"}
+            {isAdding ? t("cancelAdd") : t("addCustomZekr")}
             {isAdding ? (
               <X className="w-4 h-4" />
             ) : (
@@ -184,21 +191,21 @@ export default function ManageAzkarPage() {
             <div className="flex items-center gap-6">
               <div className="flex flex-col gap-1.5">
                 <span className="text-xs uppercase text-muted-foreground/50">
-                  الظهور في القائمة
+                  {t("visibleInList")}
                 </span>
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => handleToggleAllStatus(true)}
                     className="text-xs font-bold text-primary hover:text-green-400 transition-colors"
                   >
-                    تفعيل الكل
+                    {t("enableAll")}
                   </button>
                   <div className="w-px h-3 bg-white/10" />
                   <button
                     onClick={() => handleToggleAllStatus(false)}
                     className="text-xs font-bold text-muted-foreground hover:text-red-400 transition-colors"
                   >
-                    إخفاء الكل
+                    {t("hideAll")}
                   </button>
                 </div>
               </div>
@@ -207,21 +214,21 @@ export default function ManageAzkarPage() {
             <div className="flex items-center gap-6">
               <div className="flex flex-col gap-1.5 items-end">
                 <span className="text-xs uppercase text-muted-foreground/50">
-                  إشعارات سطح المكتب
+                  {t("desktopNotifications")}
                 </span>
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => handleToggleAllNotif(true)}
                     className="text-xs font-bold text-primary hover:text-green-400 transition-colors"
                   >
-                    تفعيل
+                    {t("enable")}
                   </button>
                   <div className="w-px h-3 bg-white/10" />
                   <button
                     onClick={() => handleToggleAllNotif(false)}
                     className="text-xs font-bold text-muted-foreground hover:text-red-400 transition-colors"
                   >
-                    صامت
+                    {t("silent")}
                   </button>
                 </div>
               </div>
@@ -235,26 +242,26 @@ export default function ManageAzkarPage() {
                 <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
                   <Plus className="w-4 h-4" />
                 </div>
-                <h3 className="text-xl">إضافة ذكر جديد</h3>
+                <h3 className="text-xl">{t("addCustomZekr")}</h3>
               </div>
 
               <div className="space-y-4">
                 <div className="flex flex-col gap-2">
                   <label className="text-xs uppercase text-muted-foreground px-1">
-                    الذكر
+                    {t("zekr")}
                   </label>
                   <Textarea
                     required
                     value={text}
                     onChange={(e) => setText(e.target.value)}
                     className="w-full text-base min-h-30"
-                    placeholder="اكتب نص الذكر هنا..."
+                    placeholder={t("zekrPlaceholder")}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex flex-col gap-2">
                     <label className="text-xs uppercase text-muted-foreground px-1">
-                      العدد الافتراضي
+                      {t("defaultCount")}
                     </label>
                     <Input
                       type="number"
@@ -267,7 +274,7 @@ export default function ManageAzkarPage() {
                   </div>
                   <div className="flex flex-col gap-2">
                     <label className="text-xs uppercase text-muted-foreground px-1">
-                      نوع الفترة
+                      {t("periodType")}
                     </label>
                     <Select
                       value={category}
@@ -276,26 +283,26 @@ export default function ManageAzkarPage() {
                       }
                     >
                       <SelectTrigger className="w-full h-12 px-5 rounded-xl bg-white/5 border border-white/10 text-sm font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary/50 transition-all">
-                        <SelectValue placeholder="اختر النوع" />
+                        <SelectValue placeholder={t("chooseType")} />
                       </SelectTrigger>
 
                       <SelectContent className="rounded-xl border-white/10">
-                        <SelectItem value="morning">الصباح</SelectItem>
-                        <SelectItem value="evening">المساء</SelectItem>
+                        <SelectItem value="morning">{t("morning")}</SelectItem>
+                        <SelectItem value="evening">{t("evening")}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">
                   <label className="text-xs uppercase text-muted-foreground px-1">
-                    ملاحظة فضل الذكر (اختياري)
+                    {t("virtueNote")}
                   </label>
                   <Input
                     type="text"
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
                     className="py-3 px-5 placeholder:text-muted-foreground/30 font-medium"
-                    placeholder="مثال: من قالها حين يصبح..."
+                    placeholder={t("virtuePlaceholder")}
                   />
                 </div>
               </div>
@@ -304,7 +311,7 @@ export default function ManageAzkarPage() {
                 type="submit"
                 className="w-full h-12 rounded-lg  active:scale-[0.98] transition-all"
               >
-                حفظ الذكر في القائمة
+                {t("saveZekr")}
               </Button>
             </form>
           </Card>
@@ -335,7 +342,7 @@ export default function ManageAzkarPage() {
                     />
                     <div className="flex flex-wrap gap-2">
                       <span className="text-xs  px-3 py-1.5 rounded-full bg-white/5 border border-white/5 text-muted-foreground">
-                        العدد: {zekr.count}
+                        {t("countLabel", { count: zekr.count })}
                       </span>
                       {zekr.note && (
                         <span className="text-xs  px-3 py-1.5 rounded-full bg-primary/10 border border-primary/10 text-primary">
@@ -344,7 +351,7 @@ export default function ManageAzkarPage() {
                       )}
                       {zekr.isCustom && (
                         <span className="text-xs  px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/10 text-amber-500">
-                          مخصص
+                          {t("custom")}
                         </span>
                       )}
                     </div>
@@ -362,7 +369,11 @@ export default function ManageAzkarPage() {
                             ? "bg-accent/10 text-accent border border-accent/20 hover:bg-accent/10"
                             : "bg-white/5 text-muted-foreground border border-white/10 hover:bg-white/10",
                         )}
-                        title={isNotifEnabled ? "يظهر في الإشعارات" : "صامت"}
+                        title={
+                          isNotifEnabled
+                            ? t("showsInNotifications")
+                            : t("silentTitle")
+                        }
                       >
                         {isNotifEnabled ? (
                           <Bell className="w-4 h-4" />
@@ -379,7 +390,7 @@ export default function ManageAzkarPage() {
                             ? "bg-primary/10 text-primary border border-primary/20 hover:bg-primary/10"
                             : "bg-white/5 text-muted-foreground border border-white/10 hover:bg-white/10",
                         )}
-                        title={isEnabled ? "ظاهر في القائمة" : "مخفي"}
+                        title={isEnabled ? t("visibleTitle") : t("hiddenTitle")}
                       >
                         <div className="flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-300">
                           {isEnabled ? (
@@ -394,16 +405,12 @@ export default function ManageAzkarPage() {
                     {zekr.isCustom && (
                       <button
                         onClick={() => {
-                          if (
-                            confirm(
-                              "هل أنت متأكد من حذف هذا الذكر من القائمة الخاصة بك؟",
-                            )
-                          ) {
+                          if (confirm(t("deleteConfirm"))) {
                             deleteCustomZekr(zekr.id);
                           }
                         }}
                         className="w-10 h-10 rounded-xl flex items-center justify-center text-muted-foreground/30 hover:text-red-500 hover:bg-red-500/10 transition-all border border-transparent hover:border-red-500/20"
-                        title="حذف الذكر المخصص"
+                        title={t("deleteCustomZekr")}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -417,7 +424,7 @@ export default function ManageAzkarPage() {
           {visibleAzkars.length === 0 && (
             <div className="text-center py-20 border-2 border-dashed border-white/5 rounded-[2.5rem]">
               <p className="text-lg font-bold text-muted-foreground/50">
-                لا توجد أذكار في هذه الفئة
+                {t("noAzkarInCategory")}
               </p>
             </div>
           )}

@@ -10,6 +10,15 @@ import {
   type PrayerCalculationSettings,
 } from "@/lib/prayerTimes";
 import type { Category, Zekr } from "@/types";
+import {
+  loadLanguage,
+  normalizeLanguage,
+  saveLanguage,
+  type Language,
+} from "@/i18n/locale";
+import { createTranslator } from "next-intl";
+import arMessages from "@/messages/ar.json";
+import enMessages from "@/messages/en.json";
 import { isTauri, sendAzkarNotification } from "./tauri";
 
 const SETTINGS_KEY = "azkar-notification-settings";
@@ -44,6 +53,7 @@ export interface NotificationSettings {
   enabled: boolean;
   intervalMinutes: number;
   category: Category | "both";
+  language: Language;
   usePrayerTimes: boolean;
   prayerTimes: PrayerCalculationSettings;
   prayerReminders: PrayerReminderSettings;
@@ -55,6 +65,7 @@ export const DEFAULT_SETTINGS: NotificationSettings = {
   enabled: true,
   intervalMinutes: 5,
   category: "both",
+  language: "ar",
   usePrayerTimes: true,
   prayerTimes: DEFAULT_PRAYER_SETTINGS,
   prayerReminders: {
@@ -77,6 +88,24 @@ const FALLBACK_PRAYER_WINDOWS = {
   morning: { start: "04:30", end: "11:59" },
   evening: { start: "15:30", end: "04:29" },
 };
+
+const notificationMessages = {
+  ar: arMessages,
+  en: enMessages,
+} as const;
+
+type NotificationTranslationKey = keyof typeof arMessages;
+
+function getNotificationTranslator(language: Language) {
+  const locale = normalizeLanguage(language);
+  return createTranslator({
+    locale,
+    messages: notificationMessages[locale],
+  }) as (
+    key: NotificationTranslationKey,
+    params?: Record<string, string | number>,
+  ) => string;
+}
 
 function getPrayerWindows(): { morning: TimeWindow; evening: TimeWindow } {
   const coords = loadCoords();
@@ -143,6 +172,7 @@ export function loadSettings(): NotificationSettings {
       intervalMinutes: normalizeNotificationIntervalMinutes(
         parsed.intervalMinutes ?? DEFAULT_SETTINGS.intervalMinutes,
       ),
+      language: normalizeLanguage(parsed.language),
       prayerTimes: normalizePrayerSettings(parsed.prayerTimes),
       prayerReminders,
       appearance: {
@@ -157,6 +187,7 @@ export function loadSettings(): NotificationSettings {
 
 export function saveSettings(settings: NotificationSettings): void {
   if (typeof window === "undefined") return;
+  saveLanguage(settings.language);
   localStorage.setItem(
     SETTINGS_KEY,
     JSON.stringify({
@@ -228,9 +259,11 @@ function pickRandomZekr(category: Category | "both") {
 }
 
 function categoryTitle(category: Category | "both"): string {
-  if (category === "morning") return "أذكار الصباح";
-  if (category === "evening") return "أذكار المساء";
-  return "أذكار";
+  const language = loadLanguage();
+  const t = getNotificationTranslator(language);
+  if (category === "morning") return t("morningAzkar");
+  if (category === "evening") return t("eveningAzkar");
+  return t("appName");
 }
 
 export function pickRandomZekrForTest(
@@ -258,6 +291,21 @@ const reminderPrayers: Array<{
   { value: "maghrib", label: "المغرب" },
   { value: "isha", label: "العشاء" },
 ];
+
+const englishPrayerLabels: Record<Exclude<PrayerName, "sunrise">, string> = {
+  fajr: "Fajr",
+  dhuhr: "Dhuhr",
+  asr: "Asr",
+  maghrib: "Maghrib",
+  isha: "Isha",
+};
+
+function prayerLabel(
+  prayer: { value: Exclude<PrayerName, "sunrise">; label: string },
+  language: Language,
+): string {
+  return language === "en" ? englishPrayerLabels[prayer.value] : prayer.label;
+}
 
 function parseTodayTime(time: string): Date {
   return parseTimeOnDate(time, new Date());
@@ -317,10 +365,14 @@ function formatArabicCount(
 }
 
 function formatHourCount(hours: number): string {
+  if (loadLanguage() === "en") return `${hours} ${hours === 1 ? "hour" : "hours"}`;
   return formatArabicCount(hours, "ساعة", "ساعتين", "ساعات");
 }
 
 function formatMinuteCount(minutes: number): string {
+  if (loadLanguage() === "en") {
+    return `${minutes} ${minutes === 1 ? "minute" : "minutes"}`;
+  }
   return formatArabicCount(minutes, "دقيقة", "دقيقتين", "دقائق");
 }
 
@@ -339,6 +391,8 @@ async function maybeSendPrayerReminders(
   settings: NotificationSettings,
 ): Promise<boolean> {
   const reminderSettings = settings.prayerReminders;
+  const language = settings.language ?? loadLanguage();
+  const t = getNotificationTranslator(language);
   if (!reminderSettings.enabled) return false;
 
   const coords = loadCoords();
@@ -399,9 +453,12 @@ async function maybeSendPrayerReminders(
       nowMs < prayerMs &&
       !log[beforeKey]
     ) {
+      const label = prayerLabel(prayer, language);
       await sendAzkarNotification(
-        `اقترب موعد صلاة ${prayer.label}`,
-        `باقي ${formatMinuteCount(reminderSettings.beforeMinutes)} على الصلاة`,
+        t("prayerBeforeTitle", { prayer: label }),
+        t("prayerBeforeBody", {
+          time: formatMinuteCount(reminderSettings.beforeMinutes),
+        }),
         undefined,
         "prayer",
       );
@@ -416,9 +473,10 @@ async function maybeSendPrayerReminders(
       nowMs < prayerMs + 60 * 1000 &&
       !log[atKey]
     ) {
+      const label = prayerLabel(prayer, language);
       await sendAzkarNotification(
-        `حان الآن موعد صلاة ${prayer.label}`,
-        "تقبل الله منا ومنكم",
+        t("prayerAtTitle", { prayer: label }),
+        t("prayerAtBody"),
         undefined,
         "prayer",
       );
@@ -436,12 +494,13 @@ async function maybeSendPrayerReminders(
       const lastRepeat = log[repeatKey] ?? prayerMs;
       if (nowMs - lastRepeat >= reminderSettings.repeatMinutes * 60 * 1000) {
         const remainingText = formatRemainingPrayerTime(nextPrayerMs - nowMs);
+        const label = prayerLabel(prayer, language);
         await sendAzkarNotification(
-          `تذكير بصلاة ${prayer.label}`,
-          `إذا صليت فتقبل الله، وإن لم تصل بعد فباقي ${remainingText} على الصلاة التالية`,
+          t("prayerRepeatTitle", { prayer: label }),
+          t("prayerRepeatBody", { time: remainingText }),
           {
             type: "markPrayerPrayed",
-            label: "صليت بالفعل",
+            label: t("prayedAlready"),
             prayer: prayer.value,
           },
         );

@@ -3,6 +3,7 @@
 import type { Category } from "@/types";
 import { Moon, Sun } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface Props {
   active: Category;
@@ -10,6 +11,8 @@ interface Props {
 }
 
 export default function CategoryToggle({ active, onChange }: Props) {
+  const t = useTranslations();
+
   return (
     <div className="flex rounded-2xl p-1.5 gap-1.5 bg-white/5 backdrop-blur-xl border border-white/10 shadow-lg">
       <button
@@ -27,7 +30,7 @@ export default function CategoryToggle({ active, onChange }: Props) {
             active === "morning" && "rotate-90",
           )}
         />
-        <span className="relative z-10">الصباح</span>
+        <span className="relative z-10">{t("morning")}</span>
       </button>
       <button
         onClick={() => onChange("evening")}
@@ -44,7 +47,7 @@ export default function CategoryToggle({ active, onChange }: Props) {
             active === "evening" && "rotate-12",
           )}
         />
-        <span className="relative z-10">المساء</span>
+        <span className="relative z-10">{t("evening")}</span>
       </button>
     </div>
   );

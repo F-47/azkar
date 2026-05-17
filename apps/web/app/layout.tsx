@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Cairo, Amiri } from "next/font/google";
 import { cn } from "@/lib/utils";
-import { DirectionProvider } from "@/components/ui/direction";
-import { TooltipProvider } from "@/components/ui/tooltip";
 
 const cairo = Cairo({
   subsets: ["arabic"],
@@ -30,25 +28,14 @@ export default function RootLayout({
     <html
       lang="ar"
       dir="rtl"
+      suppressHydrationWarning
       className={cn("font-sans", cairo.variable, amiri.variable)}
     >
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              try {
-                if (window.__TAURI_INTERNALS__ && window.location.pathname === '/') {
-                  window.location.replace('/azkar/');
-                }
-              } catch (e) {}
-            `,
-          }}
-        />
-      </head>
-      <body className="min-h-screen">
-        <DirectionProvider dir="rtl">
-          <TooltipProvider>{children}</TooltipProvider>
-        </DirectionProvider>
+      <body
+        className="min-h-screen"
+        suppressHydrationWarning
+      >
+        {children}
       </body>
     </html>
   );

@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, type ComponentPropsWithoutRef } from "react";
 import DOMPurify from "dompurify";
 import { cn } from "@/lib/utils";
 
-interface HtmlContentProps {
+interface HtmlContentProps extends ComponentPropsWithoutRef<"p"> {
   content: string;
   className?: string;
   style?: React.CSSProperties;
@@ -18,6 +18,7 @@ export function HtmlContent({
   style,
   badgeClassName,
   badgeStyle,
+  ...props
 }: HtmlContentProps) {
   const cleanHtml = useMemo(() => {
     const badgeStyleString = badgeStyle
@@ -46,6 +47,7 @@ export function HtmlContent({
 
   return (
     <p
+      {...props}
       className={cn(className)}
       style={style}
       dangerouslySetInnerHTML={{ __html: cleanHtml }}
