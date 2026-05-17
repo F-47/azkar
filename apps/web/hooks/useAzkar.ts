@@ -64,11 +64,15 @@ function saveProgress(category: Category, progress: ProgressMap): void {
 
 export function useAzkar() {
   const [category, setCategory] = useState<Category>('morning')
-  const [progress, setProgress] = useState<ProgressMap>({})
-  const [mounted, setMounted] = useState(false)
-  const [azkarData, setAzkarData] = useState<Zekr[]>([])
+  const [azkarData, setAzkarData] = useState<Zekr[]>(() => getActiveAzkars())
 
   const azkar = useMemo(() => azkarData.filter((z) => z.category === category), [azkarData, category])
+  const [progress, setProgress] = useState<ProgressMap>(() =>
+    loadProgress(
+      'morning',
+      getActiveAzkars().filter((z) => z.category === 'morning'),
+    ),
+  )
 
   const reloadAzkarData = useCallback(() => {
     setAzkarData(getActiveAzkars())
@@ -88,17 +92,18 @@ export function useAzkar() {
   const lastCategoryRef = useRef(category)
   useEffect(() => {
     // Only reload progress if the category changed or it's the first mount
-    if (!mounted || category !== lastCategoryRef.current) {
-      setMounted(true)
-      setProgress(loadProgress(category, azkar))
+    if (category !== lastCategoryRef.current) {
+      const timer = setTimeout(() => {
+        setProgress(loadProgress(category, azkar))
+      }, 0)
       lastCategoryRef.current = category
+      return () => clearTimeout(timer)
     }
-  }, [category, azkar, mounted]);
+  }, [category, azkar]);
 
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
-    if (!mounted) return
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
     saveTimerRef.current = setTimeout(() => {
       saveProgress(category, progress)
@@ -106,7 +111,7 @@ export function useAzkar() {
     return () => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
     }
-  }, [progress, category, mounted])
+  }, [progress, category])
 
   const decrement = useCallback((id: number, defaultCount: number) => {
     setProgress((prev) => {
@@ -139,7 +144,7 @@ export function useAzkar() {
     azkar,
     category,
     progress,
-    mounted,
+    mounted: true,
     decrement,
     reset,
     switchCategory,

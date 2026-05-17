@@ -121,9 +121,7 @@ export function requestGpsCoords(): Promise<GpsCoordsResult> {
           lon: location.lon,
           accuracy: location.accuracy,
           source: "gps" as const,
-          label: location.accuracy
-            ? `GPS (${Math.round(location.accuracy)}m)`
-            : "GPS",
+          label: "GPS",
         },
       }))
       .catch((error) => {

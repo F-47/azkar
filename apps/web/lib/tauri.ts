@@ -8,15 +8,18 @@ export interface NotificationAction {
   prayer: string;
 }
 
+export type NotificationKind = "azkar" | "prayer";
+
 export async function sendAzkarNotification(
   title: string,
   body: string,
   action?: NotificationAction,
+  kind: NotificationKind = action ? "prayer" : "azkar",
 ): Promise<void> {
   if (!isTauri()) return;
   try {
     const { invoke } = await import("@tauri-apps/api/core");
-    await invoke("show_notification", { title, body, action });
+    await invoke("show_notification", { title, body, action, kind });
   } catch (e) {
     console.warn("Notification failed:", e);
   }
@@ -36,6 +39,12 @@ export async function requestDesktopLocation(): Promise<DesktopLocation> {
   if (!isTauri()) throw new Error("unsupported");
   const { invoke } = await import("@tauri-apps/api/core");
   return await invoke<DesktopLocation>("request_desktop_location");
+}
+
+export async function openLocationSettings(): Promise<void> {
+  if (!isTauri()) return;
+  const { invoke } = await import("@tauri-apps/api/core");
+  await invoke("open_location_settings");
 }
 
 export async function relaunchApp(): Promise<void> {

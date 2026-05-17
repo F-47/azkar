@@ -68,7 +68,8 @@ jobs:
               'package.json',
               'apps/desktop/package.json',
               'apps/web/package.json',
-              'apps/desktop/src-tauri/tauri.conf.json'
+              'apps/desktop/src-tauri/tauri.conf.json',
+              'apps/desktop/src-tauri/tauri.microsoftstore.conf.json'
             ];
             
             jsonFiles.forEach(file => {
@@ -148,7 +149,8 @@ jobs:
               'package.json',
               'apps/desktop/package.json',
               'apps/web/package.json',
-              'apps/desktop/src-tauri/tauri.conf.json'
+              'apps/desktop/src-tauri/tauri.conf.json',
+              'apps/desktop/src-tauri/tauri.microsoftstore.conf.json'
             ];
             jsonFiles.forEach(file => {
               if (fs.existsSync(file)) {

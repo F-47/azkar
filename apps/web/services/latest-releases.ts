@@ -12,6 +12,17 @@ export interface LatestReleaseData {
   };
 }
 
+interface GitHubReleaseAsset {
+  name: string;
+  browser_download_url: string;
+}
+
+interface GitHubReleaseResponse {
+  tag_name: string;
+  html_url: string;
+  assets?: GitHubReleaseAsset[];
+}
+
 export async function getLatestRelease(): Promise<LatestReleaseData> {
   const res = await fetch(
     "https://api.github.com/repos/F-47/azkar/releases/latest",
@@ -19,7 +30,7 @@ export async function getLatestRelease(): Promise<LatestReleaseData> {
 
   if (!res.ok) throw new Error("Failed to fetch release");
 
-  const data = await res.json();
+  const data = (await res.json()) as GitHubReleaseResponse;
   const assets = data.assets || [];
 
   return {
@@ -27,21 +38,21 @@ export async function getLatestRelease(): Promise<LatestReleaseData> {
     allAssetsUrl: data.html_url,
     windows: {
       msi:
-        assets.find((a: any) => a.name.endsWith(".msi"))
+        assets.find((a) => a.name.endsWith(".msi"))
           ?.browser_download_url || null,
       exe:
-        assets.find((a: any) => a.name.endsWith(".exe"))
+        assets.find((a) => a.name.endsWith(".exe"))
           ?.browser_download_url || null,
     },
     linux: {
       appImage:
-        assets.find((a: any) => a.name.endsWith(".AppImage"))
+        assets.find((a) => a.name.endsWith(".AppImage"))
           ?.browser_download_url || null,
       deb:
-        assets.find((a: any) => a.name.endsWith(".deb"))
+        assets.find((a) => a.name.endsWith(".deb"))
           ?.browser_download_url || null,
       rpm:
-        assets.find((a: any) => a.name.endsWith(".rpm"))
+        assets.find((a) => a.name.endsWith(".rpm"))
           ?.browser_download_url || null,
     },
   };

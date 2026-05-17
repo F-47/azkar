@@ -9,10 +9,8 @@ import { Button } from "./ui/button";
 export default function UpdateNotifier() {
   const [updateVersion, setUpdateVersion] = useState<string | null>(null);
   const [dismissed, setDismissed] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
     const hasChecked = sessionStorage.getItem("startup-update-check");
     if (!hasChecked) {
       checkForUpdate().then((version) => {
@@ -22,7 +20,7 @@ export default function UpdateNotifier() {
     }
   }, []);
 
-  if (!mounted || !updateVersion || dismissed) return null;
+  if (!updateVersion || dismissed) return null;
 
   return (
     <div className="fixed top-5 left-4 right-4 z-50 animate-in slide-in-from-top-8 duration-700 ease-out pointer-events-none">

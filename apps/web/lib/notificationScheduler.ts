@@ -305,15 +305,34 @@ export function markPrayerAsPrayed(prayer: string): void {
   savePrayerReminderLog(log);
 }
 
+function formatArabicCount(
+  count: number,
+  singular: string,
+  dual: string,
+  plural: string,
+): string {
+  if (count === 1) return singular;
+  if (count === 2) return dual;
+  return `${count} ${count >= 3 && count <= 10 ? plural : singular}`;
+}
+
+function formatHourCount(hours: number): string {
+  return formatArabicCount(hours, "ساعة", "ساعتين", "ساعات");
+}
+
+function formatMinuteCount(minutes: number): string {
+  return formatArabicCount(minutes, "دقيقة", "دقيقتين", "دقائق");
+}
+
 function formatRemainingPrayerTime(ms: number): string {
   const totalMinutes = Math.max(1, Math.ceil(ms / 60000));
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
-  const hourText = `${hours} ${hours === 1 ? "ساعة" : "ساعات"}`;
+  const hourText = formatHourCount(hours);
 
-  if (hours <= 0) return `${totalMinutes} دقيقة`;
+  if (hours <= 0) return formatMinuteCount(totalMinutes);
   if (minutes === 0) return hourText;
-  return `${hourText} و ${minutes} دقيقة`;
+  return `${hourText} و ${formatMinuteCount(minutes)}`;
 }
 
 async function maybeSendPrayerReminders(
@@ -330,7 +349,13 @@ async function maybeSendPrayerReminders(
 
   const now = new Date();
   const nowMs = now.getTime();
+  const yesterday = addDays(now, -1);
   const tomorrow = addDays(now, 1);
+  const yesterdayTimes = getPrayerTimesForDate(
+    coords,
+    yesterday,
+    settings.prayerTimes,
+  );
   const tomorrowTimes = getPrayerTimesForDate(
     coords,
     tomorrow,
@@ -340,6 +365,15 @@ async function maybeSendPrayerReminders(
     ...prayer,
     date: parseTodayTime(times[prayer.value]),
   }));
+  const ishaPrayer = reminderPrayers.find((prayer) => prayer.value === "isha");
+
+  if (yesterdayTimes && ishaPrayer) {
+    schedule.unshift({
+      ...ishaPrayer,
+      date: parseTimeOnDate(yesterdayTimes.isha, yesterday),
+    });
+  }
+
   const log = loadPrayerReminderLog();
   let changed = false;
   let sentNotification = false;
@@ -367,7 +401,9 @@ async function maybeSendPrayerReminders(
     ) {
       await sendAzkarNotification(
         `اقترب موعد صلاة ${prayer.label}`,
-        `باقي ${reminderSettings.beforeMinutes} دقيقة على الصلاة`,
+        `باقي ${formatMinuteCount(reminderSettings.beforeMinutes)} على الصلاة`,
+        undefined,
+        "prayer",
       );
       log[beforeKey] = nowMs;
       changed = true;
@@ -383,11 +419,8 @@ async function maybeSendPrayerReminders(
       await sendAzkarNotification(
         `حان الآن موعد صلاة ${prayer.label}`,
         "تقبل الله منا ومنكم",
-        {
-          type: "markPrayerPrayed",
-          label: "صليت بالفعل",
-          prayer: prayer.value,
-        },
+        undefined,
+        "prayer",
       );
       log[atKey] = nowMs;
       changed = true;

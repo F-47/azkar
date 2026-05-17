@@ -49,6 +49,7 @@ import {
   DEFAULT_SETTINGS,
   type NotificationSettings,
 } from "@/lib/notificationScheduler";
+import { openLocationSettings } from "@/lib/tauri";
 
 const methodOptions: Array<{ value: PrayerCalculationMethod; label: string }> =
   [
@@ -212,6 +213,10 @@ export function PrayerSettings({
       setLocationError(result.error ?? "unknown");
     }
     setLocating(false);
+  }
+
+  async function handleOpenLocationSettings() {
+    await openLocationSettings();
   }
 
   function updatePrayerTimes(patch: PrayerSettingsPatch) {
@@ -389,10 +394,12 @@ export function PrayerSettings({
                             : "موقع تقريبي"}
                         </p>
                         <p className="text-[11px] text-muted-foreground tabular-nums truncate">
-                          {coords?.label ??
-                            (coords
-                              ? `${coords.lat.toFixed(4)}, ${coords.lon.toFixed(4)}`
-                              : "لا يوجد موقع محفوظ")}
+                          {coords?.source === "gps"
+                            ? "GPS"
+                            : (coords?.label ??
+                              (coords
+                                ? `${coords.lat.toFixed(4)}, ${coords.lon.toFixed(4)}`
+                                : "لا يوجد موقع محفوظ"))}
                         </p>
                       </div>
                     </div>
@@ -411,17 +418,28 @@ export function PrayerSettings({
                   </div>
 
                   {locationError && (
-                    <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-xs leading-6 text-red-200">
-                      {locationError === "denied" &&
-                        "تم رفض إذن الموقع. فعّل إذن الموقع للتطبيق من إعدادات النظام ثم اضغط تحديث."}
-                      {locationError === "unsupported" &&
-                        "الموقع غير متاح داخل هذه البيئة. جرّب تشغيل التطبيق من المتصفح أو فعّل خدمات الموقع للنظام."}
-                      {locationError === "unavailable" &&
-                        "تعذر تحديد الموقع الحالي. تأكد من تشغيل خدمات الموقع ثم اضغط تحديث مرة أخرى."}
-                      {locationError === "timeout" &&
-                        "استغرق تحديد الموقع وقتا طويلا. تأكد من اتصال الجهاز وخدمات الموقع ثم حاول مرة أخرى."}
-                      {locationError === "unknown" &&
-                        "تعذر طلب الموقع لسبب غير معروف. تأكد من صلاحيات الموقع ثم حاول مرة أخرى."}
+                    <div className="grid gap-3 rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-xs leading-6 text-red-200">
+                      <p>
+                        {locationError === "denied" &&
+                          "تم رفض إذن الموقع. افتح إعدادات الموقع للنظام، فعّل الإذن للتطبيق، ثم اضغط تحديث."}
+                        {locationError === "unsupported" &&
+                          "الموقع غير متاح داخل هذه البيئة. جرّب تشغيل التطبيق من المتصفح أو فعّل خدمات الموقع للنظام."}
+                        {locationError === "unavailable" &&
+                          "تعذر تحديد الموقع الحالي. تأكد من تشغيل خدمات الموقع ثم اضغط تحديث مرة أخرى."}
+                        {locationError === "timeout" &&
+                          "استغرق تحديد الموقع وقتا طويلا. تأكد من اتصال الجهاز وخدمات الموقع ثم حاول مرة أخرى."}
+                        {locationError === "unknown" &&
+                          "تعذر طلب الموقع لسبب غير معروف. تأكد من صلاحيات الموقع ثم حاول مرة أخرى."}
+                      </p>
+                      {locationError !== "timeout" && (
+                        <button
+                          type="button"
+                          onClick={handleOpenLocationSettings}
+                          className="h-9 w-fit rounded-lg border border-red-400/30 bg-red-400/10 px-3 text-xs font-bold text-red-100 transition-colors hover:bg-red-400/15"
+                        >
+                          فتح إعدادات الموقع
+                        </button>
+                      )}
                     </div>
                   )}
                 </DialogContent>

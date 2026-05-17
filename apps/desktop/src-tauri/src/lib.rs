@@ -1,4 +1,9 @@
-use std::sync::Mutex;
+use std::{
+    fs::{create_dir_all, OpenOptions},
+    io::Write,
+    sync::Mutex,
+    time::{SystemTime, UNIX_EPOCH},
+};
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
@@ -56,8 +61,42 @@ struct NotificationAction {
 // Notification display logic (shared between the command and the scheduler)
 // ---------------------------------------------------------------------------
 
+fn log_notification_event(
+    app: &tauri::AppHandle,
+    kind: &str,
+    title: &str,
+    body: &str,
+    action: Option<&NotificationAction>,
+) -> Result<(), String> {
+    let log_dir = app.path().app_log_dir().map_err(|e| e.to_string())?;
+    create_dir_all(&log_dir).map_err(|e| e.to_string())?;
+
+    let timestamp_unix_ms = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map_err(|e| e.to_string())?
+        .as_millis();
+    let line = serde_json::json!({
+        "timestampUnixMs": timestamp_unix_ms,
+        "kind": kind,
+        "title": title,
+        "body": body,
+        "action": action,
+    });
+
+    let log_path = log_dir.join("notification-events.log");
+    let mut file = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(log_path)
+        .map_err(|e| e.to_string())?;
+    writeln!(file, "{line}").map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
 async fn trigger_notification(
     app: &tauri::AppHandle,
+    kind: Option<String>,
     title: String,
     body: String,
     action: Option<NotificationAction>,
@@ -119,6 +158,15 @@ async fn trigger_notification(
     ))
     .map_err(|e: tauri::Error| e.to_string())?;
 
+    let notification_kind = kind
+        .as_deref()
+        .or_else(|| action.as_ref().map(|_| "prayer"))
+        .unwrap_or("azkar");
+
+    if let Err(e) = log_notification_event(app, notification_kind, &title, &body, action.as_ref()) {
+        eprintln!("Failed to write notification log: {e}");
+    }
+
     Ok(())
 }
 
@@ -168,11 +216,12 @@ async fn hide_notification(app: tauri::AppHandle) -> Result<(), String> {
 #[tauri::command]
 async fn show_notification(
     app: tauri::AppHandle,
+    kind: Option<String>,
     title: String,
     body: String,
     action: Option<NotificationAction>,
 ) -> Result<(), String> {
-    trigger_notification(&app, title, body, action).await
+    trigger_notification(&app, kind, title, body, action).await
 }
 
 #[cfg(target_os = "windows")]
@@ -225,6 +274,23 @@ async fn request_desktop_location() -> Result<DesktopLocation, String> {
 }
 
 #[tauri::command]
+async fn open_location_settings() -> Result<(), String> {
+    #[cfg(target_os = "windows")]
+    {
+        std::process::Command::new("explorer")
+            .arg("ms-settings:privacy-location")
+            .spawn()
+            .map_err(|e| e.to_string())?;
+        return Ok(());
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    {
+        Err("unsupported".to_string())
+    }
+}
+
+#[tauri::command]
 async fn configure_scheduler(
     app: tauri::AppHandle,
     state: tauri::State<'_, Mutex<SchedulerState>>,
@@ -264,7 +330,9 @@ async fn configure_scheduler(
                 } else {
                     "أذكار".to_string()
                 };
-                let _ = trigger_notification(&app_handle, title, body, None).await;
+                let _ =
+                    trigger_notification(&app_handle, Some("azkar".to_string()), title, body, None)
+                        .await;
 
                 pointer += 1;
                 if pointer >= texts.len() {
@@ -301,6 +369,7 @@ pub fn run() {
             hide_notification,
             resize_notification,
             request_desktop_location,
+            open_location_settings,
             configure_scheduler
         ]);
 

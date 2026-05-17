@@ -133,11 +133,7 @@ export default function SettingsPage() {
     if (!settings) return;
     saveSettings(settings);
     setSavedSettings(settings);
-    if (
-      isTauri() &&
-      autostart !== null &&
-      autostart !== savedAutostart
-    ) {
+    if (isTauri() && autostart !== null && autostart !== savedAutostart) {
       await setAutostartEnabled(autostart);
       setSavedAutostart(autostart);
     }
@@ -190,7 +186,7 @@ export default function SettingsPage() {
         <div className="fixed top-20 left-4 right-4 z-50 pointer-events-none animate-in fade-in slide-in-from-top-4 zoom-in-95 duration-300">
           <div
             className={cn(
-              "mx-auto flex max-w-2xl items-center justify-between gap-3 rounded-xl border border-primary/40 bg-popover/95 p-3 text-popover-foreground shadow-[0_18px_60px_rgba(0,0,0,0.45)] ring-4 ring-primary/15 backdrop-blur-xl pointer-events-auto",
+              "mx-auto flex max-w-2xl items-center justify-between gap-3 rounded-xl border border-primary/40 bg-popover/95 p-3 text-popover-foreground backdrop-blur-xl pointer-events-auto",
               shakeSaveBar && "animate-unsaved-shake",
             )}
           >
@@ -231,32 +227,20 @@ export default function SettingsPage() {
       <main className="flex-1 px-4 py-8 relative z-10">
         <div className="max-w-2xl mx-auto space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <Tabs defaultValue="general" className="gap-4">
-            <TabsList className="grid h-auto w-full grid-cols-4 rounded-xl border border-white/10 bg-white/5 p-1">
-              <TabsTrigger
-                value="general"
-                className="rounded-lg text-xs"
-              >
+            <TabsList className="grid h-11! w-full grid-cols-4 rounded-xl border border-white/10 bg-white/5 p-1">
+              <TabsTrigger value="general" className="rounded-lg text-sm">
                 <Settings className="h-4 w-4" />
                 عام
               </TabsTrigger>
-              <TabsTrigger
-                value="prayer"
-                className="rounded-lg text-xs"
-              >
+              <TabsTrigger value="prayer" className="rounded-lg text-sm">
                 <Bell className="h-4 w-4" />
                 الصلاة
               </TabsTrigger>
-              <TabsTrigger
-                value="appearance"
-                className="rounded-lg text-xs"
-              >
+              <TabsTrigger value="appearance" className="rounded-lg text-sm">
                 <Palette className="h-4 w-4" />
                 المظهر
               </TabsTrigger>
-              <TabsTrigger
-                value="maintenance"
-                className="rounded-lg text-xs"
-              >
+              <TabsTrigger value="maintenance" className="rounded-lg text-sm">
                 <Wrench className="h-4 w-4" />
                 الصيانة
               </TabsTrigger>
@@ -323,35 +307,34 @@ export default function SettingsPage() {
             </TabsContent>
 
             <TabsContent value="maintenance" className="grid gap-4">
+              <div className="grid gap-4">
+                <button
+                  onClick={handleTest}
+                  disabled={testing}
+                  className={cn(
+                    "h-14 rounded-xl text-sm font-black transition-all duration-300 active:scale-[0.97] flex items-center justify-center gap-3 border",
+                    testing
+                      ? "bg-primary/10 text-primary border-primary/20"
+                      : "bg-white/5 text-white hover:bg-primary/5 hover:border-primary/20",
+                  )}
+                >
+                  {testing ? (
+                    <>
+                      تم إرسال إشعار التجربة
+                      <Check className="w-5 h-5" />
+                    </>
+                  ) : (
+                    <>
+                      <Bell className="w-5 h-5" />
+                      اختبار إشعار الآن
+                    </>
+                  )}
+                </button>
 
-          <div className="grid gap-4">
-            <button
-              onClick={handleTest}
-              disabled={testing}
-              className={cn(
-                "h-14 rounded-xl text-sm font-black transition-all duration-300 active:scale-[0.97] flex items-center justify-center gap-3 border",
-                testing
-                  ? "bg-primary/10 text-primary border-primary/20"
-                  : "bg-white/5 text-white hover:bg-primary/5 hover:border-primary/20",
-              )}
-            >
-              {testing ? (
-                <>
-                  تم إرسال إشعار التجربة
-                  <Check className="w-5 h-5" />
-                </>
-              ) : (
-                <>
-                  <Bell className="w-5 h-5" />
-                  اختبار إشعار الآن
-                </>
-              )}
-            </button>
-
-            {isTauri() && <AppUpdateCard />}
-          </div>
-          </TabsContent>
-        </Tabs>
+                {isTauri() && <AppUpdateCard />}
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
     </div>

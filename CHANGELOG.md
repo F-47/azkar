@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.10] - 2026-05-17
+
+### Added
+
+- Prayer time calculation with configurable method, madhab, high-latitude rule, and per-prayer minute adjustments.
+- GPS-based location support for accurate prayer times.
+- Prayer reminder settings for notifications before prayer time, at prayer time, and repeated reminders until the next prayer.
+- Prayer reminder controls can now open Windows Location Settings when location access is blocked.
+- Notification events are written to `AppData\Local\com.azkar.app\logs\notification-events.log` for easier debugging.
+
+### Changed
+
+- GPS location display now shows a clean `GPS` label instead of exposing low-accuracy meter values.
+- Prayer reminder text now uses improved Arabic minute/hour wording.
+
+### Fixed
+
+- Prayer-time notifications no longer show the "صليت بالفعل" action button immediately at prayer time.
+- Prayer repeat reminders still keep the "صليت بالفعل" action so repeated reminders can be stopped after praying.
+- Prayer reminders now account for the previous day's Isha when repeat reminders cross midnight.
+
+---
+
 ## [1.0.8] - 2026-04-19
 
 ### Added

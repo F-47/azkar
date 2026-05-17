@@ -6,15 +6,13 @@ import { isTauri } from '@/lib/tauri'
 
 export default function AzkarLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
-  const [allowed, setAllowed] = useState(false)
+  const [allowed] = useState(() => isTauri())
 
   useEffect(() => {
-    if (isTauri()) {
-      setAllowed(true)
-    } else {
+    if (!allowed) {
       router.replace('/')
     }
-  }, [router])
+  }, [allowed, router])
 
   if (!allowed) return null
 
