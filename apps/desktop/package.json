@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "tauri dev",
     "build": "tauri build",
-    "build:store": "tauri build --no-bundle -- --features store && copy src-tauri\\target\\x86_64-pc-windows-msvc\\release\\azkar-app.exe src-tauri\\target\\x86_64-pc-windows-msvc\\release\\AzkarApp.exe && npx @choochmeque/tauri-windows-bundle build",
+    "build:store": "tauri build --no-bundle -- --features store && copy src-tauri\\target\\release\\azkar-app.exe src-tauri\\target\\release\\AzkarApp.exe && npx @choochmeque/tauri-windows-bundle build",
     "tauri": "tauri",
     "dev:web": "cd ../web && npm run dev",
     "tauri:windows:build": "tauri-windows-bundle build"
