@@ -184,11 +184,25 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
-          INSTALLER=$(find apps/desktop/src-tauri/target/release/bundle/nsis -name "*-setup.exe" 2>/dev/null | head -1)
-          if [ -z "$INSTALLER" ]; then
-            INSTALLER=$(find apps/desktop/src-tauri/target/release/bundle/msi -name "*.msi" 2>/dev/null | head -1)
+          shopt -s nullglob
+
+          candidates=(
+            apps/desktop/src-tauri/target/msix/*.msixbundle
+            apps/desktop/src-tauri/target/msix/*.msix
+            apps/desktop/src-tauri/target/release/bundle/msix/*.msixbundle
+            apps/desktop/src-tauri/target/release/bundle/msix/*.msix
+            apps/desktop/src-tauri/target/release/bundle/nsis/*-setup.exe
+            apps/desktop/src-tauri/target/release/bundle/msi/*.msi
+          )
+
+          if [ "${#candidates[@]}" -eq 0 ]; then
+            echo "No store installer/package found. Available target outputs:"
+            find apps/desktop/src-tauri/target -maxdepth 4 -type f 2>/dev/null | sort
+            exit 1
           fi
+
+          INSTALLER="${candidates[0]}"
           EXT="${INSTALLER##*.}"
-          STORE_FILE="Azkar-App_store-setup.${EXT}"
+          STORE_FILE="Azkar-App_store-package.${EXT}"
           cp "$INSTALLER" "$STORE_FILE"
           gh release upload "${{ github.ref_name }}" "$STORE_FILE" --clobber
