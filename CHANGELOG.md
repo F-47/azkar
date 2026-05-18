@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.11] - 2026-05-18
+
+### Fixed
+
+- Fixed prayer-time location requests on Ubuntu/Linux desktop builds by falling back to WebKit geolocation when native desktop location is unsupported.
+- The location settings button now opens common Linux privacy/location settings panels.
+
+---
+
 ## [1.0.10] - 2026-05-17
 
 ### Added

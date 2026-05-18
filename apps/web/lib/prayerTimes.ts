@@ -130,12 +130,16 @@ export function requestGpsCoords(): Promise<GpsCoordsResult> {
           return { coords: null, error: "denied" };
         }
         if (message.includes("unsupported")) {
-          return { coords: null, error: "unsupported" };
+          return requestBrowserGpsCoords();
         }
         return { coords: null, error: "unavailable" };
       });
   }
 
+  return requestBrowserGpsCoords();
+}
+
+function requestBrowserGpsCoords(): Promise<GpsCoordsResult> {
   return new Promise((resolve) => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
       resolve({ coords: null, error: "unsupported" });

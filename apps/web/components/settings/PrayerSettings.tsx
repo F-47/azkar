@@ -216,7 +216,11 @@ export function PrayerSettings({
   }
 
   async function handleOpenLocationSettings() {
-    await openLocationSettings();
+    try {
+      await openLocationSettings();
+    } catch {
+      setLocationError("unsupported");
+    }
   }
 
   function updatePrayerTimes(patch: PrayerSettingsPatch) {

@@ -284,7 +284,27 @@ async fn open_location_settings() -> Result<(), String> {
         return Ok(());
     }
 
-    #[cfg(not(target_os = "windows"))]
+    #[cfg(target_os = "linux")]
+    {
+        let attempts: &[(&str, &[&str])] = &[
+            ("gnome-control-center", &["privacy", "location"]),
+            ("gnome-control-center", &["privacy"]),
+            ("systemsettings", &["kcm_geolocation"]),
+            ("xdg-open", &["settings://privacy/location"]),
+        ];
+
+        let mut last_error = String::from("unsupported");
+        for (command, args) in attempts {
+            match std::process::Command::new(command).args(*args).spawn() {
+                Ok(_) => return Ok(()),
+                Err(error) => last_error = error.to_string(),
+            }
+        }
+
+        return Err(last_error);
+    }
+
+    #[cfg(not(any(target_os = "windows", target_os = "linux")))]
     {
         Err("unsupported".to_string())
     }
@@ -384,6 +404,23 @@ pub fn run() {
     builder
         .setup(|app| {
             let window = app.get_webview_window("main").unwrap();
+
+            #[cfg(target_os = "linux")]
+            window.with_webview(|webview| {
+                use webkit2gtk::glib::ObjectExt;
+                use webkit2gtk::{
+                    GeolocationPermissionRequest, PermissionRequestExt, WebViewExt,
+                };
+
+                webview.inner().connect_permission_request(|_, request| {
+                    if request.is::<GeolocationPermissionRequest>() {
+                        request.allow();
+                        return true;
+                    }
+
+                    false
+                });
+            })?;
 
             // Hide to tray instead of closing
             let window_clone = window.clone();
