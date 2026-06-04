@@ -1,6 +1,6 @@
 [package]
 name = "azkar-app"
-version = "1.0.14"
+version = "1.0.15"
 description = "Azkar Desktop App — أذكار الصباح والمساء"
 authors = []
 edition = "2021"
