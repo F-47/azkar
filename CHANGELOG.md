@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.14] - 2026-06-04
+
+### Added
+
+- Arabic, English, French, and Turkish localization across the app interface.
+- Latin-letter transliteration for built-in and custom adhkar, shown on reading cards by default with an option to hide it.
+- Arabic or transliteration-only text modes for dhikr notifications, with Arabic kept as the default.
+- Locale-prefixed routes with redirects from the previous non-localized paths.
+- A saved language switcher and locale synchronization for the Tauri desktop shell.
+- Message validation script for translation files.
+
+### Changed
+
+- Refactored landing, azkar, management, settings, and privacy screens into reusable localized page components.
+- Updated notification, prayer settings, appearance, and update UI text to use translated messages.
+- Notification popup text size, alignment, and direction now adapt to Arabic and non-Arabic content.
+- Configured Next.js with `next-intl` while keeping static export support.
+
+### Fixed
+
+- Prayer notification scheduling now refreshes azkar notification caches after settings changes.
+- Arabic and localized text handling is now centralized through message files instead of hard-coded UI strings.
+
+---
+
 ## [1.0.11] - 2026-05-18
 
 ### Fixed

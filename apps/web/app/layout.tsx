@@ -30,6 +30,7 @@ export default function RootLayout({
     <html
       lang="ar"
       dir="rtl"
+      suppressHydrationWarning
       className={cn("font-sans", cairo.variable, amiri.variable)}
     >
       <head>
@@ -37,8 +38,15 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               try {
-                if (window.__TAURI_INTERNALS__ && window.location.pathname === '/') {
-                  window.location.replace('/azkar/');
+                var path = window.location.pathname;
+                var localeMatch = path.match(/^\\/(ar|en|fr|tr)(\\/|$)/);
+                var locale = localeMatch ? localeMatch[1] : 'ar';
+                document.documentElement.lang = locale;
+                document.documentElement.dir = locale === 'ar' ? 'rtl' : 'ltr';
+                if (window.__TAURI_INTERNALS__ && path === '/') {
+                  var saved = localStorage.getItem('azkar-locale');
+                  if (!/^(ar|en|fr|tr)$/.test(saved || '')) saved = 'ar';
+                  window.location.replace('/' + saved + '/azkar/');
                 }
               } catch (e) {}
             `,

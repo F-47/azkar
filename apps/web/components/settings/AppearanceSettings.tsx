@@ -2,13 +2,14 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import { Palette, RefreshCcw } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
 import {
   DEFAULT_SETTINGS,
   type NotificationSettings,
 } from "@/lib/notificationScheduler";
+import { cn } from "@/lib/utils";
+import { Palette, RefreshCcw } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useEffect, useRef, useState } from "react";
 
 function ColorPicker({
   value,
@@ -114,6 +115,8 @@ export function AppearanceSettings({
   settings: NotificationSettings;
   update: (patch: Partial<NotificationSettings>) => void;
 }) {
+  const t = useTranslations("appearance");
+  const common = useTranslations("common");
   const bgColor =
     (settings.appearance?.backgroundColor ?? "#ffffff") +
     Math.round((settings.appearance?.opacity ?? 100) * 2.55)
@@ -128,9 +131,9 @@ export function AppearanceSettings({
             <Palette className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="font-bold text-sm">مظهر الإشعار</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              خصص ألوان نافذة الأذكار المنبثقة
+            <h3 className="text-base font-bold">{t("title")}</h3>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              {t("description")}
             </p>
           </div>
         </div>
@@ -152,7 +155,9 @@ export function AppearanceSettings({
               backgroundColor: settings.appearance?.headerBgColor ?? "#064e3b",
             }}
           >
-            <span className="text-sm font-bold text-white">أذكار</span>
+            <span className="text-sm font-bold text-white">
+              {common("appName")}
+            </span>
             <div className="relative w-7 h-7">
               <svg width="28" height="28" className="absolute top-0 left-0">
                 <circle
@@ -184,21 +189,22 @@ export function AppearanceSettings({
           </div>
 
           <div
+            lang="ar"
+            dir="rtl"
             className="p-4 arabic-text w-full text-base flex-1"
             style={{
               backgroundColor: bgColor,
               color: settings.appearance?.textColor ?? "#1a1a1a",
             }}
           >
-            سُبْحَانَ اللَّهِ وَبِحَمْدِهِ
+            {t("sample")}
           </div>
         </div>
       </div>
 
-      {/* Controls  */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <ColorPicker
-          label="لون خلفية العنوان"
+          label={t("headerBg")}
           value={
             settings.appearance?.headerBgColor ??
             DEFAULT_SETTINGS.appearance.headerBgColor
@@ -213,7 +219,7 @@ export function AppearanceSettings({
           }
         />
         <ColorPicker
-          label="لون الخلفية"
+          label={t("background")}
           value={
             settings.appearance?.backgroundColor ??
             DEFAULT_SETTINGS.appearance.backgroundColor
@@ -228,7 +234,7 @@ export function AppearanceSettings({
           }
         />
         <ColorPicker
-          label="لون النص"
+          label={t("text")}
           value={
             settings.appearance?.textColor ??
             DEFAULT_SETTINGS.appearance.textColor
@@ -243,7 +249,7 @@ export function AppearanceSettings({
           }
         />
         <OpacitySlider
-          label="الشفافية"
+          label={t("opacity")}
           value={settings.appearance?.opacity ?? 100}
           onChange={(n) =>
             update({

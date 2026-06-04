@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface Props {
   completed: number;
@@ -9,13 +10,14 @@ interface Props {
 
 export default function ProgressBar({ completed, total }: Props) {
   const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+  const t = useTranslations("azkar");
 
   return (
     <div className="w-full space-y-2">
       <div className="flex justify-between items-end px-1">
         <div className="flex flex-col">
           <span className="text-[10px] uppercase tracking-widest text-white/40 font-bold">
-            التقدم الإجمالي
+            {t("progress")}
           </span>
           <span className="text-sm font-bold text-white tabular-nums">
             {completed}{" "}
@@ -24,7 +26,7 @@ export default function ProgressBar({ completed, total }: Props) {
         </div>
         <div className="flex flex-col items-end">
           <span className="text-[10px] uppercase tracking-widest text-white/40 font-bold">
-            النسبة
+            {t("percentage")}
           </span>
           <span
             className={cn(
@@ -45,9 +47,7 @@ export default function ProgressBar({ completed, total }: Props) {
             percentage === 100 &&
               "bg-primary shadow-[0_0_15px_rgba(59,130,246,0.5)]",
           )}
-          style={{
-            width: `${percentage}%`,
-          }}
+          style={{ width: `${percentage}%` }}
         />
       </div>
     </div>

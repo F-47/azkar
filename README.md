@@ -56,7 +56,15 @@ Each build is packaged natively for its target system to ensure proper performan
 - Native Linux packaging (.deb, .rpm, AppImage)
 - System tray background operation
 - Scheduled adhkar reminders (morning & evening)
+- Prayer-time based scheduling with configurable calculation method, madhab, and minute adjustments
+- Prayer reminders before prayer time, at prayer time, and repeated reminders until the next prayer
 - Native desktop notifications
+- Arabic, English, French, and Turkish interface support
+- Latin-letter transliteration on dhikr cards by default, with an option to hide it
+- Arabic-by-default or transliteration-only text for desktop dhikr notifications
+- Adaptive RTL/LTR direction and sizing for notification titles and bodies
+- Locale-prefixed web routes with redirects from the previous paths
+- Saved language switcher with desktop locale synchronization
 - Clean glassmorphic UI with light/dark mode
 - Configurable active hours (no interruptions)
 - Automatic updates via Tauri updater
@@ -69,7 +77,7 @@ Each build is packaged natively for its target system to ensure proper performan
 | Layer    | Technology                    |
 | -------- | ----------------------------- |
 | Core     | Tauri v2                      |
-| Frontend | Next.js 16, React 19          |
+| Frontend | Next.js 16, React 19, next-intl |
 | Styling  | Tailwind CSS 4, Framer Motion |
 
 ---
@@ -156,6 +164,12 @@ npm run dev
 
 ```bash id="build"
 npm run build
+```
+
+### Validate Translations
+
+```bash id="validate-i18n"
+npm run validate:i18n --workspace=apps/web
 ```
 
 ---

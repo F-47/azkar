@@ -10,6 +10,8 @@ import {
   type PrayerCalculationSettings,
 } from "@/lib/prayerTimes";
 import type { Category, Zekr } from "@/types";
+import { plainT } from "@/lib/i18n/plainMessages";
+import { getSavedLocale } from "@/lib/i18n/locale";
 import { isTauri, sendAzkarNotification } from "./tauri";
 
 const SETTINGS_KEY = "azkar-notification-settings";
@@ -40,8 +42,12 @@ export interface PrayerReminderSettings {
   repeatMinutes: number;
 }
 
+export type NotificationTextMode = "arabic" | "transliteration";
+
 export interface NotificationSettings {
   enabled: boolean;
+  showTransliteration: boolean;
+  notificationTextMode: NotificationTextMode;
   intervalMinutes: number;
   category: Category | "both";
   usePrayerTimes: boolean;
@@ -53,6 +59,8 @@ export interface NotificationSettings {
 
 export const DEFAULT_SETTINGS: NotificationSettings = {
   enabled: true,
+  showTransliteration: true,
+  notificationTextMode: "arabic",
   intervalMinutes: 5,
   category: "both",
   usePrayerTimes: true,
@@ -112,6 +120,12 @@ function normalizePrayerRepeatMinutes(value: number): number {
   );
 }
 
+function normalizeNotificationTextMode(
+  value: unknown,
+): NotificationTextMode {
+  return value === "transliteration" ? "transliteration" : "arabic";
+}
+
 export function normalizeNotificationIntervalMinutes(value: number): number {
   if (!Number.isFinite(value)) return DEFAULT_SETTINGS.intervalMinutes;
 
@@ -140,6 +154,9 @@ export function loadSettings(): NotificationSettings {
     return {
       ...DEFAULT_SETTINGS,
       ...parsed,
+      notificationTextMode: normalizeNotificationTextMode(
+        parsed.notificationTextMode,
+      ),
       intervalMinutes: normalizeNotificationIntervalMinutes(
         parsed.intervalMinutes ?? DEFAULT_SETTINGS.intervalMinutes,
       ),
@@ -195,8 +212,20 @@ function getEffectiveCategory(
 
 const QUEUE_KEY = "azkar-shuffled-queue";
 
-function getNextFromQueue(category: Category | "both"): Zekr | null {
-  const pool = getNotificationAzkars(category);
+function getEligibleNotificationAzkars(
+  category: Category | "both",
+  mode: NotificationTextMode,
+): Zekr[] {
+  const azkars = getNotificationAzkars(category);
+  if (mode === "arabic") return azkars;
+  return azkars.filter((zekr) => !!zekr.transliteration?.trim());
+}
+
+function getNextFromQueue(
+  category: Category | "both",
+  mode: NotificationTextMode,
+): Zekr | null {
+  const pool = getEligibleNotificationAzkars(category, mode);
   if (!pool.length) return null;
 
   if (typeof window === "undefined") return pool[0];
@@ -204,7 +233,8 @@ function getNextFromQueue(category: Category | "both"): Zekr | null {
   const stored = localStorage.getItem(QUEUE_KEY);
   const queues: Record<string, number[]> = stored ? JSON.parse(stored) : {};
 
-  let queue = queues[category] || [];
+  const queueKey = `${category}:${mode}`;
+  let queue = queues[queueKey] || [];
 
   // Filter queue to only include IDs currently in the pool (in case settings changed)
   const poolIds = new Set(pool.map((z) => z.id));
@@ -216,18 +246,24 @@ function getNextFromQueue(category: Category | "both"): Zekr | null {
   }
 
   const id = queue.shift()!;
-  queues[category] = queue;
+  queues[queueKey] = queue;
 
   localStorage.setItem(QUEUE_KEY, JSON.stringify(queues));
 
   return pool.find((z) => z.id === id) || pool[0];
 }
 
-function pickRandomZekr(category: Category | "both") {
-  return getNextFromQueue(category);
+function pickRandomZekr(
+  category: Category | "both",
+  mode: NotificationTextMode,
+) {
+  return getNextFromQueue(category, mode);
 }
 
 function categoryTitle(category: Category | "both"): string {
+  if (category === "morning") return plainT("notifications.morning");
+  if (category === "evening") return plainT("notifications.evening");
+  if (category === "both") return plainT("notifications.azkar");
   if (category === "morning") return "أذكار الصباح";
   if (category === "evening") return "أذكار المساء";
   return "أذكار";
@@ -235,12 +271,13 @@ function categoryTitle(category: Category | "both"): string {
 
 export function pickRandomZekrForTest(
   category: Category | "both",
+  mode: NotificationTextMode,
 ): { title: string; text: string } | null {
-  const zekr = pickRandomZekr(category);
+  const zekr = pickRandomZekr(category, mode);
   if (!zekr) return null;
   return {
     title: categoryTitle(zekr.category),
-    text: formatForNotification(zekr.text),
+    text: getNotificationBody(zekr, mode),
   };
 }
 
@@ -248,15 +285,22 @@ function formatForNotification(text: string): string {
   return text.trim();
 }
 
+function getNotificationBody(
+  zekr: Zekr,
+  mode: NotificationTextMode,
+): string {
+  const text = mode === "transliteration" ? zekr.transliteration : zekr.text;
+  return formatForNotification(text ?? "");
+}
+
 const reminderPrayers: Array<{
   value: Exclude<PrayerName, "sunrise">;
-  label: string;
 }> = [
-  { value: "fajr", label: "الفجر" },
-  { value: "dhuhr", label: "الظهر" },
-  { value: "asr", label: "العصر" },
-  { value: "maghrib", label: "المغرب" },
-  { value: "isha", label: "العشاء" },
+  { value: "fajr" },
+  { value: "dhuhr" },
+  { value: "asr" },
+  { value: "maghrib" },
+  { value: "isha" },
 ];
 
 function parseTodayTime(time: string): Date {
@@ -305,23 +349,34 @@ export function markPrayerAsPrayed(prayer: string): void {
   savePrayerReminderLog(log);
 }
 
-function formatArabicCount(
-  count: number,
-  singular: string,
-  dual: string,
-  plural: string,
-): string {
-  if (count === 1) return singular;
-  if (count === 2) return dual;
-  return `${count} ${count >= 3 && count <= 10 ? plural : singular}`;
+function formatCount(count: number, unit: "Hour" | "Minute"): string {
+  const locale = getSavedLocale();
+  const singularKey = `notifications.${unit.toLowerCase()}`;
+  const pluralKey = `notifications.${unit.toLowerCase()}s`;
+
+  if (locale === "ar") {
+    if (count === 1) return plainT(singularKey);
+    if (count === 2) return plainT(`notifications.two${unit}s`);
+
+    const formattedCount = new Intl.NumberFormat(locale).format(count);
+    if (count >= 3 && count <= 10) {
+      return plainT(pluralKey, { count: formattedCount });
+    }
+    return `${formattedCount} ${plainT(singularKey)}`;
+  }
+
+  const formattedCount = new Intl.NumberFormat(locale).format(count);
+  return plainT(count === 1 ? singularKey : pluralKey, {
+    count: formattedCount,
+  });
 }
 
 function formatHourCount(hours: number): string {
-  return formatArabicCount(hours, "ساعة", "ساعتين", "ساعات");
+  return formatCount(hours, "Hour");
 }
 
 function formatMinuteCount(minutes: number): string {
-  return formatArabicCount(minutes, "دقيقة", "دقيقتين", "دقائق");
+  return formatCount(minutes, "Minute");
 }
 
 function formatRemainingPrayerTime(ms: number): string {
@@ -332,7 +387,10 @@ function formatRemainingPrayerTime(ms: number): string {
 
   if (hours <= 0) return formatMinuteCount(totalMinutes);
   if (minutes === 0) return hourText;
-  return `${hourText} و ${formatMinuteCount(minutes)}`;
+  return new Intl.ListFormat(getSavedLocale(), {
+    style: "long",
+    type: "conjunction",
+  }).format([hourText, formatMinuteCount(minutes)]);
 }
 
 async function maybeSendPrayerReminders(
@@ -399,15 +457,19 @@ async function maybeSendPrayerReminders(
       nowMs < prayerMs &&
       !log[beforeKey]
     ) {
+      const prayerName = plainT(`prayer.names.${prayer.value}`);
       await sendAzkarNotification(
-        `اقترب موعد صلاة ${prayer.label}`,
-        `باقي ${formatMinuteCount(reminderSettings.beforeMinutes)} على الصلاة`,
+        plainT("notifications.prayerBeforeTitle", { prayer: prayerName }),
+        plainT("notifications.prayerBeforeBody", {
+          duration: formatMinuteCount(reminderSettings.beforeMinutes),
+        }),
         undefined,
         "prayer",
       );
       log[beforeKey] = nowMs;
       changed = true;
       sentNotification = true;
+      continue;
     }
 
     if (
@@ -416,15 +478,17 @@ async function maybeSendPrayerReminders(
       nowMs < prayerMs + 60 * 1000 &&
       !log[atKey]
     ) {
+      const prayerName = plainT(`prayer.names.${prayer.value}`);
       await sendAzkarNotification(
-        `حان الآن موعد صلاة ${prayer.label}`,
-        "تقبل الله منا ومنكم",
+        plainT("notifications.prayerAtTitle", { prayer: prayerName }),
+        plainT("notifications.prayerAtBody"),
         undefined,
         "prayer",
       );
       log[atKey] = nowMs;
       changed = true;
       sentNotification = true;
+      continue;
     }
 
     if (
@@ -436,18 +500,22 @@ async function maybeSendPrayerReminders(
       const lastRepeat = log[repeatKey] ?? prayerMs;
       if (nowMs - lastRepeat >= reminderSettings.repeatMinutes * 60 * 1000) {
         const remainingText = formatRemainingPrayerTime(nextPrayerMs - nowMs);
+        const prayerName = plainT(`prayer.names.${prayer.value}`);
         await sendAzkarNotification(
-          `تذكير بصلاة ${prayer.label}`,
-          `إذا صليت فتقبل الله، وإن لم تصل بعد فباقي ${remainingText} على الصلاة التالية`,
+          plainT("notifications.prayerRepeatTitle", { prayer: prayerName }),
+          plainT("notifications.prayerRepeatBody", {
+            duration: remainingText,
+          }),
           {
             type: "markPrayerPrayed",
-            label: "صليت بالفعل",
+            label: plainT("notifications.markPrayed"),
             prayer: prayer.value,
           },
         );
         log[repeatKey] = nowMs;
         changed = true;
         sentNotification = true;
+        continue;
       }
     }
   }
@@ -462,9 +530,14 @@ async function configureRustScheduler(
   if (!isTauri()) return;
   try {
     const azkars = settings.enabled
-      ? getNotificationAzkars(settings.category)
+      ? getEligibleNotificationAzkars(
+          settings.category,
+          settings.notificationTextMode,
+        )
       : [];
-    const texts = azkars.map((z) => formatForNotification(z.text));
+    const texts = azkars.map((z) =>
+      getNotificationBody(z, settings.notificationTextMode),
+    );
     const titles = azkars.map((z) => categoryTitle(z.category));
 
     const { invoke } = await import("@tauri-apps/api/core");
@@ -505,11 +578,14 @@ function stopJsTimer(): void {
 async function sendAzkarFromSettings(settings: NotificationSettings) {
   const effectiveCategory = getEffectiveCategory(settings);
   if (!effectiveCategory) return;
-  const zekr = pickRandomZekr(effectiveCategory);
+  const zekr = pickRandomZekr(
+    effectiveCategory,
+    settings.notificationTextMode,
+  );
   if (!zekr) return;
   await sendAzkarNotification(
     categoryTitle(zekr.category),
-    formatForNotification(zekr.text),
+    getNotificationBody(zekr, settings.notificationTextMode),
   );
 }
 

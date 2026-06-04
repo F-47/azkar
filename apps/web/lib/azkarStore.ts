@@ -1,5 +1,6 @@
 import morningAzkar from "@/data/morning-azkar.json";
 import eveningAzkar from "@/data/evening-azkar.json";
+import { getBuiltInTransliteration } from "@/data/azkar-transliterations";
 import type { Zekr, Category } from "@/types";
 
 const CUSTOM_AZKAR_KEY = "azkar-custom";
@@ -55,7 +56,10 @@ export function saveNotifDisabledIds(ids: number[]): void {
 }
 
 export function getAllAzkars(): Zekr[] {
-  const base = [...morningAzkar, ...eveningAzkar] as Zekr[];
+  const base = [...morningAzkar, ...eveningAzkar].map((zekr) => ({
+    ...zekr,
+    transliteration: getBuiltInTransliteration(zekr.id),
+  })) as Zekr[];
   const custom = getCustomAzkars();
   return [...base, ...custom];
 }

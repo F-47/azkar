@@ -2,9 +2,14 @@
 
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { Switch } from "@/components/ui/switch";
 import {
   Bell,
+  BookOpenText,
+  BookType,
   Clock,
+  Languages,
   Loader2,
   Moon,
   Power,
@@ -17,10 +22,12 @@ import { cn } from "@/lib/utils";
 import {
   MIN_NOTIFICATION_INTERVAL_MINUTES,
   normalizeNotificationIntervalMinutes,
+  type NotificationTextMode,
   type NotificationSettings,
 } from "@/lib/notificationScheduler";
 import { requestCoords, saveCoords, type SavedCoords } from "@/lib/prayerTimes";
 import { isTauri } from "@/lib/tauri";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 export function GeneralSettings({
@@ -39,6 +46,9 @@ export function GeneralSettings({
   updateAutostart: (next: boolean) => void;
 }) {
   const [locating, setLocating] = useState(false);
+  const t = useTranslations("general");
+  const common = useTranslations("common");
+  const language = useTranslations("language");
 
   async function handleTogglePrayerTimes() {
     const turningOn = !settings.usePrayerTimes;
@@ -56,72 +66,97 @@ export function GeneralSettings({
     <>
       <Card className="rounded-xl p-6 border-white/10 bg-white/5 backdrop-blur-xl group overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.03),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-        <div className="relative z-10 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-              <Bell className="w-5 h-5" />
+        <div className="relative z-10 flex items-center justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center text-cyan-400">
+              <Languages className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-base">تفعيل الإشعارات</h3>
-              <p className="text-xs text-muted-foreground">
-                تظهر أذكار عشوائية على سطح المكتب
-              </p>
+              <h3 className="font-bold text-base">{language("label")}</h3>
             </div>
           </div>
-          <button
-            onClick={() => update({ enabled: !settings.enabled })}
-            className={cn(
-              "relative w-14 h-8 rounded-full transition-all duration-500 p-1",
-              settings.enabled
-                ? "bg-primary"
-                : "bg-white/10 border border-white/5",
-            )}
-          >
-            <div
-              className={cn(
-                "w-6 h-6 rounded-full bg-white transition-all duration-500",
-                settings.enabled ? "translate-x-0 shadow-lg" : "-translate-x-6",
-              )}
-            />
-          </button>
+          <LanguageSwitcher className="w-40 shrink-0" />
         </div>
       </Card>
 
+      <SettingCard
+        icon={<BookOpenText className="w-5 h-5" />}
+        iconClassName="bg-violet-500/10 text-violet-400"
+        title={t("showTransliteration")}
+        description={t("showTransliterationDesc")}
+        enabled={settings.showTransliteration}
+        onToggle={() =>
+          update({ showTransliteration: !settings.showTransliteration })
+        }
+      />
+
+      <SettingCard
+        icon={<Bell className="w-5 h-5" />}
+        iconClassName="bg-primary/10 text-primary"
+        title={t("notificationsTitle")}
+        description={t("notificationsDesc")}
+        enabled={settings.enabled}
+        onToggle={() => update({ enabled: !settings.enabled })}
+      />
+
       {isTauri() && autostart !== null && (
-        <Card className="rounded-xl p-6 border-white/10 bg-white/5 backdrop-blur-xl group overflow-hidden">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.03),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-          <div className="relative z-10 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500">
-                <Power className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="font-bold text-base">تشغيل عند بدء النظام</h3>
-                <p className="text-xs text-muted-foreground">
-                  يبدأ التطبيق تلقائيا مع تشغيل الجهاز
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => updateAutostart(!autostart)}
-              className={cn(
-                "relative w-14 h-8 rounded-full transition-all duration-500 p-1",
-                autostart ? "bg-primary" : "bg-white/10 border border-white/5",
-              )}
-            >
-              <div
-                className={cn(
-                  "w-6 h-6 rounded-full bg-white transition-all duration-500",
-                  autostart ? "translate-x-0 shadow-lg" : "-translate-x-6",
-                )}
-              />
-            </button>
-          </div>
-        </Card>
+        <SettingCard
+          icon={<Power className="w-5 h-5" />}
+          iconClassName="bg-red-500/10 text-red-500"
+          title={t("autostartTitle")}
+          description={t("autostartDesc")}
+          enabled={autostart}
+          onToggle={() => updateAutostart(!autostart)}
+        />
       )}
 
       {settings.enabled && (
         <div className="grid gap-4 animate-in fade-in zoom-in-95 duration-500">
+          <Card className="rounded-xl p-6 border-white/10 bg-white/5 backdrop-blur-xl group overflow-hidden">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.03),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+            <div className="relative z-10">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center text-violet-400">
+                  <BookType className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold">
+                    {t("notificationText")}
+                  </h3>
+                  <p className="text-sm text-muted-foreground/70 mt-0.5">
+                    {t("notificationTextDesc")}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-5 grid grid-cols-2 gap-3">
+                {(["arabic", "transliteration"] as NotificationTextMode[]).map(
+                  (mode) => {
+                    const active = settings.notificationTextMode === mode;
+                    return (
+                      <button
+                        key={mode}
+                        type="button"
+                        onClick={() => update({ notificationTextMode: mode })}
+                        className={cn(
+                          "rounded-lg border px-4 py-3 text-sm font-bold transition-all active:scale-[0.98]",
+                          active
+                            ? "border-primary/50 bg-primary/10 text-primary"
+                            : "border-white/10 bg-white/5 text-muted-foreground hover:bg-white/10 hover:text-foreground",
+                        )}
+                      >
+                        {t(
+                          mode === "arabic"
+                            ? "notificationTextArabic"
+                            : "notificationTextTransliteration",
+                        )}
+                      </button>
+                    );
+                  },
+                )}
+              </div>
+            </div>
+          </Card>
+
           <Card className="rounded-xl p-6 border-white/10 bg-white/5 backdrop-blur-xl group overflow-hidden">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.03),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
             <div className="flex items-center justify-between">
@@ -129,7 +164,7 @@ export function GeneralSettings({
                 <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500">
                   <RefreshCw className="w-5 h-5" />
                 </div>
-                <h3 className="font-bold text-sm">الفاصل بين الأذكار</h3>
+                <h3 className="text-base font-bold">{t("interval")}</h3>
               </div>
               <div className="flex items-center gap-2">
                 <Input
@@ -146,7 +181,7 @@ export function GeneralSettings({
                   className="w-12 py-4 rounded-lg bg-white/5 border border-white/10 text-center text-lg font-black tabular-nums focus:outline-none focus:border-primary transition-all"
                 />
                 <span className="text-xs font-bold text-muted-foreground uppercase">
-                  دقيقة
+                  {common("minute")}
                 </span>
               </div>
             </div>
@@ -154,16 +189,15 @@ export function GeneralSettings({
 
           <Card className="rounded-xl p-6 border-white/10 bg-white/5 backdrop-blur-xl group overflow-hidden">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.03),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
                   <Timer className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm">مدة عرض الذكر</h3>
-                  <p className="text-xs text-muted-foreground/70 mt-0.5">
-                    كلما زادت القيمة زادت مدة عرض الذكر
+                  <h3 className="text-base font-bold">{t("duration")}</h3>
+                  <p className="text-sm text-muted-foreground/70 mt-0.5">
+                    {t("durationDesc")}
                   </p>
                 </div>
               </div>
@@ -185,7 +219,7 @@ export function GeneralSettings({
                   className="w-12 py-4 rounded-lg bg-white/5 border border-white/10 text-center text-lg font-black tabular-nums focus:outline-none focus:border-primary transition-all"
                 />
                 <span className="text-xs font-bold text-muted-foreground uppercase">
-                  مرة
+                  {t("durationUnit")}
                 </span>
               </div>
             </div>
@@ -199,42 +233,27 @@ export function GeneralSettings({
                   <Clock className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm">بناءً على أوقات الصلاة</h3>
-                  <p className="text-xs text-muted-foreground/70 mt-0.5">
-                    الصباح من الفجر • المساء من العصر حتى الفجر
+                  <h3 className="text-base font-bold">{t("usePrayerTimes")}</h3>
+                  <p className="text-sm text-muted-foreground/70 mt-0.5">
+                    {t("usePrayerTimesDesc")}
                   </p>
                   {coords && (
-                    <p className="text-xs text-teal-500/70 mt-0.5">
+                    <p className="text-xs font-medium text-teal-500/80 mt-0.5">
                       {coords.source === "gps"
-                        ? "موقع GPS"
-                        : "تقدير من المنطقة الزمنية"}
+                        ? t("gpsLocation")
+                        : t("timezoneLocation")}
                     </p>
                   )}
                 </div>
               </div>
-              <button
-                onClick={handleTogglePrayerTimes}
-                disabled={locating}
-                className={cn(
-                  "relative w-14 h-8 rounded-full transition-all duration-500 p-1 shrink-0",
-                  settings.usePrayerTimes
-                    ? "bg-primary"
-                    : "bg-white/10 border border-white/5",
-                )}
-              >
-                {locating ? (
-                  <Loader2 className="w-5 h-5 animate-spin text-primary mx-auto" />
-                ) : (
-                  <div
-                    className={cn(
-                      "w-6 h-6 rounded-full bg-white transition-all duration-500",
-                      settings.usePrayerTimes
-                        ? "translate-x-0 shadow-lg"
-                        : "-translate-x-6",
-                    )}
-                  />
-                )}
-              </button>
+              {locating ? (
+                <Loader2 className="w-5 h-5 animate-spin text-primary" />
+              ) : (
+                <Switch
+                  checked={settings.usePrayerTimes}
+                  onCheckedChange={handleTogglePrayerTimes}
+                />
+              )}
             </div>
           </Card>
 
@@ -245,24 +264,24 @@ export function GeneralSettings({
                 <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500">
                   <Sparkles className="w-5 h-5" />
                 </div>
-                <h3 className="font-bold text-sm">نوع الأذكار</h3>
+                <h3 className="text-base font-bold">{t("category")}</h3>
               </div>
               <div className="grid grid-cols-3 gap-3">
                 {[
                   {
-                    label: "الصباح",
+                    label: common("morning"),
                     value: "morning",
                     icon: Sun,
                     color: "text-amber-500",
                   },
                   {
-                    label: "المساء",
+                    label: common("evening"),
                     value: "evening",
                     icon: Moon,
                     color: "text-blue-400",
                   },
                   {
-                    label: "الكل",
+                    label: common("all"),
                     value: "both",
                     icon: Sparkles,
                     color: "text-purple-400",
@@ -302,5 +321,44 @@ export function GeneralSettings({
         </div>
       )}
     </>
+  );
+}
+
+function SettingCard({
+  icon,
+  iconClassName,
+  title,
+  description,
+  enabled,
+  onToggle,
+}: {
+  icon: React.ReactNode;
+  iconClassName: string;
+  title: string;
+  description: string;
+  enabled: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <Card className="rounded-xl p-6 border-white/10 bg-white/5 backdrop-blur-xl group overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.03),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+      <div className="relative z-10 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div
+            className={cn(
+              "w-10 h-10 rounded-xl flex items-center justify-center",
+              iconClassName,
+            )}
+          >
+            {icon}
+          </div>
+          <div>
+            <h3 className="font-bold text-base">{title}</h3>
+            <p className="text-sm text-muted-foreground">{description}</p>
+          </div>
+        </div>
+        <Switch checked={enabled} onCheckedChange={onToggle} />
+      </div>
+    </Card>
   );
 }

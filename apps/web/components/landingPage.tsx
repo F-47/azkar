@@ -1,22 +1,33 @@
 "use client";
 
 import { GitHubIcon, MosqueIcon } from "@/components/icons";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
-import { OrbitingCircles } from "@/components/ui/orbiting-circles";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { OrbitingCircles } from "@/components/ui/orbiting-circles";
 import { useLatestRelease } from "@/hooks/useLatestRelease";
 import useOrbitRadius from "@/hooks/useOrbitRadius";
 import { ChevronDown, Download, Loader2, Moon, Star } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
+
+const orbitZikr = [
+  "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ",
+  "لَا إِلَهَ إِلَّا اللَّهُ",
+  "الْحَمْدُ لِلَّهِ",
+  "اللَّهُ أَكْبَرُ",
+  "لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ",
+];
 
 function LandingPage() {
   const radius = useOrbitRadius();
   const { data, loading } = useLatestRelease();
+  const t = useTranslations("landing");
 
   const handleDownload = (url: string | null) => {
     if (url) {
@@ -28,6 +39,9 @@ function LandingPage() {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+      <div className="absolute top-4 left-4 z-50">
+        <LanguageSwitcher />
+      </div>
       <Button
         variant="link"
         className="absolute top-4 right-4 z-50 text-white"
@@ -38,11 +52,9 @@ function LandingPage() {
       <div className="absolute inset-0">
         <div className="absolute hidden sm:flex inset-0 items-center justify-center -z-10 pointer-events-none">
           <OrbitingCircles iconSize={48} radius={radius} duration={50}>
-            <Zikr text="سُبْحَانَ اللَّهِ وَبِحَمْدِهِ" />
-            <Zikr text="لَا إِلَهَ إِلَّا اللَّهُ" />
-            <Zikr text="الْحَمْدُ لِلَّهِ" />
-            <Zikr text="اللَّهُ أَكْبَرُ" />
-            <Zikr text="لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ" />
+            {orbitZikr.map((text) => (
+              <Zikr key={text} text={text} />
+            ))}
           </OrbitingCircles>
         </div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.18),transparent_65%)]" />
@@ -56,17 +68,18 @@ function LandingPage() {
         <Moon className="w-12 h-12" />
       </div>
 
-      <div className="relative w-full max-w-3xl mx-auto flex flex-col items-center text-center z-10">
+      <div className="relative w-full max-w-3xl mx-auto flex flex-col items-center text-center z-10 px-4">
         <div className="absolute w-28 h-28 -top-32">
           <Image src="/logo.png" alt="icon" fill className="object-contain" />
         </div>
 
         <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold leading-tight mb-6">
-          اجعل الذكر جزءًا من <span className="text-primary">يومك</span>
+          {t("titleBefore")}{" "}
+          <span className="text-primary">{t("titleHighlight")}</span>
         </h1>
 
         <p className="text-lg md:text-xl text-muted-foreground mb-10">
-          تجربة هادئة تساعدك على المواظبة على الذكر
+          {t("subtitle")}
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4">
@@ -156,7 +169,11 @@ export default LandingPage;
 
 function Zikr({ text }: { text: string }) {
   return (
-    <div className="px-3 py-1 rounded-full bg-white/5 backdrop-blur-md border border-white/10 text-muted-foreground/80 text-sm shadow-[0_0_12px_rgba(255,255,255,0.05)] whitespace-nowrap">
+    <div
+      lang="ar"
+      dir="rtl"
+      className="px-3 py-1 rounded-full bg-white/5 backdrop-blur-md border border-white/10 text-muted-foreground/80 text-sm shadow-[0_0_12px_rgba(255,255,255,0.05)] whitespace-nowrap"
+    >
       {text}
     </div>
   );

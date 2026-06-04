@@ -3,6 +3,7 @@ export type Category = "morning" | "evening";
 export interface Zekr {
   id: number;
   text: string;
+  transliteration?: string;
   count: number;
   category: Category;
   note?: string;

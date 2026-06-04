@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MouseEvent } from "react";
 import { calculateZekrDuration } from "@/lib/azkarUtils";
 import { HtmlContent } from "@/components/HtmlContent";
+import { cn } from "@/lib/utils";
 import {
   loadSettings,
   DEFAULT_SETTINGS,
@@ -38,6 +39,10 @@ type WindowWithNotif = Window & {
 };
 
 const DEFAULT_DURATION = 3000;
+
+function getTextDirection(text: string): "rtl" | "ltr" {
+  return /[\u0600-\u06ff]/.test(text) ? "rtl" : "ltr";
+}
 
 export default function NotificationPage() {
   const [data, setData] = useState<NotificationData | null>(null);
@@ -125,7 +130,6 @@ export default function NotificationPage() {
 
     document.documentElement.style.background = "transparent";
     document.body.style.background = "transparent";
-    document.documentElement.setAttribute("dir", "rtl");
     win.__showNotification = (title, body, duration, action) => {
       trigger(title, body, duration, action);
     };
@@ -206,6 +210,8 @@ export default function NotificationPage() {
     Math.round((settings.appearance.opacity ?? 100) * 2.55)
       .toString(16)
       .padStart(2, "0");
+  const titleDirection = getTextDirection(data.title);
+  const bodyDirection = getTextDirection(data.body);
 
   return (
     <div
@@ -216,10 +222,14 @@ export default function NotificationPage() {
       onMouseLeave={handleMouseLeave}
     >
       <header
+        dir={titleDirection}
         className="flex items-center rounded-t-xl justify-between px-4 py-2"
         style={{ backgroundColor: settings.appearance.headerBgColor }}
       >
-        <span className="text-sm font-bold pointer-events-none">
+        <span
+          lang={titleDirection === "rtl" ? "ar" : "en"}
+          className="text-sm font-bold pointer-events-none"
+        >
           {data.title}
         </span>
 
@@ -232,7 +242,14 @@ export default function NotificationPage() {
 
       <HtmlContent
         content={data.body}
-        className="p-4 pointer-events-none arabic-text leading-8! w-full whitespace-pre-line text-base flex-1"
+        dir={bodyDirection}
+        lang={bodyDirection === "rtl" ? "ar" : "en"}
+        className={cn(
+          "p-4 pointer-events-none leading-8! w-full whitespace-pre-line flex-1",
+          bodyDirection === "rtl"
+            ? "arabic-text text-right text-base"
+            : "font-sans text-left text-[0.95rem]",
+        )}
         style={{ color: settings.appearance.textColor, background: bgColor }}
         badgeStyle={{
           backgroundColor: settings.appearance.headerBgColor + "30",

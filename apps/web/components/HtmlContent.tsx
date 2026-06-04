@@ -8,6 +8,8 @@ interface HtmlContentProps {
   content: string;
   className?: string;
   style?: React.CSSProperties;
+  dir?: "rtl" | "ltr";
+  lang?: string;
   badgeClassName?: string;
   badgeStyle?: React.CSSProperties;
 }
@@ -16,6 +18,8 @@ export function HtmlContent({
   content,
   className,
   style,
+  dir,
+  lang,
   badgeClassName,
   badgeStyle,
 }: HtmlContentProps) {
@@ -48,6 +52,8 @@ export function HtmlContent({
     <p
       className={cn(className)}
       style={style}
+      dir={dir}
+      lang={lang}
       dangerouslySetInnerHTML={{ __html: cleanHtml }}
     />
   );

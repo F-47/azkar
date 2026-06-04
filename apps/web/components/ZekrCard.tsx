@@ -5,17 +5,26 @@ import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { Zekr } from "@/types";
 import { Check, Star } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface Props {
   zekr: Zekr;
   remaining: number;
+  showTransliteration: boolean;
   onDecrement: (id: number, defaultCount: number) => void;
 }
 
-export default function ZekrCard({ zekr, remaining, onDecrement }: Props) {
+export default function ZekrCard({
+  zekr,
+  remaining,
+  showTransliteration,
+  onDecrement,
+}: Props) {
   const isDone = remaining === 0;
   const progress =
     zekr.count > 0 ? ((zekr.count - remaining) / zekr.count) * 100 : 100;
+  const t = useTranslations("azkar");
+  const common = useTranslations("common");
 
   return (
     <Card
@@ -36,6 +45,18 @@ export default function ZekrCard({ zekr, remaining, onDecrement }: Props) {
           )}
           badgeClassName="inline-flex items-center justify-center bg-primary/20 text-primary text-sm font-bold rounded-full w-7 h-7 mx-1.5 align-middle font-serif border border-primary/20"
         />
+        {showTransliteration && zekr.transliteration && (
+          <p
+            lang="en"
+            dir="ltr"
+            className={cn(
+              "whitespace-pre-line text-left text-sm leading-7 text-muted-foreground/80",
+              isDone && "text-muted-foreground/40",
+            )}
+          >
+            {zekr.transliteration}
+          </p>
+        )}
 
         <div className="space-y-4 pt-2 border-t border-white/5">
           <div className="w-full h-1.5 rounded-full overflow-hidden bg-white/10">
@@ -44,9 +65,7 @@ export default function ZekrCard({ zekr, remaining, onDecrement }: Props) {
                 "h-full rounded-full transition-all duration-700 ease-out bg-primary",
                 isDone && "bg-green-500",
               )}
-              style={{
-                width: `${progress}%`,
-              }}
+              style={{ width: `${progress}%` }}
             />
           </div>
 
@@ -63,12 +82,12 @@ export default function ZekrCard({ zekr, remaining, onDecrement }: Props) {
             >
               {isDone ? (
                 <>
-                  <span>تمّ الذكر</span>
+                  <span>{t("done")}</span>
                   <Check className="w-4 h-4" />
                 </>
               ) : (
                 <>
-                  <span>سبّح</span>
+                  <span>{t("count")}</span>
                   <Star className="w-4 h-4 transition-transform group-hover:rotate-45" />
                 </>
               )}
@@ -91,7 +110,7 @@ export default function ZekrCard({ zekr, remaining, onDecrement }: Props) {
                 </span>
               </div>
               <span className="text-xs uppercase text-muted-foreground/40 font-bold">
-                المرات
+                {common("times")}
               </span>
             </div>
           </div>
