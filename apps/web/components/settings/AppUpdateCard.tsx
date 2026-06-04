@@ -21,7 +21,13 @@ export function AppUpdateCard() {
   const t = useTranslations("updates");
   const common = useTranslations("common");
   const [updateState, setUpdateState] = useState<
-    "idle" | "checking" | "available" | "downloading" | "done" | "latest"
+    | "idle"
+    | "checking"
+    | "available"
+    | "downloading"
+    | "done"
+    | "latest"
+    | "failed"
   >("idle");
   const [updateVersion, setUpdateVersion] = useState<string | null>(null);
   const [downloadProgress, setDownloadProgress] = useState(0);
@@ -48,8 +54,13 @@ export function AppUpdateCard() {
   async function handleInstallUpdate() {
     setUpdateState("downloading");
     setDownloadProgress(0);
-    await installUpdate((pct) => setDownloadProgress(pct));
-    setUpdateState("done");
+    try {
+      await installUpdate((pct) => setDownloadProgress(pct));
+      setUpdateState("done");
+    } catch (error) {
+      console.error("Failed to install update:", error);
+      setUpdateState("failed");
+    }
   }
 
   if (!isTauri()) return null;
@@ -157,6 +168,21 @@ export function AppUpdateCard() {
                 style={{ width: `${downloadProgress}%` }}
               />
             </div>
+          </div>
+        )}
+
+        {updateState === "failed" && (
+          <div className="space-y-4 animate-in zoom-in-95 duration-500">
+            <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm font-bold text-red-300">
+              {t("failed")}
+            </div>
+            <Button
+              onClick={handleInstallUpdate}
+              className="w-full h-14 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-black text-sm shadow-[0_10px_20px_rgba(245,158,11,0.2)] active:scale-[0.98] transition-all"
+            >
+              <RefreshCw className="w-5 h-5 ml-2" />
+              {t("retry")}
+            </Button>
           </div>
         )}
 

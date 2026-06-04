@@ -5,6 +5,7 @@ let pendingUpdate: any = null
 
 export async function checkForUpdate(): Promise<string | null> {
   if (!isTauri()) return null
+  pendingUpdate = null
   try {
     const { check } = await import('@tauri-apps/plugin-updater')
     pendingUpdate = await check()
@@ -15,7 +16,9 @@ export async function checkForUpdate(): Promise<string | null> {
 }
 
 export async function installUpdate(onProgress: (pct: number) => void): Promise<void> {
-  if (!pendingUpdate?.available) return
+  if (!pendingUpdate?.available) {
+    throw new Error('No checked update is available to install')
+  }
   let downloaded = 0
   let total = 0
   await pendingUpdate.downloadAndInstall((event: { event: string; data: { contentLength?: number; chunkLength: number } }) => {
