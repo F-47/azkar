@@ -15,6 +15,7 @@ export interface LatestReleaseData {
 interface GitHubReleaseAsset {
   name: string;
   browser_download_url: string;
+  download_count: number;
 }
 
 interface GitHubReleaseResponse {
@@ -56,4 +57,23 @@ export async function getLatestRelease(): Promise<LatestReleaseData> {
           ?.browser_download_url || null,
     },
   };
+}
+
+export async function getTotalDownloads(): Promise<number> {
+  const res = await fetch(
+    "https://api.github.com/repos/F-47/azkar/releases?per_page=100",
+  );
+
+  if (!res.ok) return 0;
+
+  const releases = (await res.json()) as Array<{
+    assets: Array<{ download_count: number }>;
+  }>;
+
+  return releases.reduce(
+    (total, release) =>
+      total +
+      release.assets.reduce((sum, asset) => sum + asset.download_count, 0),
+    0,
+  );
 }

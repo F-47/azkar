@@ -12,24 +12,41 @@ import {
 import { OrbitingCircles } from "@/components/ui/orbiting-circles";
 import { useLatestRelease } from "@/hooks/useLatestRelease";
 import useOrbitRadius from "@/hooks/useOrbitRadius";
-import { ChevronDown, Download, Loader2, Moon, Star } from "lucide-react";
+import { ChevronDown, Download, Loader2, Moon, Star, Store } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 
+declare global {
+  interface Window {
+    umami?: { track: (event: string, data?: Record<string, string>) => void };
+  }
+}
+
+const MICROSOFT_STORE_URL =
+  "https://apps.microsoft.com/detail/9N5V2SR2X29V?hl=en-us&gl=EG&ocid=pdpshare";
+
 const orbitZikr = [
-  "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ",
-  "لَا إِلَهَ إِلَّا اللَّهُ",
-  "الْحَمْدُ لِلَّهِ",
-  "اللَّهُ أَكْبَرُ",
-  "لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ",
+  "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ",
+  "لَا إِلَهَ إِلَّا اللَّهُ",
+  "الْحَمْدُ لِلَّهِ",
+  "اللَّهُ أَكْبَرُ",
+  "لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ",
 ];
+
+function formatDownloads(count: number): string {
+  if (count >= 1000) {
+    return `${(count / 1000).toFixed(1)}k`;
+  }
+  return count.toString();
+}
 
 function LandingPage() {
   const radius = useOrbitRadius();
-  const { data, loading } = useLatestRelease();
+  const { data, loading, totalDownloads } = useLatestRelease();
   const t = useTranslations("landing");
 
-  const handleDownload = (url: string | null) => {
+  const handleDownload = (url: string | null, format: string) => {
+    window.umami?.track("download", { format });
     if (url) {
       window.location.href = url;
     } else {
@@ -64,7 +81,7 @@ function LandingPage() {
       <div className="absolute top-32 left-16 opacity-15">
         <Star className="w-12 h-12" />
       </div>
-      <div className="absolute bottom-40 right-20 opacity-15 ">
+      <div className="absolute bottom-40 right-20 opacity-15">
         <Moon className="w-12 h-12" />
       </div>
 
@@ -101,13 +118,13 @@ function LandingPage() {
             >
               <DropdownMenuItem
                 className="cursor-pointer hover:text-white! font-bold justify-start text-right py-3 rounded-lg"
-                onClick={() => handleDownload(data?.windows.msi || null)}
+                onClick={() => handleDownload(data?.windows.msi || null, "msi")}
               >
                 MSI Installer
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer hover:text-white! font-bold justify-start text-right py-3 rounded-lg"
-                onClick={() => handleDownload(data?.windows.exe || null)}
+                onClick={() => handleDownload(data?.windows.exe || null, "exe")}
               >
                 EXE Installer
               </DropdownMenuItem>
@@ -137,24 +154,47 @@ function LandingPage() {
             >
               <DropdownMenuItem
                 className="cursor-pointer hover:text-white! font-bold justify-start text-right py-3 rounded-lg"
-                onClick={() => handleDownload(data?.linux.deb || null)}
+                onClick={() => handleDownload(data?.linux.deb || null, "deb")}
               >
                 Debian (.deb)
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer hover:text-white! font-bold justify-start text-right py-3 rounded-lg"
-                onClick={() => handleDownload(data?.linux.appImage || null)}
+                onClick={() => handleDownload(data?.linux.appImage || null, "appimage")}
               >
                 AppImage
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer hover:text-white! font-bold justify-start text-right py-3 rounded-lg"
-                onClick={() => handleDownload(data?.linux.rpm || null)}
+                onClick={() => handleDownload(data?.linux.rpm || null, "rpm")}
               >
                 RPM Package
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+        </div>
+
+        <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground/55">
+          <button
+            onClick={() => {
+              window.umami?.track("download", { format: "microsoft-store" });
+              window.open(MICROSOFT_STORE_URL, "_blank");
+            }}
+            className="flex items-center gap-1.5 hover:text-muted-foreground transition-colors"
+          >
+            <Store className="w-3.5 h-3.5" />
+            {t("microsoftStore")}
+          </button>
+
+          {totalDownloads !== null && totalDownloads > 0 && (
+            <>
+              <span className="w-px h-3.5 bg-white/15 shrink-0" />
+              <span className="flex items-center gap-1.5">
+                <Download className="w-3.5 h-3.5 shrink-0" />
+                {formatDownloads(totalDownloads)}+ {t("downloadsCount")}
+              </span>
+            </>
+          )}
         </div>
       </div>
 

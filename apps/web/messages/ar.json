@@ -48,7 +48,9 @@
     "featureCustomTitle": "تخصيص كامل",
     "featureCustomDesc": "غير المظهر والخطوط بما يناسب ذوقك الشخصي",
     "footer": "نسعى لتذكيرك بما يعينك على الثبات في الذكر والقرب من الله في كل يوم.",
-    "copyright": "© {year} أذكار. جميع الحقوق محفوظة."
+    "copyright": "© {year} أذكار. جميع الحقوق محفوظة.",
+    "microsoftStore": "متجر مايكروسوفت",
+    "downloadsCount": "تنزيل"
   },
   "azkar": {
     "morningTitle": "أذكار الصباح",
