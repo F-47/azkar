@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import type { Zekr } from "@/types";
 import { Check, Star } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { memo } from "react";
 
 interface Props {
   zekr: Zekr;
@@ -14,7 +15,7 @@ interface Props {
   onDecrement: (id: number, defaultCount: number) => void;
 }
 
-export default function ZekrCard({
+function ZekrCard({
   zekr,
   remaining,
   showTransliteration,
@@ -29,13 +30,17 @@ export default function ZekrCard({
   return (
     <Card
       className={cn(
-        "group relative border border-white/10 bg-white/5 backdrop-blur-xl transition-all duration-500 p-6 overflow-hidden shadow-[0_0_30px_rgba(59,130,246,0.03)] rounded-2xl",
+        "group relative border border-white/10 bg-white/5 transition-colors duration-200 p-6 overflow-hidden shadow-sm rounded-2xl",
         isDone
           ? "opacity-60 grayscale-[0.3]"
-          : "hover:bg-white/10 hover:scale-[1.01]",
+          : "hover:bg-white/10",
       )}
+      style={{
+        contentVisibility: "auto",
+        containIntrinsicSize: "24rem",
+        contain: "content",
+      }}
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.08),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
       <div className="relative z-10 flex flex-col gap-4">
         <HtmlContent
           content={zekr.text}
@@ -119,3 +124,5 @@ export default function ZekrCard({
     </Card>
   );
 }
+
+export default memo(ZekrCard);

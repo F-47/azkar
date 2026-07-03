@@ -43,7 +43,7 @@ export default function UpdateNotifier() {
   return (
     <div className="fixed top-5 left-4 right-4 z-50 animate-in slide-in-from-top-8 duration-700 ease-out pointer-events-none">
       <div className="max-w-md mx-auto pointer-events-auto">
-        <div className="relative group overflow-hidden rounded-2xl border border-amber-500/30 bg-amber-500/10 backdrop-blur-2xl p-4">
+        <div className="relative group overflow-hidden rounded-2xl border border-amber-500/30 bg-amber-500/12 p-4 shadow-lg shadow-amber-500/10">
           <div className="relative z-10 flex items-start gap-4">
             <div className="w-12 h-12 shrink-0 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-500 shadow-inner">
               <PartyPopper className="w-6 h-6 animate-bounce" />

@@ -81,15 +81,24 @@ export default function SettingsPage() {
     }
   }, [mounted]);
 
+  const settingsSignature = useMemo(
+    () => (settings ? JSON.stringify(settings) : null),
+    [settings],
+  );
+  const savedSettingsSignature = useMemo(
+    () => (savedSettings ? JSON.stringify(savedSettings) : null),
+    [savedSettings],
+  );
+
   const hasUnsavedChanges = useMemo(
     () =>
-      (settings !== null &&
-        savedSettings !== null &&
-        JSON.stringify(settings) !== JSON.stringify(savedSettings)) ||
+      (settingsSignature !== null &&
+        savedSettingsSignature !== null &&
+        settingsSignature !== savedSettingsSignature) ||
       (autostart !== null &&
         savedAutostart !== null &&
         autostart !== savedAutostart),
-    [autostart, savedAutostart, settings, savedSettings],
+    [autostart, savedAutostart, savedSettingsSignature, settingsSignature],
   );
 
   const warnUnsavedChanges = useCallback(() => {
@@ -174,7 +183,7 @@ export default function SettingsPage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.1),transparent_60%)]" />
       </div>
 
-      <header className="sticky top-0 z-50 border-b border-white/5 backdrop-blur-xl px-4 py-4 flex items-center justify-between">
+      <header className="sticky top-0 z-50 border-b border-white/5 bg-background/95 px-4 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
             <Settings className="w-5 h-5" />
@@ -196,7 +205,7 @@ export default function SettingsPage() {
         <div className="fixed top-20 left-4 right-4 z-50 pointer-events-none animate-in fade-in slide-in-from-top-4 zoom-in-95 duration-300">
           <div
             className={cn(
-              "mx-auto flex max-w-2xl items-center justify-between gap-3 rounded-xl border border-primary/40 bg-popover/95 p-3 text-popover-foreground backdrop-blur-xl pointer-events-auto",
+            "mx-auto flex max-w-2xl items-center justify-between gap-3 rounded-xl border border-primary/40 bg-popover/95 p-3 text-popover-foreground pointer-events-auto",
               shakeSaveBar && "animate-unsaved-shake",
             )}
           >

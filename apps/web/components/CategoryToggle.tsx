@@ -8,17 +8,27 @@ import { useTranslations } from "next-intl";
 interface Props {
   active: Category;
   onChange: (category: Category) => void;
+  className?: string;
 }
 
-export default function CategoryToggle({ active, onChange }: Props) {
+export default function CategoryToggle({
+  active,
+  onChange,
+  className,
+}: Props) {
   const t = useTranslations("common");
 
   return (
-    <div className="flex rounded-2xl p-1.5 gap-1.5 bg-white/5 backdrop-blur-xl border border-white/10 shadow-lg">
+    <div
+      className={cn(
+        "flex w-full max-w-md mx-auto rounded-2xl gap-1.5 bg-white/5 border border-white/10 p-1.5",
+        className,
+      )}
+    >
       <button
         onClick={() => onChange("morning")}
         className={cn(
-          "flex-1 py-2.5 px-4 rounded-xl text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2.5 relative overflow-hidden group",
+          "flex-1 py-2.5 px-4 rounded-xl text-sm font-bold transition-colors duration-200 flex items-center justify-center gap-2.5 relative overflow-hidden",
           active === "morning"
             ? "text-white bg-primary"
             : "text-white/60 hover:text-white hover:bg-white/5",
@@ -35,7 +45,7 @@ export default function CategoryToggle({ active, onChange }: Props) {
       <button
         onClick={() => onChange("evening")}
         className={cn(
-          "flex-1 py-2.5 px-4 rounded-xl text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2.5 relative overflow-hidden group",
+          "flex-1 py-2.5 px-4 rounded-xl text-sm font-bold transition-colors duration-200 flex items-center justify-center gap-2.5 relative overflow-hidden",
           active === "evening"
             ? "text-white bg-primary"
             : "text-white/60 hover:text-white hover:bg-white/5",

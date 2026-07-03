@@ -41,7 +41,7 @@ import {
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 export default function ManageAzkarPage() {
   const locale = useLocale();
@@ -79,7 +79,10 @@ export default function ManageAzkarPage() {
     };
   }, [reload]);
 
-  const visibleAzkars = azkars.filter((z) => z.category === tab);
+  const visibleAzkars = useMemo(
+    () => azkars.filter((z) => z.category === tab),
+    [azkars, tab],
+  );
 
   function handleAdd(e: React.FormEvent) {
     e.preventDefault();
@@ -124,7 +127,7 @@ export default function ManageAzkarPage() {
       </header>
 
       <main className="flex-1 w-full px-4 py-8 relative z-10 max-w-2xl mx-auto space-y-8">
-        <div className="flex w-full flex-col gap-6 md:flex-row md:items-center md:justify-between bg-white/5 backdrop-blur-md rounded-xl p-4 border border-white/10 shadow-sm">
+        <div className="flex w-full flex-col gap-6 md:flex-row md:items-center md:justify-between bg-white/5 rounded-xl p-4 border border-white/10 shadow-sm">
           <div className="flex bg-white/5 p-1 rounded-lg border border-white/5 gap-2">
             <TabButton
               active={tab === "morning"}
@@ -288,11 +291,15 @@ export default function ManageAzkarPage() {
               <Card
                 key={zekr.id}
                 className={cn(
-                  "group relative rounded-xl p-6 border transition-all duration-500 overflow-hidden",
+                  "group relative rounded-xl p-6 border transition-colors duration-300 overflow-hidden",
                   isEnabled
                     ? "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20"
                     : "bg-white/2 border-white/5 opacity-50 grayscale shadow-none",
                 )}
+                style={{
+                  contentVisibility: "auto",
+                  containIntrinsicSize: "18rem",
+                }}
               >
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.03),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
 

@@ -64,7 +64,10 @@ export function GeneralSettings({
 
   return (
     <>
-      <Card className="rounded-xl p-6 border-white/10 bg-white/5 backdrop-blur-xl group overflow-hidden">
+      <Card
+        className="rounded-xl p-6 border-white/10 bg-white/5 group overflow-hidden"
+        style={{ contentVisibility: "auto", containIntrinsicSize: "12rem" }}
+      >
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.03),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
         <div className="relative z-10 flex items-center justify-between gap-4">
           <div className="flex min-w-0 items-center gap-4">
@@ -112,7 +115,10 @@ export function GeneralSettings({
 
       {settings.enabled && (
         <div className="grid gap-4 animate-in fade-in zoom-in-95 duration-500">
-          <Card className="rounded-xl p-6 border-white/10 bg-white/5 backdrop-blur-xl group overflow-hidden">
+          <Card
+            className="rounded-xl p-6 border-white/10 bg-white/5 group overflow-hidden"
+            style={{ contentVisibility: "auto", containIntrinsicSize: "16rem" }}
+          >
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.03),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
             <div className="relative z-10">
               <div className="flex items-center gap-4">
@@ -157,7 +163,10 @@ export function GeneralSettings({
             </div>
           </Card>
 
-          <Card className="rounded-xl p-6 border-white/10 bg-white/5 backdrop-blur-xl group overflow-hidden">
+          <Card
+            className="rounded-xl p-6 border-white/10 bg-white/5 group overflow-hidden"
+            style={{ contentVisibility: "auto", containIntrinsicSize: "12rem" }}
+          >
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.03),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -187,7 +196,10 @@ export function GeneralSettings({
             </div>
           </Card>
 
-          <Card className="rounded-xl p-6 border-white/10 bg-white/5 backdrop-blur-xl group overflow-hidden">
+          <Card
+            className="rounded-xl p-6 border-white/10 bg-white/5 group overflow-hidden"
+            style={{ contentVisibility: "auto", containIntrinsicSize: "12rem" }}
+          >
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.03),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -225,7 +237,10 @@ export function GeneralSettings({
             </div>
           </Card>
 
-          <Card className="rounded-xl p-6 border-white/10 bg-white/5 backdrop-blur-xl group overflow-hidden">
+          <Card
+            className="rounded-xl p-6 border-white/10 bg-white/5 group overflow-hidden"
+            style={{ contentVisibility: "auto", containIntrinsicSize: "12rem" }}
+          >
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.03),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-4">
@@ -258,7 +273,13 @@ export function GeneralSettings({
           </Card>
 
           {!settings.usePrayerTimes && (
-            <Card className="rounded-xl p-6 border-white/10 bg-white/5 backdrop-blur-xl group overflow-hidden">
+            <Card
+              className="rounded-xl p-6 border-white/10 bg-white/5 group overflow-hidden"
+              style={{
+                contentVisibility: "auto",
+                containIntrinsicSize: "14rem",
+              }}
+            >
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.03),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500">
@@ -340,7 +361,10 @@ function SettingCard({
   onToggle: () => void;
 }) {
   return (
-    <Card className="rounded-xl p-6 border-white/10 bg-white/5 backdrop-blur-xl group overflow-hidden">
+    <Card
+      className="rounded-xl p-6 border-white/10 bg-white/5 group overflow-hidden"
+      style={{ contentVisibility: "auto", containIntrinsicSize: "10rem" }}
+    >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.03),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
       <div className="relative z-10 flex items-center justify-between">
         <div className="flex items-center gap-4">

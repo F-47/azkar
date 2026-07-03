@@ -30,10 +30,8 @@ export default function ProgressBar({ completed, total }: Props) {
           </span>
           <span
             className={cn(
-              "text-sm font-black tabular-nums transition-colors duration-500",
-              percentage === 100
-                ? "text-primary animate-pulse"
-                : "text-primary",
+              "text-sm font-black tabular-nums transition-colors duration-300 text-primary",
+              percentage === 100 && "animate-pulse",
             )}
           >
             {percentage}%
@@ -43,9 +41,9 @@ export default function ProgressBar({ completed, total }: Props) {
       <div className="w-full h-3 rounded-full overflow-hidden bg-white/10 p-0.5 border border-white/5">
         <div
           className={cn(
-            "h-full rounded-full transition-all duration-1000 ease-out bg-primary shadow-[0_0_15px_rgba(59,130,246,0.5)]",
+            "h-full rounded-full transition-all duration-500 ease-out bg-primary",
             percentage === 100 &&
-              "bg-primary shadow-[0_0_15px_rgba(59,130,246,0.5)]",
+              "shadow-[0_0_15px_rgba(59,130,246,0.5)]",
           )}
           style={{ width: `${percentage}%` }}
         />

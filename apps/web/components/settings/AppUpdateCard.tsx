@@ -66,7 +66,10 @@ export function AppUpdateCard() {
   if (!isTauri()) return null;
 
   return (
-    <Card className="rounded-xl p-6 border-white/10 bg-white/5 backdrop-blur-xl group overflow-hidden relative">
+    <Card
+      className="rounded-xl p-6 border-white/10 bg-white/5 group overflow-hidden relative"
+      style={{ contentVisibility: "auto", containIntrinsicSize: "24rem" }}
+    >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.05),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
 
       <div className="flex items-center justify-between">

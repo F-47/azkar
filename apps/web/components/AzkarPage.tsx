@@ -55,7 +55,7 @@ export default function AzkarPage() {
     <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-500">
       <UpdateNotifier />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.1),transparent_60%)]" />
-      <header className="sticky top-0 z-20 border-b border-white/5 backdrop-blur-2xl">
+      <header className="sticky top-0 z-20 border-b border-white/5 bg-background/95">
         <div className="px-4 py-4 relative">
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">
@@ -118,13 +118,13 @@ export default function AzkarPage() {
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto px-4 py-8 relative z-10">
+      <main className="flex-1 px-4 py-8 relative z-10">
         <div className="max-w-2xl mx-auto space-y-4">
           {mounted && isComplete && azkar.length > 0 && (
             <div className="p-8 rounded-2xl text-center relative overflow-hidden group mb-8 border border-green-500/20 bg-green-500/5">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(34,197,94,0.1),transparent_70%)] animate-pulse" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(34,197,94,0.08),transparent_70%)]" />
               <div className="relative z-10">
-                <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-[0_0_30px_rgba(34,197,94,0.4)]">
+                <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
                   <LayoutDashboard className="w-8 h-8 text-white" />
                 </div>
                 <h2 className="text-xl font-black mb-2 text-white sm:text-2xl">
@@ -160,7 +160,7 @@ export default function AzkarPage() {
               </Link>
             </div>
           ) : (
-            <div className="grid gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700 border-none">
+            <div className="grid gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500 border-none">
               {azkar.map((zekr) => (
                 <ZekrCard
                   key={zekr.id}

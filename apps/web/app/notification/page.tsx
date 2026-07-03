@@ -203,13 +203,28 @@ export default function NotificationPage() {
     [data, hideWindow],
   );
 
-  if (!data) return null;
-
   const bgColor =
     settings.appearance.backgroundColor +
     Math.round((settings.appearance.opacity ?? 100) * 2.55)
       .toString(16)
       .padStart(2, "0");
+  const bodyStyle = useMemo(
+    () => ({
+      color: settings.appearance.textColor,
+      background: bgColor,
+    }),
+    [bgColor, settings.appearance.textColor],
+  );
+  const badgeStyle = useMemo(
+    () => ({
+      backgroundColor: settings.appearance.headerBgColor + "30",
+      borderColor: settings.appearance.headerBgColor + "30",
+      color: settings.appearance.headerBgColor,
+    }),
+    [settings.appearance.headerBgColor],
+  );
+  if (!data) return null;
+
   const titleDirection = getTextDirection(data.title);
   const bodyDirection = getTextDirection(data.body);
 
@@ -250,12 +265,8 @@ export default function NotificationPage() {
             ? "arabic-text text-right text-base"
             : "font-sans text-left text-[0.95rem]",
         )}
-        style={{ color: settings.appearance.textColor, background: bgColor }}
-        badgeStyle={{
-          backgroundColor: settings.appearance.headerBgColor + "30",
-          borderColor: settings.appearance.headerBgColor + "30",
-          color: settings.appearance.headerBgColor,
-        }}
+        style={bodyStyle}
+        badgeStyle={badgeStyle}
         badgeClassName="inline-flex items-center justify-center text-sm font-bold rounded-full w-6 h-6 align-middle font-serif border"
       />
 

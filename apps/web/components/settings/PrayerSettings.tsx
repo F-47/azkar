@@ -257,7 +257,10 @@ export function PrayerSettings({
   }
 
   return (
-    <Card className="rounded-xl p-6 border-white/10 bg-white/5 backdrop-blur-xl group overflow-hidden">
+    <Card
+      className="rounded-xl p-6 border-white/10 bg-white/5 group overflow-hidden"
+      style={{ contentVisibility: "auto", containIntrinsicSize: "64rem" }}
+    >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.03),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
       <div className="relative z-10 grid gap-5">
         <div className="grid grid-cols-[1fr_auto] items-center gap-2">

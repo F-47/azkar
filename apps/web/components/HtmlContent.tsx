@@ -1,8 +1,11 @@
 "use client";
 
-import { useMemo } from "react";
 import DOMPurify from "dompurify";
+import { memo, useMemo } from "react";
+
 import { cn } from "@/lib/utils";
+
+const htmlCache = new Map<string, string>();
 
 interface HtmlContentProps {
   content: string;
@@ -14,7 +17,7 @@ interface HtmlContentProps {
   badgeStyle?: React.CSSProperties;
 }
 
-export function HtmlContent({
+function HtmlContentBase({
   content,
   className,
   style,
@@ -33,19 +36,28 @@ export function HtmlContent({
           .join(";")
       : "";
 
+    const cacheKey = [content, badgeClassName ?? "", badgeStyleString].join("|");
+    const cached = htmlCache.get(cacheKey);
+    if (cached) return cached;
+
     const processedContent = content.replace(
-      /۝([\u0660-\u0669]+)/g,
+      /\u06dd([\u0660-\u0669]+)/g,
       (match, p1) => {
         return `<span class="${cn(badgeClassName)}" style="${badgeStyleString}">${p1}</span>`;
       },
     );
 
-    if (typeof window === "undefined") return processedContent;
+    if (typeof window === "undefined") {
+      htmlCache.set(cacheKey, processedContent);
+      return processedContent;
+    }
 
-    return DOMPurify.sanitize(processedContent, {
+    const sanitized = DOMPurify.sanitize(processedContent, {
       ALLOWED_TAGS: ["span", "br"],
       ALLOWED_ATTR: ["class", "style"],
     });
+    htmlCache.set(cacheKey, sanitized);
+    return sanitized;
   }, [content, badgeClassName, badgeStyle]);
 
   return (
@@ -58,3 +70,5 @@ export function HtmlContent({
     />
   );
 }
+
+export const HtmlContent = memo(HtmlContentBase);

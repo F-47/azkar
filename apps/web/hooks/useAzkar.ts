@@ -131,14 +131,24 @@ export function useAzkar() {
     setCategory(next)
   }, [])
 
-  const totalCount = azkar.reduce((sum, z) => sum + z.count, 0)
-  const completedCount = azkar.reduce((sum, z) => {
-    const original = z.count
-    const remaining = progress[z.id] ?? original
-    return sum + (original - remaining)
-  }, 0)
+  const { totalCount, completedCount, isComplete } = useMemo(() => {
+    let total = 0
+    let completed = 0
+    let complete = true
 
-  const isComplete = azkar.every((z) => (progress[z.id] ?? z.count) === 0)
+    for (const zekr of azkar) {
+      total += zekr.count
+      const remaining = progress[zekr.id] ?? zekr.count
+      completed += zekr.count - remaining
+      if (remaining !== 0) complete = false
+    }
+
+    return {
+      totalCount: total,
+      completedCount: completed,
+      isComplete: complete,
+    }
+  }, [azkar, progress])
 
   return {
     azkar,

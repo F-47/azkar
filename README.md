@@ -124,14 +124,6 @@ sudo rpm -i azkar.rpm
 
 ---
 
-### Arch Linux (AUR)
-
-```bash id="aur-install"
-yay -S azkar
-```
-
----
-
 ### Universal Linux (AppImage)
 
 ```bash id="appimage"
