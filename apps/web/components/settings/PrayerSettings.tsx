@@ -399,7 +399,8 @@ export function PrayerSettings({
               {locationError && (
                 <div className="grid gap-3 rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-xs leading-6 text-red-200">
                   <p>{t(locationError)}</p>
-                  {locationError !== "timeout" && (
+                  {locationError !== "timeout" &&
+                    locationError !== "inaccurate" && (
                     <button
                       type="button"
                       onClick={handleOpenLocationSettings}

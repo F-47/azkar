@@ -227,6 +227,7 @@ async fn show_notification(
 #[cfg(target_os = "windows")]
 fn request_windows_location() -> Result<DesktopLocation, String> {
     use windows::Devices::Geolocation::{GeolocationAccessStatus, Geolocator, PositionAccuracy};
+    use windows::Foundation::TimeSpan;
 
     let access = Geolocator::RequestAccessAsync()
         .map_err(|e| e.to_string())?
@@ -242,8 +243,14 @@ fn request_windows_location() -> Result<DesktopLocation, String> {
         .SetDesiredAccuracy(PositionAccuracy::High)
         .map_err(|e| e.to_string())?;
 
+    const TICKS_PER_SECOND: i64 = 10_000_000;
     let position = geolocator
-        .GetGeopositionAsync()
+        .GetGeopositionAsyncWithAgeAndTimeout(
+            TimeSpan::default(),
+            TimeSpan {
+                Duration: 30 * TICKS_PER_SECOND,
+            },
+        )
         .map_err(|e| e.to_string())?
         .get()
         .map_err(|e| e.to_string())?;
@@ -378,12 +385,6 @@ pub fn run() {
         .manage(Mutex::new(SchedulerState::default()))
         .plugin(tauri_plugin_positioner::init())
         .plugin(tauri_plugin_process::init())
-        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            if let Some(win) = app.get_webview_window("main") {
-                let _ = win.show();
-                let _ = win.set_focus();
-            }
-        }))
         .invoke_handler(tauri::generate_handler![
             show_notification,
             hide_notification,
@@ -392,6 +393,14 @@ pub fn run() {
             open_location_settings,
             configure_scheduler
         ]);
+
+    #[cfg(not(debug_assertions))]
+    let builder = builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+        if let Some(win) = app.get_webview_window("main") {
+            let _ = win.show();
+            let _ = win.set_focus();
+        }
+    }));
 
     #[cfg(not(feature = "store"))]
     let builder = builder

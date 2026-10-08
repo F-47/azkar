@@ -642,22 +642,37 @@ function startJsTimer(settings: NotificationSettings): void {
   );
 }
 
+async function silentlyEnsureCoords(): Promise<void> {
+  const { isCoordsStale, loadCoords, requestCoords, requestGpsCoords, saveCoords } =
+    await import("./prayerTimes");
+  const coords = loadCoords();
+
+  if (!coords) {
+    try {
+      const c = await requestCoords();
+      if (c) saveCoords(c);
+    } catch (e) {
+      console.warn("Failed to silently auto-fetch coordinates:", e);
+    }
+    return;
+  }
+
+  if (!isCoordsStale(coords)) return;
+
+  try {
+    const result = await requestGpsCoords();
+    if (result.coords) saveCoords(result.coords);
+  } catch (e) {
+    console.warn("Failed to silently refresh coordinates:", e);
+  }
+}
+
 export async function startScheduler(): Promise<void> {
   stopJsTimer();
   const settings = loadSettings();
 
   if (settings.enabled && settings.usePrayerTimes) {
-    const { loadCoords, requestCoords, saveCoords } =
-      await import("./prayerTimes");
-    const coords = loadCoords();
-    if (!coords) {
-      try {
-        const c = await requestCoords();
-        if (c) saveCoords(c);
-      } catch (e) {
-        console.warn("Failed to silently auto-fetch coordinates:", e);
-      }
-    }
+    void silentlyEnsureCoords();
   }
 
   if (isTauri() && !settings.usePrayerTimes) {

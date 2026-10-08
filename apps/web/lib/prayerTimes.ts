@@ -66,6 +66,7 @@ export interface SavedCoords {
   source: "gps" | "timezone";
   accuracy?: number | null;
   label?: string;
+  fetchedAt?: number;
 }
 
 export type LocationRequestError =
@@ -73,6 +74,7 @@ export type LocationRequestError =
   | "denied"
   | "unavailable"
   | "timeout"
+  | "inaccurate"
   | "unknown";
 
 export interface GpsCoordsResult {
@@ -80,9 +82,23 @@ export interface GpsCoordsResult {
   error?: LocationRequestError;
 }
 
+const MAX_TRUSTED_ACCURACY_METERS = 15_000;
+const COORDS_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+
+export function isCoordsStale(coords: SavedCoords): boolean {
+  return (
+    coords.source !== "gps" ||
+    typeof coords.fetchedAt !== "number" ||
+    Date.now() - coords.fetchedAt > COORDS_MAX_AGE_MS
+  );
+}
+
 export function saveCoords(coords: SavedCoords): void {
   if (typeof window === "undefined") return;
-  localStorage.setItem(COORDS_KEY, JSON.stringify(coords));
+  localStorage.setItem(
+    COORDS_KEY,
+    JSON.stringify({ ...coords, fetchedAt: Date.now() }),
+  );
 }
 
 export function loadCoords(): SavedCoords | null {
@@ -112,18 +128,36 @@ export function requestCoords(): Promise<SavedCoords> {
   );
 }
 
+function trustedGpsCoords(
+  lat: number,
+  lon: number,
+  accuracy?: number | null,
+): SavedCoords | null {
+  if (typeof accuracy === "number" && accuracy > MAX_TRUSTED_ACCURACY_METERS) {
+    return null;
+  }
+  return {
+    lat,
+    lon,
+    accuracy: accuracy ?? null,
+    source: "gps",
+    label: "GPS",
+  };
+}
+
 export function requestGpsCoords(): Promise<GpsCoordsResult> {
   if (isTauri()) {
     return requestDesktopLocation()
-      .then((location) => ({
-        coords: {
-          lat: location.lat,
-          lon: location.lon,
-          accuracy: location.accuracy,
-          source: "gps" as const,
-          label: "GPS",
-        },
-      }))
+      .then((location) => {
+        const coords = trustedGpsCoords(
+          location.lat,
+          location.lon,
+          location.accuracy,
+        );
+        return coords
+          ? { coords }
+          : { coords: null, error: "inaccurate" as const };
+      })
       .catch((error) => {
         const message = error instanceof Error ? error.message : String(error);
         if (message.includes("denied")) {
@@ -148,13 +182,14 @@ function requestBrowserGpsCoords(): Promise<GpsCoordsResult> {
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        resolve({
-          coords: {
-            lat: pos.coords.latitude,
-            lon: pos.coords.longitude,
-            source: "gps",
-          },
-        });
+        const coords = trustedGpsCoords(
+          pos.coords.latitude,
+          pos.coords.longitude,
+          pos.coords.accuracy,
+        );
+        resolve(
+          coords ? { coords } : { coords: null, error: "inaccurate" as const },
+        );
       },
       (error) => {
         if (error.code === error.PERMISSION_DENIED) {
